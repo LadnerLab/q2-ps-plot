@@ -1,3 +1,4 @@
+#!/usr/bin/env python\
 import importlib
 
 from qiime2.plugin import (Plugin,
