@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import pandas as pd
 from q2_ps_plot.format_types import PepsirfContingencyTSVFormat
 import qiime2
