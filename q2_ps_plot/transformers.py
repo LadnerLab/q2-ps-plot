@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from q2_ps_plot.plugin_setup import plugin
 from q2_ps_plot.format_types import PepsirfContingencyTSVFormat
 
