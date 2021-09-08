@@ -6,8 +6,9 @@ import glob, os, subprocess
 import tempfile
 import csv
 
-from q2_ps_plot.format_types import PepsirfContingencyTSVFormat
+from q2_ps_plot.format_types import PepsirfContingencyTSVFormat, Zscore
 import qiime2
+from q2_types.feature_table import BIOMV210Format
 
 
 def _make_pairs_file(column, outpath):
@@ -44,6 +45,11 @@ def zenrich(output_dir: str,
         #flip data frame
         data = data.transpose()
 
+        #put zscores data into dataframe and flip
+        zBiom = zscores.view(BIOMV210Format)
+        zData = zBiom.view(pd.DataFrame)
+        zData = zData.transpose()
+
         #set negative matrix
         if not negative_data:
             negative_data = data
@@ -67,7 +73,7 @@ def zenrich(output_dir: str,
         threshRange = list(reversed(range(lower_z_thresh, upper_z_thresh, step_z_thresh)))
         
         #set up enriched peptide data frame
-        enrichedDf = pd.DataFrame(columns = ['Peptide','sample','sample_value', 'negative_control', 'z_score_threshold'])
+        enrichedDf = pd.DataFrame(columns = ['Peptide','sample','sample_value', 'negative_control', 'z_score_threshold', 'Zscores'])
         
         #iterate through thresholds and generate threshold file to be used to get enriched peptide
         for score in threshRange:
@@ -112,7 +118,10 @@ def zenrich(output_dir: str,
                     if enrichedDf.loc[(enrichedDf['Peptide'] == pep) & (enrichedDf['sample'] == sample)].empty:
                         x = np.mean([float(negative_data[sn][pep]) for sn in negative_controls])
                         y = np.mean([float(data[sn][pep]) for sn in sNames])
-                        enrichedDf.loc[len(enrichedDf.index)] = [pep, sample, np.log10(y+1), np.log10(x+1), int(oD)]
+                        z = [zData[sn][pep] for sn in sNames]
+                        zToStr = ', '.join([str(elem) for elem in z])
+                        enrichedDf.loc[len(enrichedDf.index)] = [pep, sample, np.log10(y+1), np.log10(x+1), int(oD), zToStr]
+
 
         #collect peptide metadata information and add it to the enriched data frame
         if peptide_metadata:
@@ -121,12 +130,13 @@ def zenrich(output_dir: str,
 
             #add pepsirf to tooltip list and add data type to each item
             tooltip.insert(0, 'Peptide')
+            tooltip.insert(1, 'Zscores')
             i = 0
             for title in tooltip:
                 tooltip[i] += ':N'
                 i += 1
         else:
-            tooltip = ['Peptide:N']
+            tooltip = ['Peptide:N', 'Zscores:N']
 
         #set up unenriched data frame
         heatmapDf = pd.DataFrame(columns = ['sample', 'bin_x_start', 'bin_x_end',
