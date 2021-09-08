@@ -58,8 +58,8 @@ shared_descriptions = {
     "tooltip": "List of title names found in the peptide metadata file "
                 "to be added to the hover tooltip (Parameter is case sensitive. "
                 "Example argument: --p-tooltip Species SpeciesID). "
-                "'Peptide' will always be added to the list of titles, if peptide metadata is not "
-                "provided just 'Peptide' will be shown."
+                "'Peptide' and 'Zscores' will always be added to the list of titles, "
+                "if peptide metadata is not provided just 'Peptide' and 'Zscores' will be shown."
 }
 
 plugin.pipelines.register_function(
