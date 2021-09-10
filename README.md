@@ -54,3 +54,6 @@ Visit: https://github.com/LadnerLab/PepSIRF for installation documentation on Pe
 | *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
 
 ### `More visualizers coming soon...`
+
+## Tutorial
+**`File inputs for tutorial located in q2-ps-plot/example`**
