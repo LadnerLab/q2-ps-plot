@@ -107,6 +107,7 @@ You can view this visualization by dropping the `testing_zenrich_tsv.qzv` file i
 | *Optional* | `--p-step-z-thresh` | Integar to increment z-score thresholds. | **--p-step-z-thresh** 1 | **5** |
 | *Optional* | `--p-upper-z-thresh` | Upper limit of z-score thresholds (non-inclusive). | **--p-upper-z-thresh** 10 | **30** |
 | *Optional* | `--p-lower-z-thresh` | Lower limit of z-score thresholds (inclusive). | **--p-lower-z-thresh** 5 | **5** |
+| *Optional* | `--p-exact-z-thresh` | List of exact z score thresholds either individual or combined. List MUST BE in descending order. | **--p-exact-z-thresh** 25 10 3 *or* **--p-exact-z-thresh** 6,25 4,10 1,3 | None |
 | *Optional* | `--p-pepsirf-binary` | The binary to call pepsirf on your system. Used to call pepsirf enrich module. | **--p-pepsirf-binary** pepsirf_executable | **'pepsirf'** |
 | **Required** | `--o-visualization` | Visualization output name | **--o-visualization** file_name.qzv | N/A |
 | *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
@@ -125,6 +126,7 @@ You can view this visualization by dropping the `testing_zenrich_tsv.qzv` file i
 | *Optional* | `--p-step-z-thresh` | Integar to increment z-score thresholds. | **--p-step-z-thresh** 1 | **5** |
 | *Optional* | `--p-upper-z-thresh` | Upper limit of z-score thresholds (non-inclusive). | **--p-upper-z-thresh** 10 | **30** |
 | *Optional* | `--p-lower-z-thresh` | Lower limit of z-score thresholds (inclusive). | **--p-lower-z-thresh** 5 | **5** |
+| *Optional* | `--p-exact-z-thresh` | List of exact z score thresholds either individual or combined. List MUST BE in descending order. | **--p-exact-z-thresh** 25 10 3 *or* **--p-exact-z-thresh** 6,25 4,10 1,3 | None |
 | *Optional* | `--p-pepsirf-binary` | The binary to call pepsirf on your system. Used to call pepsirf enrich module. | **--p-pepsirf-binary** pepsirf_executable | **'pepsirf'** |
 | **Required** | `--o-zenrich-vis` | Visualization output name | **--o-zenrich-vis** file_name.qzv | N/A |
 | *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
