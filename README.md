@@ -15,6 +15,24 @@ Visit: https://github.com/LadnerLab/PepSIRF for installation documentation on Pe
 - `PepSIRF`
 - `altair`
 
+#### Directions:
+Make sure your Qiime2 conda environment is activated by running the command:
+  
+```
+conda activate qiime2-2021.8
+```
+
+You can replace `qiime2-2021.8` above with whichever version of QIIME 2 you have currently installed.
+
+Now you are ready to install ps-plot. Run the following commands:
+
+```
+pip install altair
+pip install git+https://github.com/LadnerLab/q2-ps-plot.git
+```
+
+Run `qiime info` to check for a successful installation. If installation was successful, you should see `ps-plot: version` in the list of installed plugins.
+
 ## Usage
 
 ### zenrich
