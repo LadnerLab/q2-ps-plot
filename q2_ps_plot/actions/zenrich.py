@@ -10,14 +10,12 @@ from q2_ps_plot.format_types import PepsirfContingencyTSVFormat, Zscore
 import qiime2
 from q2_types.feature_table import BIOMV210Format
 
-
 def _make_pairs_file(column, outpath):
     series = column.to_series()
     pairs = {k: v.index for k,v in series.groupby(series)}
     with open(outpath, 'w') as fh:
         for _, ids in pairs.items():
             fh.write('\t'.join(ids) + '\n')
-
 
 def zenrich(output_dir: str,
             data: pd.DataFrame,
@@ -74,7 +72,8 @@ def zenrich(output_dir: str,
         
         #set up enriched peptide data frame
         enrichedDf = pd.DataFrame(columns = ['Peptide','sample','sample_value', 'negative_control', 'z_score_threshold', 'Zscores'])
-        
+        enr_index = 0
+
         #iterate through thresholds and generate threshold file to be used to get enriched peptide
         for score in threshRange:
             outputDir.append(str(score))
@@ -86,10 +85,11 @@ def zenrich(output_dir: str,
             #run p enrich module
             cmd = "%s enrich -t %s -s %s -x %s -o %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score))
             subprocess.run(cmd, shell=True)
-            
-        #create empty list to collect all sample names for dropdown menu
-        dropNames = []
-        
+
+        #create empty dicionaries to collect all sample names and sample/peptide combos
+        dropNames = {}
+        enrDic = {}
+
         #iterate through created directories
         for oD in outputDir:
             enrFiles = glob.glob("%s/*%s" % (oD, outSuffix))
@@ -105,23 +105,20 @@ def zenrich(output_dir: str,
 
                 #generate a list of sample names
                 if sample not in dropNames:
-                    dropNames.append(sample)
+                    dropNames[sample] = ""
                 
-                #get list of peptides from enriched file
-                enrPeptides = []
+                #collect information for the pandas data frame
                 with open(file, 'r') as fin:
                     for row in fin:
-                        enrPeptides.append(row.rstrip("\n"))
-
-                #collect information for the pandas data frame
-                for pep in enrPeptides:
-                    if enrichedDf.loc[(enrichedDf['Peptide'] == pep) & (enrichedDf['sample'] == sample)].empty:
-                        x = np.mean([float(negative_data[sn][pep]) for sn in negative_controls])
-                        y = np.mean([float(data[sn][pep]) for sn in sNames])
-                        z = [zData[sn][pep] for sn in sNames]
-                        zToStr = ', '.join([str(elem) for elem in z])
-                        enrichedDf.loc[len(enrichedDf.index)] = [pep, sample, np.log10(y+1), np.log10(x+1), int(oD), zToStr]
-
+                        pep = row.rstrip("\n")
+                        if (pep,sample) not in enrDic:
+                            x = np.mean([float(negative_data[sn][pep]) for sn in negative_controls])
+                            y = np.mean([float(data[sn][pep]) for sn in sNames])
+                            z = [zData[sn][pep] for sn in sNames]
+                            zToStr = ', '.join([str(elem) for elem in z])
+                            enrichedDf.loc[enr_index] = [pep, sample, np.log10(y+1), np.log10(x+1), int(oD), zToStr]
+                            enr_index += 1
+                            enrDic[(pep,sample)] = ""
 
         #collect peptide metadata information and add it to the enriched data frame
         if peptide_metadata:
@@ -141,12 +138,15 @@ def zenrich(output_dir: str,
         #set up unenriched data frame
         heatmapDf = pd.DataFrame(columns = ['sample', 'bin_x_start', 'bin_x_end',
                                             'bin_y_start', 'bin_y_end', 'count'])
+        hm_index = 0
+
+
+        x = np.array([np.mean([float(negative_data[sn][pn]) for sn in negative_controls]) for pn in peptideNames])
+        xLog = np.log10(x+1)
 
         #iterate through samples to fill Data Frame
-        for sample in dropNames:
+        for sample in dropNames.keys():
             sNames = sample.split('~')
-            x = np.array([np.mean([float(negative_data[sn][pn]) for sn in negative_controls]) for pn in peptideNames])
-            xLog = np.log10(x+1)
             y = np.array([np.mean([float(data[sn][pn]) for sn in sNames]) for pn in peptideNames])
             yLog = np.log10(y+1)
             heatmap, xedges, yedges = np.histogram2d(xLog, yLog, bins=(70,70))
@@ -162,8 +162,9 @@ def zenrich(output_dir: str,
                     bin_x_end = xedges[x+1]
                     bin_y_start = yedges[y]
                     bin_y_end = yedges[y+1]
-                    heatmapDf.loc[len(heatmapDf.index)] = [sample, bin_x_start, bin_x_end,
+                    heatmapDf.loc[hm_index] = [sample, bin_x_start, bin_x_end,
                                                         bin_y_start, bin_y_end, count]
+                    hm_index += 1
 
         #find axis ratio for chart width an height
         xy_max = heatmapDf[['bin_x_end', 'bin_y_end']].max()
@@ -172,8 +173,8 @@ def zenrich(output_dir: str,
         chartWidth =  chartHeight + (20 * ratio)
 
         #create dropdown specs
-        sample_dropdown = alt.binding_select(options=dropNames, name='Sample Select')
-        sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': dropNames[0]})
+        sample_dropdown = alt.binding_select(options=list(dropNames.keys()), name='Sample Select')
+        sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': list(dropNames.keys())[0]})
         
         #create scatterplot of enriched peptides
         scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
