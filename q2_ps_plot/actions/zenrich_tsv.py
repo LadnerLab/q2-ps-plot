@@ -14,8 +14,9 @@ def zenrich_tsv(ctx,
             step_z_thresh=5,
             upper_z_thresh=30,
             lower_z_thresh=5,
+            exact_z_thresh=None,
             pepsirf_binary="pepsirf"):
-    
+
         zenrich = ctx.get_action('ps-plot', 'zenrich')
 
         data = ctx.make_artifact(type='FeatureTable[Normed]',
@@ -43,6 +44,7 @@ def zenrich_tsv(ctx,
             step_z_thresh = step_z_thresh,
             upper_z_thresh = upper_z_thresh,
             lower_z_thresh = lower_z_thresh,
+            exact_z_thresh = exact_z_thresh,
             pepsirf_binary = pepsirf_binary)
 
         return zenrich_vis
