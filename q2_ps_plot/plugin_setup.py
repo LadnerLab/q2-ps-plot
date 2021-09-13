@@ -37,6 +37,7 @@ shared_parameters = {
     "step_z_thresh": Int % Range(1, None),
     "upper_z_thresh": Int % Range(2, None),
     "lower_z_thresh": Int % Range(1, None),
+    "exact_z_thresh": List[Str],
     "source": MetadataColumn[Categorical],
     "peptide_metadata": Metadata,
     "pepsirf_binary": Str,
@@ -47,6 +48,9 @@ shared_descriptions = {
     "step_z_thresh": "Integar to increment z-score thresholds.",
     "upper_z_thresh": "Upper limit of z-score thresholds (non-inclusive).",
     "lower_z_thresh": "Lower limit of z-score thresholds (inclusive).",
+    "exact_z_thresh": "List of exact z score thresholds either individual or combined. "
+                    "List MUST BE in descending order. (Example argument: '--p-exact-z-thresh 25 10 3' "
+                    "or '--p-exact-z-thresh 6,25 4,10 1,3')",
     "source": "Metadata file containing all sample names and their source groups. "
             "Used to create pairs tsv to run pepsirf enrich module.",
     "peptide_metadata": "Filename of file that contains peptide metadata related to "
