@@ -33,9 +33,60 @@ pip install git+https://github.com/LadnerLab/q2-ps-plot.git
 
 Run `qiime info` to check for a successful installation. If installation was successful, you should see `ps-plot: version` in the list of installed plugins.
 
+## Tutorial
+File inputs for tutorial located in q2-ps-plot/example
+
+### Running zenrich
+Download the following files:
+
+- IM0032-pA_PV1_subset_CS.qza
+- IM0032-pA_PV1_subset_Z-HDI95.qza
+- pairs_source.tsv
+
+Run the following command:
+
+```
+qiime ps-plot zenrich --i-data IM0032-pA_PV1_subset_CS.qza \
+--i-zscores IM0032-pA_PV1_subset_Z-HDI95.qza \
+--m-source-file pairs_source.tsv \
+--m-source-column Source \
+--p-negative-controls SB_pA_A SB_pA_B SB_pA_D \
+--o-visualization testing_zenrich
+```
+
+*If you cannot run PepSIRF by simply calling 'pepsirf' in the command line, you need to add `--p-pepsirf-binary` to the above command, followed by how you can call PepSIRF on your system*
+
+Once ps-plot has finished running you should see: `Saved Visualization to: testing_zenrich.qzv`
+
+You can view this visualization by dropping the `testing_zenrich.qzv` file into https://view.qiime2.org/.
+
+### Running zenrich-tsv
+Download the following files:
+
+- IM0032-pA_PV1_subset_CS.tsv
+- IM0032-pA_PV1_subset_Z-HDI95.tsv
+- pairs_source.tsv
+
+Run the following command:
+
+```
+qiime ps-plot zenrich-tsv --p-data-filepath IM0032-pA_PV1_subset_CS.tsv \
+--p-zscores-filepath IM0032-pA_PV1_subset_Z-HDI95.tsv \
+--m-source-file pairs_source.tsv \
+--m-source-column Source \
+--p-negative-controls SB_pA_A SB_pA_B SB_pA_D \
+--o-zenrich-vis testing_zenrich_tsv
+```
+
+*If you cannot run PepSIRF by simply calling 'pepsirf' in the command line, you need to add `--p-pepsirf-binary` to the above command, followed by how you can call PepSIRF on your system*
+
+Once ps-plot has finished running you should see: `Saved Visualization to: testing_zenrich_tsv.qzv`
+
+You can view this visualization by dropping the `testing_zenrich_tsv.qzv` file into https://view.qiime2.org/.
+
 ## Usage
 
-### zenrich
+### zenrich Arguments
 | Optional/Required | Argument(s) | Description | Example | Default |
 | :--: | :------: | --- | --- | -- |
 | **Required** | `--i-data` | Featuretable[Normed] - FeatureTable containing normalized read counts of samples and peptides. First column header must be 'Sequence Name' as produced by pepsirf. | **--i-data** some_file.qza | N/A |
@@ -53,7 +104,7 @@ Run `qiime info` to check for a successful installation. If installation was suc
 | **Required** | `--o-visualization` | Visualization output name | **--o-visualization** file_name.qzv | N/A |
 | *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
 
-### zenrich_tsv
+### zenrich_tsv Arguments
 | Optional/Required | Argument(s) | Description | Example | Default |
 | :--: | :------: | --- | --- | -- |
 | **Required** | `--p-data-filepath` | Filepath of .tsv file containing normalized read counts of samples and peptides. First column header must be 'Sequence Name' as produced by pepsirf. | **--p-data-filepath** some_file.tsv | N/A |
@@ -72,6 +123,3 @@ Run `qiime info` to check for a successful installation. If installation was suc
 | *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
 
 ### `More visualizers coming soon...`
-
-## Tutorial
-**`File inputs for tutorial located in q2-ps-plot/example`**
