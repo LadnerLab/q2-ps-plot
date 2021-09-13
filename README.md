@@ -1,6 +1,13 @@
 # q2-ps-plot
 Qiime2 Plug-in for the creation of visualizations from PepSIRF outputs.
 
+### Table of Contents
+- [Installation](https://github.com/LadnerLab/q2-ps-plot#installation)
+
+- [Tutorial](https://github.com/LadnerLab/q2-ps-plot#tutorial)
+
+- [Usage](https://github.com/LadnerLab/q2-ps-plot#usage)
+
 ## Installation
 
 ### Qiime2 Installation:
