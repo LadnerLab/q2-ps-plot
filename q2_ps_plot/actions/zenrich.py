@@ -28,6 +28,7 @@ def zenrich(output_dir: str,
             step_z_thresh: int=5,
             upper_z_thresh: int=30,
             lower_z_thresh: int=5,
+            exact_z_thresh: list=None,
             pepsirf_binary: str="pepsirf") -> None:
 
     old = os.getcwd() # TODO: bug in framework, remove this when fixed
@@ -68,7 +69,10 @@ def zenrich(output_dir: str,
         peptideNames = negative_data.index
         
         #get list of thresholds
-        threshRange = list(reversed(range(lower_z_thresh, upper_z_thresh, step_z_thresh)))
+        if not exact_z_thresh:
+            threshRange = list(reversed(range(lower_z_thresh, upper_z_thresh, step_z_thresh)))
+        else:
+            threshRange = exact_z_thresh
         
         #set up enriched peptide data frame
         enrichedDf = pd.DataFrame(columns = ['Peptide','sample','sample_value', 'negative_control', 'z_score_threshold', 'Zscores'])
@@ -116,7 +120,7 @@ def zenrich(output_dir: str,
                             y = np.mean([float(data[sn][pep]) for sn in sNames])
                             z = [zData[sn][pep] for sn in sNames]
                             zToStr = ', '.join([str(elem) for elem in z])
-                            enrichedDf.loc[enr_index] = [pep, sample, np.log10(y+1), np.log10(x+1), int(oD), zToStr]
+                            enrichedDf.loc[enr_index] = [pep, sample, np.log10(y+1), np.log10(x+1), oD, zToStr]
                             enr_index += 1
                             enrDic[(pep,sample)] = ""
 
