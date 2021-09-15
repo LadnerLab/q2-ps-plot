@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import importlib
+import q2_ps_plot
 
 from qiime2.plugin import (Plugin,
                         SemanticType,
@@ -23,7 +24,7 @@ from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 # This is the plugin object. It is what the framework will load and what an
 # interface will interact with. Basically every registration we perform will
 # involve this object in some way.
-plugin = Plugin("ps-plot", version="0.0.1.dev",
+plugin = Plugin("ps-plot", version=q2_ps_plot.__version__,
                 website="https://github.com/LadnerLab/q2-ps-plot")
 
 plugin.register_formats(PepsirfContingencyTSVFormat,
