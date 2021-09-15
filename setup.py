@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
+import versioneer
 
 
 setup(
     name="q2-ps-plot",
-    version='0.0.1.dev',
+    version=versioneer.get_version(),
+    cmdclass = versioneer.get_cmdclass(),
     packages=find_packages(),
     package_data={},
     author="Annabelle Brown",
