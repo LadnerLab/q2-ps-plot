@@ -5,6 +5,7 @@ import altair as alt
 import glob, os, subprocess
 import tempfile
 import csv
+from collections import defaultdict
 
 from q2_ps_plot.format_types import PepsirfContingencyTSVFormat, Zscore
 import qiime2
@@ -73,10 +74,6 @@ def zenrich(output_dir: str,
             threshRange = list(reversed(range(lower_z_thresh, upper_z_thresh, step_z_thresh)))
         else:
             threshRange = exact_z_thresh
-        
-        #set up enriched peptide data frame
-        enrichedDf = pd.DataFrame(columns = ['Peptide','sample','sample_value', 'negative_control', 'z_score_threshold', 'Zscores'])
-        enr_index = 0
 
         #iterate through thresholds and generate threshold file to be used to get enriched peptide
         for score in threshRange:
@@ -92,7 +89,13 @@ def zenrich(output_dir: str,
 
         #create empty dicionaries to collect all sample names and sample/peptide combos
         dropNames = {}
-        enrDic = {}
+        pepSamp = {}
+
+        #create empty dictionary of lists to collect enriched peptides
+        enrDict = defaultdict(list)
+        columnNms = ['Peptide','sample','sample_value', 'negative_control', 'z_score_threshold', 'Zscores']
+        for nm in columnNms:
+            enrDict[nm]
 
         #iterate through created directories
         for oD in outputDir:
@@ -115,14 +118,23 @@ def zenrich(output_dir: str,
                 with open(file, 'r') as fin:
                     for row in fin:
                         pep = row.rstrip("\n")
-                        if (pep,sample) not in enrDic:
+                        if (pep,sample) not in pepSamp:
                             x = np.mean([float(negative_data[sn][pep]) for sn in negative_controls])
                             y = np.mean([float(data[sn][pep]) for sn in sNames])
                             z = [zData[sn][pep] for sn in sNames]
                             zToStr = ', '.join([str(elem) for elem in z])
-                            enrichedDf.loc[enr_index] = [pep, sample, np.log10(y+1), np.log10(x+1), oD, zToStr]
-                            enr_index += 1
-                            enrDic[(pep,sample)] = ""
+
+                            #add all enriched peptide info to enriched dictionary
+                            enrDict['Peptide'].append(pep)
+                            enrDict['sample'].append(sample)
+                            enrDict['sample_value'].append(np.log10(y+1))
+                            enrDict['negative_control'].append(np.log10(x+1))
+                            enrDict['z_score_threshold'].append(oD)
+                            enrDict['Zscores'].append(zToStr)
+                            pepSamp[(pep,sample)] = ""
+
+        #convert eriched dictionary to enriched data frame
+        enrichedDf = pd.DataFrame(enrDict)
 
         #collect peptide metadata information and add it to the enriched data frame
         if peptide_metadata:
@@ -139,12 +151,13 @@ def zenrich(output_dir: str,
         else:
             tooltip = ['Peptide:N', 'Zscores:N']
 
-        #set up unenriched data frame
-        heatmapDf = pd.DataFrame(columns = ['sample', 'bin_x_start', 'bin_x_end',
-                                            'bin_y_start', 'bin_y_end', 'count'])
-        hm_index = 0
+        #create empty directory to collect all heatmap information
+        hmDic = defaultdict(list)
+        columnNms = ['sample', 'bin_x_start', 'bin_x_end', 'bin_y_start', 'bin_y_end', 'count']
+        for nm in columnNms:
+            hmDic[nm]
 
-
+        #collect x axis data
         x = np.array([np.mean([float(negative_data[sn][pn]) for sn in negative_controls]) for pn in peptideNames])
         xLog = np.log10(x+1)
 
@@ -166,9 +179,17 @@ def zenrich(output_dir: str,
                     bin_x_end = xedges[x+1]
                     bin_y_start = yedges[y]
                     bin_y_end = yedges[y+1]
-                    heatmapDf.loc[hm_index] = [sample, bin_x_start, bin_x_end,
-                                                        bin_y_start, bin_y_end, count]
-                    hm_index += 1
+
+                    #add all x and y bins to heatmap dictionary
+                    hmDic['sample'].append(sample)
+                    hmDic['bin_x_start'].append(bin_x_start)
+                    hmDic['bin_x_end'].append(bin_x_end)
+                    hmDic['bin_y_start'].append(bin_y_start)
+                    hmDic['bin_y_end'].append(bin_y_end)
+                    hmDic['count'].append(count)
+
+        #convert heatmap dictionary to data frame
+        heatmapDf = pd.DataFrame(hmDic)
 
         #find axis ratio for chart width an height
         xy_max = heatmapDf[['bin_x_end', 'bin_y_end']].max()
