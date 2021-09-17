@@ -21,8 +21,9 @@ def _make_pairs_file(column, outpath):
 def zenrich(output_dir: str,
             data: pd.DataFrame,
             zscores: PepsirfContingencyTSVFormat,
-            source: qiime2.CategoricalMetadataColumn,
             negative_controls: list,
+            source: qiime2.CategoricalMetadataColumn = None,
+            pn_filepath: str = None,
             peptide_metadata: qiime2.Metadata = None,
             tooltip: list=['Species', 'SpeciesID'],
             negative_data: pd.DataFrame = None,
@@ -39,8 +40,11 @@ def zenrich(output_dir: str,
         os.chdir(tempdir)
 
         #create pairs file
-        pairsFile = os.path.join(tempdir, 'pairs.tsv')
-        _make_pairs_file(source, pairsFile)
+        if source:
+            pairsFile = os.path.join(tempdir, 'pairs.tsv')
+            _make_pairs_file(source, pairsFile)
+        elif pn_filepath:
+            pairsFile = os.path.abspath(pn_filepath)
 
         #flip data frame
         data = data.transpose()
