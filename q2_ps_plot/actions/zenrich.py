@@ -7,6 +7,8 @@ import tempfile
 import csv
 from collections import defaultdict
 
+from pandas.core.dtypes.missing import isnull
+
 from q2_ps_plot.format_types import PepsirfContingencyTSVFormat, Zscore
 import qiime2
 from q2_types.feature_table import BIOMV210Format
@@ -68,6 +70,7 @@ def zenrich(output_dir: str,
         
         #set values for pepsirf
         outSuffix = "_tempEnriched.txt"
+        failOut = "enrichFail.txt"
         outputDir = []
         
         #convert colsum data to pandas data frame
@@ -88,7 +91,7 @@ def zenrich(output_dir: str,
                     tsv_writer.writerow([str(zscores), score])
             
             #run p enrich module
-            cmd = "%s enrich -t %s -s %s -x %s -o %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score))
+            cmd = "%s enrich -t %s -s %s -x %s -o %s -f %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score), failOut)
             subprocess.run(cmd, shell=True)
 
         #create empty dicionaries to collect all sample names and sample/peptide combos
@@ -136,6 +139,17 @@ def zenrich(output_dir: str,
                             enrDict['z_score_threshold'].append(oD)
                             enrDict['Zscores'].append(zToStr)
                             pepSamp[(pep,sample)] = ""
+            
+            #add sample names that have no enriched peptides to dropNames dict
+            with open(os.path.join(oD, failOut), 'r') as fh:
+                lines = fh.readlines()
+                c = 0
+                for ln in lines:
+                    fail = ln.rstrip("\n").split("\t")
+                    samp = "~".join(fail[0].split(", "))
+                    if c > 0 and fail[1] == 'No enriched peptides' and samp not in dropNames:
+                        dropNames[samp] = ''
+                    c += 1
 
         #convert eriched dictionary to enriched data frame
         enrichedDf = pd.DataFrame(enrDict)
@@ -162,13 +176,13 @@ def zenrich(output_dir: str,
             hmDic[nm]
 
         #collect x axis data
-        x = np.array([np.mean([float(negative_data[sn][pn]) for sn in negative_controls]) for pn in peptideNames])
+        x = np.array([np.mean([float(negative_data[sn][pn]) for sn in negative_controls if not pd.isnull(negative_data[sn][pn])]) for pn in peptideNames])
         xLog = np.log10(x+1)
 
         #iterate through samples to fill Data Frame
         for sample in dropNames.keys():
             sNames = sample.split('~')
-            y = np.array([np.mean([float(data[sn][pn]) for sn in sNames]) for pn in peptideNames])
+            y = np.array([np.mean([float(data[sn][pn]) for sn in sNames if not pd.isnull(data[sn][pn])]) for pn in peptideNames])
             yLog = np.log10(y+1)
             heatmap, xedges, yedges = np.histogram2d(xLog, yLog, bins=(70,70))
 
