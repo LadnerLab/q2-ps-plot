@@ -37,6 +37,10 @@ def zenrich(output_dir: str,
 
     old = os.getcwd() # TODO: bug in framework, remove this when fixed
 
+    #collect absolute filepath of pairs file
+    if pn_filepath:
+        pairsFile = os.path.abspath(pn_filepath)
+
     #create temporary directory to work in
     with tempfile.TemporaryDirectory() as tempdir:
         os.chdir(tempdir)
@@ -45,8 +49,6 @@ def zenrich(output_dir: str,
         if source:
             pairsFile = os.path.join(tempdir, 'pairs.tsv')
             _make_pairs_file(source, pairsFile)
-        elif pn_filepath:
-            pairsFile = os.path.abspath(pn_filepath)
 
         #flip data frame
         data = data.transpose()
@@ -140,16 +142,19 @@ def zenrich(output_dir: str,
                             enrDict['Zscores'].append(zToStr)
                             pepSamp[(pep,sample)] = ""
             
-            #add sample names that have no enriched peptides to dropNames dict
-            with open(os.path.join(oD, failOut), 'r') as fh:
-                lines = fh.readlines()
-                c = 0
-                for ln in lines:
-                    fail = ln.rstrip("\n").split("\t")
-                    samp = "~".join(fail[0].split(", "))
-                    if c > 0 and fail[1] == 'No enriched peptides' and samp not in dropNames:
-                        dropNames[samp] = ''
-                    c += 1
+            #check if there were any samples that had no enriched peptides
+            if os.path.exists(os.path.join(oD, failOut)): 
+
+                #add sample names that have no enriched peptides to dropNames dict
+                with open(os.path.join(oD, failOut), 'r') as fh:
+                    lines = fh.readlines()
+                    c = 0
+                    for ln in lines:
+                        fail = ln.rstrip("\n").split("\t")
+                        samp = "~".join(fail[0].split(", "))
+                        if c > 0 and fail[1] == 'No enriched peptides' and samp not in dropNames:
+                            dropNames[samp] = ''
+                        c += 1
 
         #convert eriched dictionary to enriched data frame
         enrichedDf = pd.DataFrame(enrDict)
