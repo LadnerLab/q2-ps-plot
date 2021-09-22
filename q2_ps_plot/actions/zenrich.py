@@ -59,7 +59,7 @@ def zenrich(output_dir: str,
         zData = zData.transpose()
 
         #set negative matrix
-        if not negative_data:
+        if negative_data is None:
             negative_data = data
         else:
             negative_data = negative_data.transpose()
