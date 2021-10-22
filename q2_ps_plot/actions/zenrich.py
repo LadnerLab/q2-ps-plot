@@ -41,6 +41,11 @@ def zenrich(output_dir: str,
     if pn_filepath:
         pairsFile = os.path.abspath(pn_filepath)
 
+    #collect absolute filepath of
+    if os.path.isfile(pepsirf_binary):
+        pepsirf_binary = os.path.abspath(pepsirf_binary)
+        pepsirf_binary = "'%s'" % (pepsirf_binary)
+
     #create temporary directory to work in
     with tempfile.TemporaryDirectory() as tempdir:
         os.chdir(tempdir)
@@ -93,7 +98,7 @@ def zenrich(output_dir: str,
                     tsv_writer.writerow([str(zscores), score])
             
             #run p enrich module
-            cmd = "%s enrich -t %s -s %s -x %s -o %s -f %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score), failOut)
+            cmd = "%s enrich -t %s -s '%s' -x %s -o %s -f %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score), failOut)
             subprocess.run(cmd, shell=True)
 
         #create empty dicionaries to collect all sample names and sample/peptide combos
