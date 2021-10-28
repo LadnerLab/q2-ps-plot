@@ -40,6 +40,14 @@ pip install git+https://github.com/LadnerLab/q2-ps-plot.git
 
 Run `qiime info` to check for a successful installation. If installation was successful, you should see `ps-plot: version` in the list of installed plugins.
 
+#### Update ps-plot:
+
+To update ps-plot, run the following command:
+
+```
+pip install -U git+https://github.com/LadnerLab/q2-ps-plot.git
+```
+
 ## Tutorial
 File inputs for tutorial located in q2-ps-plot/example
 
