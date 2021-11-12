@@ -16,11 +16,16 @@ Visit: https://docs.qiime2.org/2021.8/install/ for intallation documentation on 
 ### PepSIRF Installation:
 Visit: https://github.com/LadnerLab/PepSIRF for installation documentation on PepSIRF
 
+### q2-pepsirf1 Installation:
+Visit: https://github.com/LadnerLab/q2-pepsirf1 for installation documentation on q2-pepsirf1
+
 ### q2-ps-plot Installation:
 #### Dependencies:
 - `qiime2`
 - `PepSIRF`
+- `q2-pepsirf1`
 - `altair`
+- `altair_saver`: must have selenium and NodeJS (Installation included in directions)
 
 #### Directions:
 Make sure your Qiime2 conda environment is activated by running the command:
@@ -35,6 +40,9 @@ Now you are ready to install ps-plot. Run the following commands:
 
 ```
 pip install altair
+pip install altair_saver
+pip install selenium
+npm install vega-lite vega-cli canvas
 pip install git+https://github.com/LadnerLab/q2-ps-plot.git
 ```
 
