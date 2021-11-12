@@ -12,12 +12,13 @@ from qiime2.plugin import (Plugin,
                         Str,
                         List,
                         Visualization,
-                        Metadata)
+                        Metadata,
+                        Bool)
 
 from q2_pepsirf.format_types import (
     Normed, Zscore, InfoSumOfProbes )
 import q2_ps_plot.actions as actions
-from q2_ps_plot.actions.scatter import repZscatters
+from q2_ps_plot.actions.scatter import repScatters
 from q2_ps_plot.actions.boxplot import readCountsBoxplot
 
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
@@ -123,22 +124,28 @@ plugin.visualizers.register_function(
 )
 
 plugin.visualizers.register_function(
-    function=repZscatters,
+    function=repScatters,
     inputs={
-        'zscore': FeatureTable[Zscore]
+        'zscore': FeatureTable[Zscore],
+        'col_sum': FeatureTable[Normed]
     },
     parameters={
-        'source': MetadataColumn[Categorical]
+        'source': MetadataColumn[Categorical],
+        'plot_log': Bool
     },
     input_descriptions={
         'zscore': "FeatureTable containing z scores of the normalized read counts. "
-                "Fist column header must be 'Sequence Name' as produced by pepsirf."
+                "Fist column header must be 'Sequence Name' as produced by pepsirf.",
+        'col_sum': "FeatureTable containing normalized read counts of samples and peptides. "
+                "First column header must be 'Sequence Name' as produced by pepsirf."
     },
     parameter_descriptions={
-        'source': ""
+        'source': "Metadata file containing all sample names and their source groups. "
+            "Used to create pairs tsv to run pepsirf enrich module.",
+        'plot_log': ""
     },
-    name='Rep z scatter',
-    description=""
+    name='Rep Scatter',
+    description="Creates a scatterplot for reps of Col-sum data or reps of z score data"
 )
 
 plugin.visualizers.register_function(
@@ -148,11 +155,12 @@ plugin.visualizers.register_function(
     },
     parameters=None,
     input_descriptions={
-        'read_counts': ""
+        'read_counts': "InfoSumOfProbes file, The first entry in each column will be the name of the "
+                    "sample, and the second will be the sum of the peptide/probe scores for the sample."
     },
     parameter_descriptions=None,
     name='Read Counts BoxPlot',
-    description=""
+    description="Creates a boxplot for the read counts/ sum of probes"
 )
 
 
