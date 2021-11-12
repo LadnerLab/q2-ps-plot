@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from pandas.core.dtypes.missing import isnull
 
-from q2_ps_plot.format_types import PepsirfContingencyTSVFormat, Zscore
+from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, Zscore
 import qiime2
 from q2_types.feature_table import BIOMV210Format
 

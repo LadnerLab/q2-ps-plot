@@ -14,9 +14,11 @@ from qiime2.plugin import (Plugin,
                         Visualization,
                         Metadata)
 
-from q2_ps_plot.format_types import (
-    Normed, Zscore, PepsirfContingencyTSVDirFmt, PepsirfContingencyTSVFormat)
+from q2_pepsirf.format_types import (
+    Normed, Zscore, InfoSumOfProbes )
 import q2_ps_plot.actions as actions
+from q2_ps_plot.actions.scatter import repZscatters
+from q2_ps_plot.actions.boxplot import readCountsBoxplot
 
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 
@@ -27,12 +29,12 @@ from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 plugin = Plugin("ps-plot", version=q2_ps_plot.__version__,
                 website="https://github.com/LadnerLab/q2-ps-plot")
 
-plugin.register_formats(PepsirfContingencyTSVFormat,
-                        PepsirfContingencyTSVDirFmt)
+# plugin.register_formats(PepsirfContingencyTSVFormat,
+#                         PepsirfContingencyTSVDirFmt)
 
-plugin.register_semantic_types(Normed, Zscore)
-plugin.register_semantic_type_to_format(FeatureTable[Normed | Zscore],
-                                        BIOMV210DirFmt)
+# plugin.register_semantic_types(Normed, Zscore)
+# plugin.register_semantic_type_to_format(FeatureTable[Normed | Zscore],
+#                                         BIOMV210DirFmt)
 
 shared_parameters = {
     "step_z_thresh": Int % Range(1, None),
@@ -118,6 +120,39 @@ plugin.visualizers.register_function(
     description="Creates a scatterplot of enriched peptides, points are colored "
                 "according to the z score thresholds provided. Scatterplot is "
                 "layered over a heatmap containing all of the data."
+)
+
+plugin.visualizers.register_function(
+    function=repZscatters,
+    inputs={
+        'zscore': FeatureTable[Zscore]
+    },
+    parameters={
+        'source': MetadataColumn[Categorical]
+    },
+    input_descriptions={
+        'zscore': "FeatureTable containing z scores of the normalized read counts. "
+                "Fist column header must be 'Sequence Name' as produced by pepsirf."
+    },
+    parameter_descriptions={
+        'source': ""
+    },
+    name='Rep z scatter',
+    description=""
+)
+
+plugin.visualizers.register_function(
+    function=readCountsBoxplot,
+    inputs={
+        'read_counts':  InfoSumOfProbes
+    },
+    parameters=None,
+    input_descriptions={
+        'read_counts': ""
+    },
+    parameter_descriptions=None,
+    name='Read Counts BoxPlot',
+    description=""
 )
 
 

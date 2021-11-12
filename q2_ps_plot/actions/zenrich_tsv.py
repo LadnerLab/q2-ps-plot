@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import pandas as pd
-from q2_ps_plot.format_types import PepsirfContingencyTSVFormat
+from q2_pepsirf.format_types import PepsirfContingencyTSVFormat
 import qiime2
 
 def zenrich_tsv(ctx,
