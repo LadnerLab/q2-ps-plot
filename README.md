@@ -149,4 +149,16 @@ You can view this visualization by dropping the `testing_zenrich_tsv.qzv` file i
 | **Required** | `--o-zenrich-vis` | Visualization output name | **--o-zenrich-vis** file_name.qzv | N/A |
 | *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
 
+### repScatters
+| Optional/Required | Argument(s) | Description | Example | Default |
+| :--: | :------: | --- | --- | -- |
+| *Optional* | `--i-zscore` | FeatureTable containing z scores of the normalized read counts. Fist column header must be 'Sequence Name' as produced by pepsirf. | **--i-zscore** some_file_z.qza | N/A |
+| *Optional* | `--i-col-sum` | FeatureTable containing normalized read counts of samples and peptides. First column header must be 'Sequence Name' as produced by pepsirf. | **-i-col-sum** some_file_CS.qza | N/A |
+| **Required** | `--m-source-file` | Metadata file containing all sample names and their source groups. Used to create pairs tsv to run pepsirf enrich module. | **--m-source-file** some_file.tsv | N/A |
+| **Required** | `--m-source-column` | Name of column to collect source info from. | **--m-source-column** Source | N/A |
+| *Optional* | `--p-plot-log` | Use if you want axes to be shown on a log-scale. | **--p-plot-log** | --p-no-plot-log |
+| *Optional* | `--p-no-plot-log` | Use if you dont't want axes to be shown on a log-scale. | **--p-no-plot-log** | --p-no-plot-log |
+| **Required** | `--o-visualization` | Visualization output name | **--o-visualization** file_name.qzv | N/A |
+| *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
+
 ### `More visualizers coming soon...`
