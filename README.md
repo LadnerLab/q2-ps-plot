@@ -161,4 +161,19 @@ You can view this visualization by dropping the `testing_zenrich_tsv.qzv` file i
 | **Required** | `--o-visualization` | Visualization output name | **--o-visualization** file_name.qzv | N/A |
 | *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
 
+### enrichmentRCBoxplot
+| Optional/Required | Argument(s) | Description | Example | Default |
+| :--: | :------: | --- | --- | -- |
+| **Required** | `--i-enriched-dir` | A PairwiseEnrichment semantic type or .qza. This file is the output of q2-pepsirf's enrich module | **--i-enriched-dir** some_file.qza | N/A |
+| **Required** | `--o-visualization` | Visualization output name | **--o-visualization** file_name.qzv | N/A |
+| *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
+
+### readCountsBoxplot
+| Optional/Required | Argument(s) | Description | Example | Default |
+| :--: | :------: | --- | --- | -- |
+| **Required** | `--i-read-counts` | InfoSumOfProbes file, The first entry in each column will be the name of the sample, and the second will be the sum of the peptide/probe scores for the sample. | **__i-read-counts** some_file_RC.tsv | N/A |
+| **Required** | `--o-visualization` | Visualization output name | **--o-visualization** file_name.qzv | N/A |
+| *Optional* | `--output-dir` | Output unspecified results to a directory | **--output-dir** directory_name | **Current Working Directory** |
+
+
 ### `More visualizers coming soon...`
