@@ -142,7 +142,7 @@ plugin.visualizers.register_function(
     parameter_descriptions={
         'source': "Metadata file containing all sample names and their source groups. "
             "Used to create pairs tsv to run pepsirf enrich module.",
-        'plot_log': ""
+        'plot_log': "Use if you want axes to be shown on a log-scale."
     },
     name='Rep Scatter',
     description="Creates a scatterplot for reps of Col-sum data or reps of z score data"
@@ -170,7 +170,8 @@ plugin.visualizers.register_function(
     },
     parameters=None,
     input_descriptions={
-        'enriched_dir': ""
+        'enriched_dir': "A PairwiseEnrichment semantic type or .qza. This file is the output of "
+                    "q2-pepsirf's enrich module"
     },
     parameter_descriptions=None,
     name='Enriched Read Counts BoxPlot',
