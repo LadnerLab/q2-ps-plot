@@ -16,10 +16,10 @@ from qiime2.plugin import (Plugin,
                         Bool)
 
 from q2_pepsirf.format_types import (
-    Normed, Zscore, InfoSumOfProbes )
+    Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment)
 import q2_ps_plot.actions as actions
 from q2_ps_plot.actions.scatter import repScatters
-from q2_ps_plot.actions.boxplot import readCountsBoxplot
+from q2_ps_plot.actions.boxplot import readCountsBoxplot, enrichmentRCBoxplot
 
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 
@@ -163,6 +163,18 @@ plugin.visualizers.register_function(
     description="Creates a boxplot for the read counts/ sum of probes"
 )
 
-
+plugin.visualizers.register_function(
+    function=enrichmentRCBoxplot,
+    inputs={
+        'enriched_dir':  PairwiseEnrichment
+    },
+    parameters=None,
+    input_descriptions={
+        'enriched_dir': ""
+    },
+    parameter_descriptions=None,
+    name='Enriched Read Counts BoxPlot',
+    description="Creates a boxplot for the read counts of enriched peptides"
+)
 
 importlib.import_module("q2_ps_plot.transformers")

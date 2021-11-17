@@ -27,8 +27,32 @@ def readCountsBoxplot(
     save(chart, "readCountBoxplot.png", scale_factor=10)
     chart.save(os.path.join(output_dir, "index.html"))
 
-def enrichmentBoxplot(
-    output_dir = str,
-    enriched_dir = pd.DataFrame) -> None:
+def enrichmentRCBoxplot(
+    output_dir: str,
+    enriched_dir: pd.DataFrame) -> None:
 
-    pass
+    # collect file names
+    files = list(enriched_dir.columns)
+
+    # create dictionary for collection of sum of enriched
+    sumDict = {"sum of enriched": []}
+
+    # loop through the file names and collect sum of True values for enriched
+    for f in files:
+        sumDict["sum of enriched"].append(len(enriched_dir[enriched_dir[f] == True]))
+
+    # convert dictionary to dataframe
+    sumDf = pd.DataFrame(sumDict)
+
+    # create chart for boxplot
+    chart = alt.Chart(sumDf).transform_fold(
+        ['sum of enriched'],
+        as_=['key', 'value']
+    ).mark_boxplot(size = 50).encode(
+        x=alt.X('key:N', axis = alt.Axis(title="Sum Of Enriched")),
+        y=alt.Y('value:Q', axis = alt.Axis(title="Value"))
+    ).properties(width=300)
+
+    # saves boxplot as a png file and to index.html for creation of qzv file
+    save(chart, "enrichedRCBoxplot.png", scale_factor=10)
+    chart.save(os.path.join(output_dir, "index.html"))
