@@ -39,10 +39,7 @@ You can replace `qiime2-2021.8` above with whichever version of QIIME 2 you have
 Now you are ready to install ps-plot. Run the following commands:
 
 ```
-pip install altair
-pip install altair_saver
-pip install selenium
-npm install vega-lite vega-cli canvas
+conda install -c conda-forge altair altair_saver
 pip install git+https://github.com/LadnerLab/q2-ps-plot.git
 ```
 
