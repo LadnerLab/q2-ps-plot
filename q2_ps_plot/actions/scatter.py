@@ -52,6 +52,11 @@ def repScatters(
             if plot_log:
                 x = np.log10(np.array(x)+1)
                 y = np.log10(np.array(y)+1)
+                xTitle = "Sample1 log10(score + 1)"
+                yTitle = "Sample2 log10(score + 1)"
+            else:
+                xTitle = "Sample1"
+                yTitle = "Sample2"
 
             #generate heatmap values
             heatmap, xedges, yedges = np.histogram2d(x, y, bins=(70,70))
@@ -83,9 +88,9 @@ def repScatters(
 
     # create scatterplot chart with attached dropdown menu
     heatmapChart = alt.Chart(hmDf).mark_rect().encode(
-            alt.X('bin_x_start:Q', title="Sample1"),
+            alt.X('bin_x_start:Q', title=xTitle),
             alt.X2('bin_x_end:Q'),
-            alt.Y('bin_y_start:Q', title="Sample2"),
+            alt.Y('bin_y_start:Q', title=yTitle),
             alt.Y2('bin_y_end:Q'),
             alt.Color('count:Q', scale = alt.Scale(scheme='plasma'))
     ).add_selection(
