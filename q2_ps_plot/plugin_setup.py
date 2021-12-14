@@ -28,7 +28,8 @@ from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 # interface will interact with. Basically every registration we perform will
 # involve this object in some way.
 plugin = Plugin("ps-plot", version=q2_ps_plot.__version__,
-                website="https://github.com/LadnerLab/q2-ps-plot")
+                website="https://github.com/LadnerLab/q2-ps-plot",
+                description="Qiime2 Plug-in for the creation of visualizations from PepSIRF outputs.")
 
 # plugin.register_formats(PepsirfContingencyTSVFormat,
 #                         PepsirfContingencyTSVDirFmt)
