@@ -154,12 +154,16 @@ plugin.visualizers.register_function(
     inputs={
         'read_counts':  InfoSumOfProbes
     },
-    parameters=None,
+    parameters={
+        'png_out_dir': Str
+    },
     input_descriptions={
         'read_counts': "InfoSumOfProbes file, The first entry in each column will be the name of the "
                     "sample, and the second will be the sum of the peptide/probe scores for the sample."
     },
-    parameter_descriptions=None,
+    parameter_descriptions={
+        'png_out_dir': "The name of the directory to wich to write the .png output files to"
+    },
     name='Read Counts BoxPlot',
     description="Creates a boxplot for the read counts/ sum of probes"
 )
@@ -169,12 +173,16 @@ plugin.visualizers.register_function(
     inputs={
         'enriched_dir':  PairwiseEnrichment
     },
-    parameters=None,
+    parameters={
+        'png_out_dir': Str
+    },
     input_descriptions={
         'enriched_dir': "A PairwiseEnrichment semantic type or .qza. This file is the output of "
                     "q2-pepsirf's enrich module"
     },
-    parameter_descriptions=None,
+    parameter_descriptions={
+        'png_out_dir': "The name of the directory to wich to write the .png output files to"
+    },
     name='Enriched Read Counts BoxPlot',
     description="Creates a boxplot for the read counts of enriched peptides"
 )
