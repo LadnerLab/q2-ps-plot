@@ -31,31 +31,12 @@ Visit: https://github.com/LadnerLab/q2-pepsirf1 for installation documentation o
 - `jsonschema 3.2`
 
 #### Directions:
-Make sure your Qiime2 conda environment is activated by running the command:
-  
-```
-conda activate qiime2-2021.11
-```
 
-You can replace `qiime2-2021.11` above with whichever version of QIIME 2 you have currently installed.
-
-Now you are ready to install ps-plot. Run the following commands:
-
-```
-conda install -c conda-forge altair altair_saver
-pip install jsonschema==3.2
-pip install git+https://github.com/LadnerLab/q2-ps-plot.git
-```
-
-Run `qiime info` to check for a successful installation. If installation was successful, you should see `ps-plot: version` in the list of installed plugins.
+Visit: https://ladnerlab.github.io/pepsirf-q2-plugin-docs/Pepsirf_Plugins/q2-ps-plot/ for installation documentation on q2-ps-plot.
 
 #### Update ps-plot:
 
-To update ps-plot, run the following command:
-
-```
-pip install -U git+https://github.com/LadnerLab/q2-ps-plot.git
-```
+Visit: https://ladnerlab.github.io/pepsirf-q2-plugin-docs/Pepsirf_Plugins/q2-ps-plot/#updating for updating documentation on q2-ps-plot.
 
 ## Tutorial
 File inputs for tutorial located in q2-ps-plot/example
