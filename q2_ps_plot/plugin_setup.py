@@ -16,7 +16,7 @@ from qiime2.plugin import (Plugin,
                         Bool)
 
 from q2_pepsirf.format_types import (
-    Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment)
+    Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment, InfoSNPN)
 import q2_ps_plot.actions as actions
 from q2_ps_plot.actions.scatter import repScatters
 from q2_ps_plot.actions.boxplot import readCountsBoxplot, enrichmentRCBoxplot
@@ -48,7 +48,8 @@ shared_parameters = {
     "peptide_metadata": Metadata,
     "pepsirf_binary": Str,
     "negative_controls": List[Str],
-    "tooltip": List[Str]
+    "tooltip": List[Str],
+    "color_by": Str
 }
 shared_descriptions = {
     "step_z_thresh": "Integar to increment z-score thresholds.",
@@ -71,7 +72,9 @@ shared_descriptions = {
                 "to be added to the hover tooltip (Parameter is case sensitive. "
                 "Example argument: --p-tooltip Species SpeciesID). "
                 "'Peptide' and 'Zscores' will always be added to the list of titles, "
-                "if peptide metadata is not provided just 'Peptide' and 'Zscores' will be shown."
+                "if peptide metadata is not provided just 'Peptide' and 'Zscores' will be shown.",
+    "color_by": "A column within the metadata file to base the coloring of the enriched peptide points. "
+                "This parameter is case sensitive and the default is the different zscore thresholds."
 }
 
 plugin.pipelines.register_function(
@@ -84,6 +87,7 @@ plugin.pipelines.register_function(
         'data_filepath': Str,
         'zscores_filepath': Str,
         'negative_data_filepath': Str,
+        'highlighted_probes_filepath': Str,
         **shared_parameters
     },
     input_descriptions=None,
@@ -95,6 +99,7 @@ plugin.pipelines.register_function(
                     "Fist column header must be 'Sequence Name' as produced by pepsirf.",
         'negative_data_filepath':"Filepath of .tsv file containing normalized read counts of controls and peptides. "
                             "First column header must be 'Sequence Name' as produced by pepsirf.",
+        'highlighted_probes_filepath': "A InfoSNPN file that contains a list of probes/peptides to highlight.",
         **shared_descriptions
     },
     name='zenrich TSV Pipeline',
@@ -106,7 +111,8 @@ plugin.visualizers.register_function(
     inputs={
         'data': FeatureTable[Normed],
         'zscores': FeatureTable[Zscore],
-        'negative_data': FeatureTable[Normed]
+        'negative_data': FeatureTable[Normed],
+        'highlight_probes': InfoSNPN
     },
     parameters=shared_parameters,
     input_descriptions={
@@ -115,7 +121,8 @@ plugin.visualizers.register_function(
         'zscores': "FeatureTable containing z scores of the normalized read counts. "
                 "Fist column header must be 'Sequence Name' as produced by pepsirf.",
         'negative_data': "FeatureTable containing normalized read counts of controls and peptides. "
-                        "First column header must be 'Sequence Name' as produced by pepsirf."
+                        "First column header must be 'Sequence Name' as produced by pepsirf.",
+        'highlight_probes': "A InfoSNPN file that contains a list of probes/peptides to highlight."
     },
     parameter_descriptions=shared_descriptions,
     name='Z Enrichment Variance Visualizer',
