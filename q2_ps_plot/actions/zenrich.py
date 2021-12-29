@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from pandas.core.dtypes.missing import isnull
 
-from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, Zscore
+from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, Zscore, PepsirfInfoSNPNFormat
 import qiime2
 from q2_types.feature_table import BIOMV210Format
 
@@ -24,10 +24,12 @@ def zenrich(output_dir: str,
             data: pd.DataFrame,
             zscores: PepsirfContingencyTSVFormat,
             negative_controls: list,
+            highlight_probes: PepsirfInfoSNPNFormat = None,
             source: qiime2.CategoricalMetadataColumn = None,
             pn_filepath: str = None,
             peptide_metadata: qiime2.Metadata = None,
             tooltip: list=['Species', 'SpeciesID'],
+            color_by: str = 'z_score_threshold',
             negative_data: pd.DataFrame = None,
             step_z_thresh: int=5,
             upper_z_thresh: int=30,
@@ -45,6 +47,14 @@ def zenrich(output_dir: str,
     if os.path.isfile(pepsirf_binary):
         pepsirf_binary = os.path.abspath(pepsirf_binary)
         pepsirf_binary = "'%s'" % (pepsirf_binary)
+
+    # collect probe names in a list if higlighted is provided
+    peptides = []
+    if highlight_probes:
+        with open(str(highlight_probes), 'r') as fin:
+                    for row in fin:
+                        pep = row.rstrip("\n")
+                        peptides.append(pep)
 
     #create temporary directory to work in
     with tempfile.TemporaryDirectory() as tempdir:
@@ -179,6 +189,10 @@ def zenrich(output_dir: str,
         else:
             tooltip = ['Peptide:N', 'Zscores:N']
 
+        # if highlighted probes provided, collect all of the peptides and put into new df
+        if highlight_probes:
+            highlightDf = enrichedDf.loc[enrichedDf["Peptide"].isin(peptides)]
+
         #create empty directory to collect all heatmap information
         hmDic = defaultdict(list)
         columnNms = ['sample', 'bin_x_start', 'bin_x_end', 'bin_y_start', 'bin_y_end', 'count']
@@ -229,11 +243,14 @@ def zenrich(output_dir: str,
         sample_dropdown = alt.binding_select(options=list(dropNames.keys()), name='Sample Select')
         sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': list(dropNames.keys())[0]})
         
+        # set color by as nominal
+        color_by = color_by + ":N"
+
         #create scatterplot of enriched peptides
         scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
             x = alt.X('negative_control:Q', title = "Negative Control log10(value+1.0)"),
             y = alt.Y('sample_value:Q', title = "Sample log10(value+1.0)"),
-            color = alt.Color('z_score_threshold:N',
+            color = alt.Color(color_by,
                 scale=alt.Scale(range=['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']),
                 sort=threshRange,
                 legend=alt.Legend(title='Z Score Thresholds')),
@@ -258,7 +275,29 @@ def zenrich(output_dir: str,
         #layer scatterplot and heatmap
         finalChart = alt.layer(heatmapChart, scatter).properties(title="Z Score Threshold Variance")
 
-        #save the plot
-        finalChart.save(os.path.join(output_dir, "index.html"))
+        # if highlighted probes provided, create square scatterplot
+        if highlight_probes:
+            highlightedChart = alt.Chart(highlightDf).mark_square(size=60).encode(
+                x = alt.X('negative_control:Q', title = "Negative Control log10(value+1.0)"),
+                y = alt.Y('sample_value:Q', title = "Sample log10(value+1.0)"),
+                color = alt.Color(color_by,
+                    scale=alt.Scale(range=['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']),
+                    sort=threshRange,
+                    legend=alt.Legend(title='Z Score Thresholds')),
+                tooltip = tooltip
+            ).transform_filter(
+                sample_select
+            )
+
+            #layer the square scatterplot over the final chart
+            finalCharts = alt.layer(finalChart, highlightedChart)
+
+            #save the plot
+            finalCharts.save(os.path.join(output_dir, "index.html"))
+
+        #otherwise, save the final chart without the higlighted probes
+        else:
+            finalChart.save(os.path.join(output_dir, "index.html"))
 
     os.chdir(old)  # TODO: found a bug in the framework, remove when fixed
+    
