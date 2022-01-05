@@ -21,7 +21,7 @@ def _make_pairs_file(column, outpath):
             fh.write('\t'.join(ids) + '\n')
 
 def zenrich(output_dir: str,
-            data: pd.DataFrame,
+            data: PepsirfContingencyTSVFormat,
             zscores: PepsirfContingencyTSVFormat,
             negative_controls: list,
             highlight_probes: PepsirfInfoSNPNFormat = None,
@@ -35,6 +35,7 @@ def zenrich(output_dir: str,
             upper_z_thresh: int=30,
             lower_z_thresh: int=5,
             exact_z_thresh: list=None,
+            exact_cs_thresh: str = '20',
             pepsirf_binary: str="pepsirf") -> None:
 
     old = os.getcwd() # TODO: bug in framework, remove this when fixed
@@ -66,6 +67,8 @@ def zenrich(output_dir: str,
             _make_pairs_file(source, pairsFile)
 
         #flip data frame
+        data_file = str(data)
+        data = data.view(pd.DataFrame)
         data = data.transpose()
 
         #put zscores data into dataframe and flip
@@ -106,6 +109,7 @@ def zenrich(output_dir: str,
             with open(threshFile, 'w', newline='') as out_file:
                     tsv_writer = csv.writer(out_file, delimiter='\t')
                     tsv_writer.writerow([str(zscores), score])
+                    tsv_writer.writerow([str(data_file), str(exact_cs_thresh)])
             
             #run p enrich module
             cmd = "%s enrich -t %s -s '%s' -x %s -o %s -f %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score), failOut)

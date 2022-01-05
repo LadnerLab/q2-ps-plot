@@ -18,6 +18,7 @@ def zenrich_tsv(ctx,
             upper_z_thresh=30,
             lower_z_thresh=5,
             exact_z_thresh=None,
+            exact_cs_thresh='20',
             pepsirf_binary="pepsirf"):
 
         zenrich = ctx.get_action('ps-plot', 'zenrich')
@@ -56,6 +57,7 @@ def zenrich_tsv(ctx,
             upper_z_thresh = upper_z_thresh,
             lower_z_thresh = lower_z_thresh,
             exact_z_thresh = exact_z_thresh,
+            exact_cs_thresh = exact_cs_thresh,
             pepsirf_binary = pepsirf_binary)
 
         return zenrich_vis
