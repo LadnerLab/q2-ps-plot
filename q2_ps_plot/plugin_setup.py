@@ -49,6 +49,7 @@ shared_parameters = {
     "peptide_metadata": Metadata,
     "pepsirf_binary": Str,
     "negative_controls": List[Str],
+    "negative_id": Str,
     "tooltip": List[Str],
     "color_by": Str
 }

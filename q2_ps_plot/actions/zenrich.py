@@ -23,7 +23,8 @@ def _make_pairs_file(column, outpath):
 def zenrich(output_dir: str,
             data: PepsirfContingencyTSVFormat,
             zscores: PepsirfContingencyTSVFormat,
-            negative_controls: list,
+            negative_controls: list = None,
+            negative_id: str = None,
             highlight_probes: PepsirfInfoSNPNFormat = None,
             source: qiime2.CategoricalMetadataColumn = None,
             pn_filepath: str = None,
@@ -81,6 +82,13 @@ def zenrich(output_dir: str,
             negative_data = data
         else:
             negative_data = negative_data.transpose()
+
+        if negative_id and not negative_controls:
+                negative_controls = []
+                neg_cont = negative_data.columns
+                for samp in neg_cont:
+                    if samp.startswith(negative_id):
+                        negative_controls.append(samp)
 
         #set max rows for altair to none
         alt.data_transformers.enable('default', max_rows=None)
