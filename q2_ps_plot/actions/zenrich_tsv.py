@@ -6,7 +6,8 @@ import qiime2
 def zenrich_tsv(ctx,
             data_filepath,
             zscores_filepath,
-            negative_controls,
+            negative_controls = None,
+            negative_id = None,
             source = None,
             pn_filepath = None,
             peptide_metadata = None,
@@ -18,6 +19,7 @@ def zenrich_tsv(ctx,
             upper_z_thresh=30,
             lower_z_thresh=5,
             exact_z_thresh=None,
+            exact_cs_thresh='20',
             pepsirf_binary="pepsirf"):
 
         zenrich = ctx.get_action('ps-plot', 'zenrich')
@@ -45,6 +47,7 @@ def zenrich_tsv(ctx,
         zenrich_vis, = zenrich(data = data,
             zscores = zscores,
             negative_controls = negative_controls,
+            negative_id = negative_id,
             highlight_probes = highlighted_probes_filepath,
             source = source,
             pn_filepath = pn_filepath,
@@ -56,6 +59,7 @@ def zenrich_tsv(ctx,
             upper_z_thresh = upper_z_thresh,
             lower_z_thresh = lower_z_thresh,
             exact_z_thresh = exact_z_thresh,
+            exact_cs_thresh = exact_cs_thresh,
             pepsirf_binary = pepsirf_binary)
 
         return zenrich_vis
