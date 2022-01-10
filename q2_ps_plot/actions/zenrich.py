@@ -4,7 +4,7 @@ import numpy as np
 import altair as alt
 import glob, os, subprocess
 import tempfile
-import csv
+import csv, itertools
 from collections import defaultdict
 
 from pandas.core.dtypes.missing import isnull
@@ -16,9 +16,14 @@ from q2_types.feature_table import BIOMV210Format
 def _make_pairs_file(column, outpath):
     series = column.to_series()
     pairs = {k: v.index for k,v in series.groupby(series)}
+    result = []
+    for _, ids in pairs.items():
+        result.append(list(itertools.combinations(ids, 2)))
     with open(outpath, 'w') as fh:
-        for _, ids in pairs.items():
-            fh.write('\t'.join(ids) + '\n')
+        for pair in result:
+            for a, b in pair:
+                fh.write(a + '\t' + b + '\n')
+    return result
 
 def zenrich(output_dir: str,
             data: PepsirfContingencyTSVFormat,
