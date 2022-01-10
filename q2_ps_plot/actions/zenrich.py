@@ -256,9 +256,13 @@ def zenrich(output_dir: str,
         chartHeight = 500
         chartWidth =  chartHeight + (20 * ratio)
 
+        #create a sorted list for dropNames
+        dropList = list(dropNames.keys())
+        dropList.sort()
+
         #create dropdown specs
-        sample_dropdown = alt.binding_select(options=list(dropNames.keys()), name='Sample Select')
-        sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': list(dropNames.keys())[0]})
+        sample_dropdown = alt.binding_select(options=dropList, name='Sample Select')
+        sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': dropList[0]})
         
         # set color by as nominal
         color_by = color_by + ":N"
