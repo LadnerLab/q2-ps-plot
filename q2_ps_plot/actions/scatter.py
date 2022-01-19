@@ -11,7 +11,11 @@ def _make_pairs_list(column):
     pairs = {k: v.index for k,v in series.groupby(series)}
     result = []
     for _, ids in pairs.items():
-        result.append(list(itertools.combinations(ids, 2)))
+        combination = list(itertools.combinations(ids, 2))
+        if len(combination) > 0:
+            result.append(tuple(combination))
+        else:
+            result.append(ids)
     return result
 
 def repScatters(
@@ -42,12 +46,18 @@ def repScatters(
     # start loop to collect heatmap values
     for lst in pairs:
         for tpl in lst:
-            samp = '~'.join(tpl)
-            samples.append(samp)
 
             #set x and y values from the dataframe
-            x = list(data[tpl[0]])
-            y = list(data[tpl[1]])
+            if type(tpl) == 'tuple':
+                samp = '~'.join(tpl)
+                samples.append(samp)
+                x = list(data[tpl[0]])
+                y = list(data[tpl[1]])
+            else:
+                samp = tpl
+                samples.append(samp)
+                x = list(data[tpl])
+                y = list(data[tpl])
 
             if plot_log:
                 x = np.log10(np.array(x)+1)

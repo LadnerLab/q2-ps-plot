@@ -1,6 +1,6 @@
 import pandas as pd
 import altair as alt
-import os
+import os, tempfile
 from altair_saver import save
 
 # function that creates and saves the boxplot as a png and qzv
@@ -14,8 +14,23 @@ def _make_box_plot(dataframe, key, output_dir, png_out, rc_min, rc_max):
         y=alt.Y('value:Q', axis = alt.Axis(title="Value"), scale=alt.Scale(domain=[rc_min, rc_max]))
     ).properties(width=300)
 
-    # save png file
-    save(chart, png_out, scale_factor=10)
+    #collect current working directory
+    oldDir = os.getcwd()
+
+    #get the absolute path of the png outfile directory
+    png_out = os.path.abspath(png_out)
+
+    #generate and open temporary directory in order to avoid
+    #geckodriver.log creation
+    with tempfile.TemporaryDirectory() as tempdir:
+        #change to temporary directory
+        os.chdir(tempdir)
+
+        # save png file
+        save(chart, png_out, scale_factor=10)
+
+    #change directory back to the current working directory
+    os.chdir(oldDir)
 
     # save to index.html for creation of qzv file
     chart.save(os.path.join(output_dir, "index.html"))
