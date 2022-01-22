@@ -48,16 +48,17 @@ def repScatters(
         for tpl in lst:
 
             #set x and y values from the dataframe
-            if type(tpl) == 'tuple':
+            if type(tpl) is tuple:
                 samp = '~'.join(tpl)
                 samples.append(samp)
-                x = list(data[tpl[0]])
-                y = list(data[tpl[1]])
+                x = [ x for x in data[tpl[0]] if not np.isnan(x)]
+                y = [ y for y in data[tpl[1]] if not np.isnan(y)]
             else:
                 samp = tpl
                 samples.append(samp)
-                x = list(data[tpl])
-                y = list(data[tpl])
+                x = [ x for x in data[tpl] if not np.isnan(x)]
+                y = [ y for y in data[tpl] if not np.isnan(y)]
+
 
             if plot_log:
                 x = np.log10(np.array(x)+1)
