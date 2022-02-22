@@ -4,7 +4,11 @@ import numpy as np
 from collections import defaultdict
 import qiime2, itertools, os
 
-
+# Name: _make_pairs_list
+# Process: creates a list of sample replicates
+# Method inputs/parameters: column
+# Method outputs/Returned: list of pairs
+# Dependencies: itertools
 # function to collect pairwise pairs of samples
 def _make_pairs_list(column):
     series = column.to_series()
@@ -18,12 +22,19 @@ def _make_pairs_list(column):
             result.append(ids)
     return result
 
+# Name: repScatters
+# Process: creates an interactive scatterplot/heatmap for reps of 
+# Col-sum data or reps of z score data
+# Method inputs/parameters: output_dir, source, plot_log, zscore, col_sum,
+# facet_charts
+# Dependencies: os, pandas, numpy, altair, and defaultdict
 def repScatters(
     output_dir: str,
     source: qiime2.CategoricalMetadataColumn,
     plot_log: bool = False,
     zscore: pd.DataFrame = None,
-    col_sum: pd.DataFrame = None)->None:
+    col_sum: pd.DataFrame = None,
+    facet_charts: bool = False)->None:
 
     # check wether zscore matrix or colsum matrix was provided
     if zscore is not None:
@@ -97,18 +108,31 @@ def repScatters(
     sample_dropdown = alt.binding_select(options=samples, name='Sample Select')
     sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': samples[0]})
 
-    # create scatterplot chart with attached dropdown menu
-    heatmapChart = alt.Chart(hmDf).mark_rect().encode(
-            alt.X('bin_x_start:Q', title=xTitle),
-            alt.X2('bin_x_end:Q'),
-            alt.Y('bin_y_start:Q', title=yTitle),
-            alt.Y2('bin_y_end:Q'),
-            alt.Color('count:Q', scale = alt.Scale(scheme='plasma'))
-    ).add_selection(
-        sample_select
-    ).transform_filter(
-        sample_select
-    )
+    if not facet_charts:
+        # create scatterplot chart with attached dropdown menu
+        heatmapChart = alt.Chart(hmDf).mark_rect().encode(
+                alt.X('bin_x_start:Q', title=xTitle),
+                alt.X2('bin_x_end:Q'),
+                alt.Y('bin_y_start:Q', title=yTitle),
+                alt.Y2('bin_y_end:Q'),
+                alt.Color('count:Q', scale = alt.Scale(scheme='plasma'))
+        ).add_selection(
+            sample_select
+        ).transform_filter(
+            sample_select
+        )
+    else:
+        # create scatterplot chart with attached dropdown menu
+        heatmapChart = alt.Chart(hmDf).mark_rect().encode(
+                alt.X('bin_x_start:Q', title=xTitle),
+                alt.X2('bin_x_end:Q'),
+                alt.Y('bin_y_start:Q', title=yTitle),
+                alt.Y2('bin_y_end:Q'),
+                alt.Color('count:Q', scale = alt.Scale(scheme='plasma'))
+        ).facet(
+            facet='sample:N',
+            columns=5
+        )
 
     # save the chart to index.html to be saved to a .qzv file
     heatmapChart.save(os.path.join(output_dir, "index.html"))

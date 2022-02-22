@@ -3,7 +3,12 @@ import altair as alt
 import os, tempfile
 from altair_saver import save
 
-# function that creates and saves the boxplot as a png and qzv
+# Name: _make_box_plot
+# Process: function that creates and saves the boxplot as a png and qzv
+# Method inputs/parameters: dataframe, key, output_dir, png_out,
+# rc_min, and rc_max
+# Method outputs/returned: None
+# Dependencies: altair, os, tempfile, altair_saver
 def _make_box_plot(dataframe, key, output_dir, png_out, rc_min, rc_max):
     #creates boxplot
     chart = alt.Chart(dataframe).transform_fold(
@@ -35,6 +40,11 @@ def _make_box_plot(dataframe, key, output_dir, png_out, rc_min, rc_max):
     # save to index.html for creation of qzv file
     chart.save(os.path.join(output_dir, "index.html"))
 
+# Name: readCountsBoxplot
+# Process: creates a boxplot based on the read counts
+# Method inputs/parameters: output_dir, read_counts, png_out_dir
+# Method outputs/returned: None
+# Dependencies: pandas, os
 def readCountsBoxplot(
     output_dir: str,
     read_counts: pd.DataFrame,
@@ -51,6 +61,12 @@ def readCountsBoxplot(
     # create and save boxplot
     _make_box_plot(read_counts, 'Sum of probe scores', output_dir, os.path.join(png_out_dir, "readCountBoxplot.png"), rc_min, rc_max)
 
+# Name: readCountsBoxplot
+# Process: creates a boxplot based on the enriched directory of
+# enriched peptides
+# Method inputs/parameters: output_dir, enriched_dir, png_out_dir
+# Method outputs/returned: None
+# Dependencies: pandas, os
 def enrichmentRCBoxplot(
     output_dir: str,
     enriched_dir: pd.DataFrame,

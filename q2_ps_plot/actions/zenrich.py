@@ -13,6 +13,12 @@ from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, Zscore, Pepsirf
 import qiime2
 from q2_types.feature_table import BIOMV210Format
 
+# Name: _make_pairs_file
+# Process: makes a pairs file for the purpose of inputting it
+# into enrich
+# Method Inputs/Parameters: column and outpath
+# Method Outputs/Returned: list of pairs
+# Dependencies: itertools
 def _make_pairs_file(column, outpath):
     series = column.to_series()
     pairs = {k: v.index for k,v in series.groupby(series)}
@@ -25,6 +31,17 @@ def _make_pairs_file(column, outpath):
                 fh.write(a + '\t' + b + '\n')
     return result
 
+# Name: zenrich
+# Process: runs the enrich module to collect enriched peptides at
+# different z score thresholds, then creates an interactive graph with
+# the enriched peptides highlighted and the sample available in the 
+# dropdown menu
+# Method inputs/parameters: output_dir, data, zscores, negative_controls,
+# negative_id, highlight_probes, source, pn_filepath, peptide_metadata
+# tooltip, color_by, negative_data, step_z_thresh, upper_z_thresh
+# lower_z_thresh, exact_z_thresh, exact_cs_thresh, pepsirf_binary
+# Dependencies: os, pandas, csv, glob, numpy, altair, subprocess, tempfile,
+# and defaultdict
 def zenrich(output_dir: str,
             data: PepsirfContingencyTSVFormat,
             zscores: PepsirfContingencyTSVFormat,
