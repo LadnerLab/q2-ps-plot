@@ -143,7 +143,8 @@ plugin.visualizers.register_function(
     },
     parameters={
         'source': MetadataColumn[Categorical],
-        'plot_log': Bool
+        'plot_log': Bool,
+        'facet_charts': Bool
     },
     input_descriptions={
         'zscore': "FeatureTable containing z scores of the normalized read counts. "
@@ -154,7 +155,9 @@ plugin.visualizers.register_function(
     parameter_descriptions={
         'source': "Metadata file containing all sample names and their source groups. "
             "Used to create pairs tsv to run pepsirf enrich module.",
-        'plot_log': "Use if you want axes to be shown on a log-scale."
+        'plot_log': "Use if you want axes to be shown on a log-scale.",
+        'facet_charts': "Allows for view of all tables on one page instead of the "
+                    "available dropdown menu."
     },
     name='Rep Scatter',
     description="Creates a scatterplot for reps of Col-sum data or reps of z score data"
