@@ -22,13 +22,6 @@ Visit: https://github.com/LadnerLab/PepSIRF for installation documentation on Pe
 Visit: https://github.com/LadnerLab/q2-pepsirf1 for installation documentation on q2-pepsirf1
 
 ### q2-ps-plot Installation:
-#### Dependencies:
-- `qiime2-2021.11 +`
-- `PepSIRF`
-- `q2-pepsirf1`
-- `altair`
-- `altair_saver`
-- `jsonschema 3.2`
 
 #### Directions:
 
