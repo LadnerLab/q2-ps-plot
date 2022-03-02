@@ -16,10 +16,11 @@ from qiime2.plugin import (Plugin,
                         Bool)
 
 from q2_pepsirf.format_types import (
-    Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment, InfoSNPN)
+    Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment, InfoSNPN, ProteinAlignment)
 import q2_ps_plot.actions as actions
 from q2_ps_plot.actions.scatter import repScatters
 from q2_ps_plot.actions.boxplot import readCountsBoxplot, enrichmentRCBoxplot
+from q2_ps_plot.actions.heatmap import proteinHeatmap
 
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 
@@ -199,6 +200,37 @@ plugin.visualizers.register_function(
     },
     name='Enriched Read Counts BoxPlot',
     description="Creates a boxplot for the read counts of enriched peptides"
+)
+
+plugin.visualizers.register_function(
+    function=proteinHeatmap,
+    inputs={
+        'enriched_dir':  PairwiseEnrichment,
+        'protein_alignment': ProteinAlignment
+    },
+    parameters={
+        'enriched_suffix': Str,
+        'align_header': Str,
+        'color_scheme': Str,
+        'align_delim': Str
+    },
+    input_descriptions={
+        'enriched_dir': "A PairwiseEnrichment semantic type or .qza. This file is the output of "
+                    "q2-pepsirf's enrich module",
+        'protein_alignment': "A tab delimited file containing the protein and the filepath "
+                            "to the associated alignment file. The file should start with the "
+                            "header as 'ProtName'"
+    },
+    parameter_descriptions={
+        'enriched_suffix': "The outfile suffix of the enriched peptide files.",
+        'align_header': "The name of the header to which identifies the alignment positions separated by "
+        "the align_delim (Example column: '1~2~3~4').",
+        'color_scheme': "String of the name of a color scheme for the heatmap. Color schemes can be found"
+                    " here: https://vega.github.io/vega/docs/schemes/",
+        'align_delim': "The deliminator that separates the alignment positions."
+    },
+    name='Protein Alignment Heatmap',
+    description="Creates a heatmap based on the alignment of peptides in the enriched peptides"
 )
 
 importlib.import_module("q2_ps_plot.transformers")
