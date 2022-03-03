@@ -1,3 +1,5 @@
+## this code has been moved to q2-pepsirf ##
+
 #!/usr/bin/env python
 # import qiime2.plugin.model as model
 # from qiime2.plugin import SemanticType
