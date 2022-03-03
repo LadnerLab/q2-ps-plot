@@ -32,13 +32,7 @@ plugin = Plugin("ps-plot", version=q2_ps_plot.__version__,
                 website="https://github.com/LadnerLab/q2-ps-plot",
                 description="Qiime2 Plug-in for the creation of visualizations from PepSIRF outputs.")
 
-# plugin.register_formats(PepsirfContingencyTSVFormat,
-#                         PepsirfContingencyTSVDirFmt)
-
-# plugin.register_semantic_types(Normed, Zscore)
-# plugin.register_semantic_type_to_format(FeatureTable[Normed | Zscore],
-#                                         BIOMV210DirFmt)
-
+# shared parameters for zenrich and zenrich tsv pipeline
 shared_parameters = {
     "step_z_thresh": Int % Range(1, None),
     "upper_z_thresh": Int % Range(2, None),
@@ -54,6 +48,7 @@ shared_parameters = {
     "tooltip": List[Str],
     "color_by": Str
 }
+# shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
     "step_z_thresh": "Integar to increment z-score thresholds.",
     "upper_z_thresh": "Upper limit of z-score thresholds (non-inclusive).",
@@ -82,6 +77,7 @@ shared_descriptions = {
                 "This parameter is case sensitive and the default is the different zscore thresholds."
 }
 
+# action set up for zenrich tsv pipeline
 plugin.pipelines.register_function(
     function=actions.zenrich_tsv,
     inputs={},
@@ -111,6 +107,7 @@ plugin.pipelines.register_function(
     description="Pipeline that converts .tsv files to .qza files and then runs zenrich."
 )
 
+# action set up for zenrich module
 plugin.visualizers.register_function(
     function=actions.zenrich,
     inputs={
@@ -136,6 +133,7 @@ plugin.visualizers.register_function(
                 "layered over a heatmap containing all of the data."
 )
 
+# action set up for repScatters module
 plugin.visualizers.register_function(
     function=repScatters,
     inputs={
@@ -164,6 +162,7 @@ plugin.visualizers.register_function(
     description="Creates a scatterplot for reps of Col-sum data or reps of z score data"
 )
 
+# action set up for readCountsBoxplot module
 plugin.visualizers.register_function(
     function=readCountsBoxplot,
     inputs={
@@ -183,6 +182,7 @@ plugin.visualizers.register_function(
     description="Creates a boxplot for the read counts/ sum of probes"
 )
 
+# action set up for enrichmentRCBoxplot module
 plugin.visualizers.register_function(
     function=enrichmentRCBoxplot,
     inputs={
@@ -202,6 +202,7 @@ plugin.visualizers.register_function(
     description="Creates a boxplot for the read counts of enriched peptides"
 )
 
+# action set up for proteinHeatmap module
 plugin.visualizers.register_function(
     function=proteinHeatmap,
     inputs={
@@ -232,5 +233,3 @@ plugin.visualizers.register_function(
     name='Protein Alignment Heatmap',
     description="Creates a heatmap based on the alignment of peptides in the enriched peptides"
 )
-
-importlib.import_module("q2_ps_plot.transformers")
