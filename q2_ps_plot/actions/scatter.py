@@ -62,8 +62,16 @@ def repScatters(
             if type(tpl) is tuple:
                 samp = '~'.join(tpl)
                 samples.append(samp)
-                x = [ x for x in data[tpl[0]] if not np.isnan(x)]
-                y = [ y for y in data[tpl[1]] if not np.isnan(y)]
+                # x = [ x for x in data[tpl[0]] if not np.isnan(x)]
+                # y = [ y for y in data[tpl[1]] if not np.isnan(y)]
+                x = []
+                y = []
+                xData = list(data[tpl[0]])
+                yData = list(data[tpl[1]])
+                for i in range(len(xData)):
+                    if not np.isnan(xData[i]) and not np.isnan(yData[i]):
+                        x.append(xData[i])
+                        y.append(yData[i])
             else:
                 samp = tpl
                 samples.append(samp)
