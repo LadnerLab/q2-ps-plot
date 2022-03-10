@@ -13,7 +13,7 @@ https://ladnerlab.github.io/pepsirf-q2-plugin-docs/
 ## Installation
 
 ### Qiime2 Installation:
-Visit: https://docs.qiime2.org/2021.8/install/ for intallation documentation on Qiime2
+Visit: https://docs.qiime2.org/2022.2/install/ for intallation documentation on Qiime2
 
 ### PepSIRF Installation:
 Visit: https://github.com/LadnerLab/PepSIRF for installation documentation on PepSIRF
