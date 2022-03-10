@@ -4,35 +4,61 @@ import numpy as np
 import altair as alt
 import glob, os, subprocess
 import tempfile
-import csv
+import csv, itertools
 from collections import defaultdict
 
 from pandas.core.dtypes.missing import isnull
 
-from q2_ps_plot.format_types import PepsirfContingencyTSVFormat, Zscore
+from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, Zscore, PepsirfInfoSNPNFormat
 import qiime2
 from q2_types.feature_table import BIOMV210Format
 
+# Name: _make_pairs_file
+# Process: makes a pairs file for the purpose of inputting it
+# into enrich
+# Method Inputs/Parameters: column and outpath
+# Method Outputs/Returned: list of pairs
+# Dependencies: itertools
 def _make_pairs_file(column, outpath):
     series = column.to_series()
     pairs = {k: v.index for k,v in series.groupby(series)}
+    result = []
+    for _, ids in pairs.items():
+        result.append(list(itertools.combinations(ids, 2)))
     with open(outpath, 'w') as fh:
-        for _, ids in pairs.items():
-            fh.write('\t'.join(ids) + '\n')
+        for pair in result:
+            for a, b in pair:
+                fh.write(a + '\t' + b + '\n')
+    return result
 
+# Name: zenrich
+# Process: runs the enrich module to collect enriched peptides at
+# different z score thresholds, then creates an interactive graph with
+# the enriched peptides highlighted and the sample available in the 
+# dropdown menu
+# Method inputs/parameters: output_dir, data, zscores, negative_controls,
+# negative_id, highlight_probes, source, pn_filepath, peptide_metadata
+# tooltip, color_by, negative_data, step_z_thresh, upper_z_thresh
+# lower_z_thresh, exact_z_thresh, exact_cs_thresh, pepsirf_binary
+# Dependencies: os, pandas, csv, glob, numpy, altair, subprocess, tempfile,
+# and defaultdict
 def zenrich(output_dir: str,
-            data: pd.DataFrame,
+            data: PepsirfContingencyTSVFormat,
             zscores: PepsirfContingencyTSVFormat,
-            negative_controls: list,
+            negative_controls: list = None,
+            negative_id: str = None,
+            highlight_probes: PepsirfInfoSNPNFormat = None,
             source: qiime2.CategoricalMetadataColumn = None,
             pn_filepath: str = None,
             peptide_metadata: qiime2.Metadata = None,
             tooltip: list=['Species', 'SpeciesID'],
+            color_by: str = 'z_score_threshold',
             negative_data: pd.DataFrame = None,
             step_z_thresh: int=5,
             upper_z_thresh: int=30,
             lower_z_thresh: int=5,
             exact_z_thresh: list=None,
+            exact_cs_thresh: str = '20',
             pepsirf_binary: str="pepsirf") -> None:
 
     old = os.getcwd() # TODO: bug in framework, remove this when fixed
@@ -40,6 +66,19 @@ def zenrich(output_dir: str,
     #collect absolute filepath of pairs file
     if pn_filepath:
         pairsFile = os.path.abspath(pn_filepath)
+
+    #collect absolute filepath of
+    if os.path.isfile(pepsirf_binary):
+        pepsirf_binary = os.path.abspath(pepsirf_binary)
+        pepsirf_binary = "'%s'" % (pepsirf_binary)
+
+    # collect probe names in a list if higlighted is provided
+    peptides = []
+    if highlight_probes:
+        with open(str(highlight_probes), 'r') as fin:
+                    for row in fin:
+                        pep = row.rstrip("\n")
+                        peptides.append(pep)
 
     #create temporary directory to work in
     with tempfile.TemporaryDirectory() as tempdir:
@@ -51,6 +90,8 @@ def zenrich(output_dir: str,
             _make_pairs_file(source, pairsFile)
 
         #flip data frame
+        data_file = str(data)
+        data = data.view(pd.DataFrame)
         data = data.transpose()
 
         #put zscores data into dataframe and flip
@@ -63,6 +104,13 @@ def zenrich(output_dir: str,
             negative_data = data
         else:
             negative_data = negative_data.transpose()
+
+        if negative_id and not negative_controls:
+                negative_controls = []
+                neg_cont = negative_data.columns
+                for samp in neg_cont:
+                    if samp.startswith(negative_id):
+                        negative_controls.append(samp)
 
         #set max rows for altair to none
         alt.data_transformers.enable('default', max_rows=None)
@@ -91,9 +139,10 @@ def zenrich(output_dir: str,
             with open(threshFile, 'w', newline='') as out_file:
                     tsv_writer = csv.writer(out_file, delimiter='\t')
                     tsv_writer.writerow([str(zscores), score])
+                    tsv_writer.writerow([str(data_file), str(exact_cs_thresh)])
             
             #run p enrich module
-            cmd = "%s enrich -t %s -s %s -x %s -o %s -f %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score), failOut)
+            cmd = "%s enrich -t %s -s '%s' -x %s -o %s -f %s >> enrich.out" % (pepsirf_binary, threshFile, pairsFile, outSuffix, str(score), failOut)
             subprocess.run(cmd, shell=True)
 
         #create empty dicionaries to collect all sample names and sample/peptide combos
@@ -174,6 +223,10 @@ def zenrich(output_dir: str,
         else:
             tooltip = ['Peptide:N', 'Zscores:N']
 
+        # if highlighted probes provided, collect all of the peptides and put into new df
+        if highlight_probes:
+            highlightDf = enrichedDf.loc[enrichedDf["Peptide"].isin(peptides)]
+
         #create empty directory to collect all heatmap information
         hmDic = defaultdict(list)
         columnNms = ['sample', 'bin_x_start', 'bin_x_end', 'bin_y_start', 'bin_y_end', 'count']
@@ -220,15 +273,22 @@ def zenrich(output_dir: str,
         chartHeight = 500
         chartWidth =  chartHeight + (20 * ratio)
 
+        #create a sorted list for dropNames
+        dropList = list(dropNames.keys())
+        dropList.sort()
+
         #create dropdown specs
-        sample_dropdown = alt.binding_select(options=list(dropNames.keys()), name='Sample Select')
-        sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': list(dropNames.keys())[0]})
+        sample_dropdown = alt.binding_select(options=dropList, name='Sample Select')
+        sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': dropList[0]})
         
+        # set color by as nominal
+        color_by = color_by + ":N"
+
         #create scatterplot of enriched peptides
         scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
             x = alt.X('negative_control:Q', title = "Negative Control log10(value+1.0)"),
             y = alt.Y('sample_value:Q', title = "Sample log10(value+1.0)"),
-            color = alt.Color('z_score_threshold:N',
+            color = alt.Color(color_by,
                 scale=alt.Scale(range=['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']),
                 sort=threshRange,
                 legend=alt.Legend(title='Z Score Thresholds')),
@@ -253,7 +313,29 @@ def zenrich(output_dir: str,
         #layer scatterplot and heatmap
         finalChart = alt.layer(heatmapChart, scatter).properties(title="Z Score Threshold Variance")
 
-        #save the plot
-        finalChart.save(os.path.join(output_dir, "index.html"))
+        # if highlighted probes provided, create square scatterplot
+        if highlight_probes:
+            highlightedChart = alt.Chart(highlightDf).mark_square(size=60).encode(
+                x = alt.X('negative_control:Q', title = "Negative Control log10(value+1.0)"),
+                y = alt.Y('sample_value:Q', title = "Sample log10(value+1.0)"),
+                color = alt.Color(color_by,
+                    scale=alt.Scale(range=['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']),
+                    sort=threshRange,
+                    legend=alt.Legend(title='Z Score Thresholds')),
+                tooltip = tooltip
+            ).transform_filter(
+                sample_select
+            )
+
+            #layer the square scatterplot over the final chart
+            finalCharts = alt.layer(finalChart, highlightedChart)
+
+            #save the plot
+            finalCharts.save(os.path.join(output_dir, "index.html"))
+
+        #otherwise, save the final chart without the higlighted probes
+        else:
+            finalChart.save(os.path.join(output_dir, "index.html"))
 
     os.chdir(old)  # TODO: found a bug in the framework, remove when fixed
+    
