@@ -31,4 +31,6 @@ Visit: https://ladnerlab.github.io/pepsirf-q2-plugin-docs/Pepsirf_Plugins/q2-ps-
 
 Visit: https://ladnerlab.github.io/pepsirf-q2-plugin-docs/Pepsirf_Plugins/q2-ps-plot/#updating for updating documentation on q2-ps-plot.
 
-### `More visualizers coming soon...`
+## Tutorial
+
+Visit: https://ladnerlab.github.io/pepsirf-q2-plugin-docs/tutorials/pepsirf-tutorial/ for a tutorial on select modules.
