@@ -2,7 +2,7 @@ import pandas as pd
 import altair as alt
 import numpy as np
 from collections import defaultdict
-import qiime2, itertools, os
+import qiime2, itertools, os, csv
 
 # Name: _make_pairs_list
 # Process: creates a list of sample replicates
@@ -10,16 +10,23 @@ import qiime2, itertools, os
 # Method outputs/Returned: list of pairs
 # Dependencies: itertools
 # function to collect pairwise pairs of samples
-def _make_pairs_list(column):
-    series = column.to_series()
-    pairs = {k: v.index for k,v in series.groupby(series)}
-    result = []
-    for _, ids in pairs.items():
-        combination = list(itertools.combinations(ids, 2))
-        if len(combination) > 0:
-            result.append(tuple(combination))
-        else:
-            result.append(ids)
+def _make_pairs_list(column, type):
+    if type == "sourceCol":
+        series = column.to_series()
+        pairs = {k: v.index for k,v in series.groupby(series)}
+        result = []
+        for _, ids in pairs.items():
+            combination = list(itertools.combinations(ids, 2))
+            if len(combination) > 0:
+                result.append(tuple(combination))
+            else:
+                result.append(ids)
+    elif type == "pnFile":
+        result = []
+        with open(column) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter="\t")
+            for row in csv_reader:
+                result.append(tuple([tuple(row)]))
     return result
 
 # Name: repScatters
@@ -30,7 +37,8 @@ def _make_pairs_list(column):
 # Dependencies: os, pandas, numpy, altair, and defaultdict
 def repScatters(
     output_dir: str,
-    source: qiime2.CategoricalMetadataColumn,
+    source: qiime2.CategoricalMetadataColumn = None,
+    pn_filepath: str = None,
     plot_log: bool = False,
     zscore: pd.DataFrame = None,
     col_sum: pd.DataFrame = None,
@@ -49,7 +57,10 @@ def repScatters(
         hmDic[nm]
 
     # call function to collect samples pairs
-    pairs = _make_pairs_list(source)
+    if source:
+        pairs = _make_pairs_list(source, "sourceCol")
+    elif pn_filepath:
+        pairs = _make_pairs_list(pn_filepath, "pnFile")
 
     # initialize empty list to collet sample names for dropdown menu
     samples = []
