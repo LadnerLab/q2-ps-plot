@@ -16,7 +16,7 @@ def proteinHeatmap(
     enriched_suffix: str = "_enriched.txt",
     align_header: str = "AlignPos",
     align_delim: str = "~",
-    color_scheme: str = "turbo")->None:
+    color_scheme: str = "viridis")->None:
     
     # collect enriched peptide files
     enrFiles = glob.glob("%s/*%s" % (str(enriched_dir), enriched_suffix))
