@@ -2,7 +2,7 @@ import pandas as pd
 import altair as alt
 import glob, os
 from collections import defaultdict
-from q2_pepsirf.format_types import EnrichedPeptideDirFmt, ProteinAlignmentFormat
+from q2_pepsirf.format_types import EnrichedPeptideDirFmt, ProteinAlignmentDirFormat
 
 # Name: proteinHeatmap
 # Process: creates an interactive heatmap to show the alignment of proteins
@@ -12,7 +12,7 @@ from q2_pepsirf.format_types import EnrichedPeptideDirFmt, ProteinAlignmentForma
 def proteinHeatmap(
     output_dir: str,
     enriched_dir: EnrichedPeptideDirFmt,
-    protein_alignment: ProteinAlignmentFormat,
+    protein_alignment: ProteinAlignmentDirFormat,
     enriched_suffix: str = "_enriched.txt",
     align_header: str = "AlignPos",
     align_delim: str = "~",
