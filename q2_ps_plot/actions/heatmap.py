@@ -17,6 +17,8 @@ def proteinHeatmap(
     align_header: str = "AlignPos",
     align_delim: str = "~",
     color_scheme: str = "viridis")->None:
+
+    print(os.listdir(str(protein_alignment)))
     
     # collect enriched peptide files
     enrFiles = glob.glob("%s/*%s" % (str(enriched_dir), enriched_suffix))
@@ -40,8 +42,9 @@ def proteinHeatmap(
     alignDict = defaultdict()
     proteinDict = defaultdict(dict)
 
+
     # open the alignment files and collect the protein, and alignment information
-    with open(str(protein_alignment), 'r') as fin:
+    with open(str(protein_alignment.path /"manifest.tsv"), 'r') as fin:
         ct = 0
         for row in fin:
             if ct != 0:
@@ -50,7 +53,7 @@ def proteinHeatmap(
 
                 # put the alignment file into a pandas DataFrame to easily
                 # collect alignment information
-                proteinDf = pd.read_csv(file, sep='\t', index_col=0)
+                proteinDf = pd.read_csv(str(protein_alignment.path /file), sep='\t', index_col=0)
                 align = dict(proteinDf[align_header])
                 
                 # collect the alignment and the protein
