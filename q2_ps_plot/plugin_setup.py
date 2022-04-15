@@ -13,12 +13,15 @@ from qiime2.plugin import (Plugin,
                         List,
                         Visualization,
                         Metadata,
-                        Bool)
+                        Bool, 
+                        Float)
 
 from q2_pepsirf.format_types import (
-    Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment, InfoSNPN, ProteinAlignment)
+    Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment, InfoSNPN, ProteinAlignment,
+    MutantReference
+    )
 import q2_ps_plot.actions as actions
-from q2_ps_plot.actions.scatter import repScatters
+from q2_ps_plot.actions.scatter import repScatters, mutantScatters
 from q2_ps_plot.actions.boxplot import readCountsBoxplot, enrichmentRCBoxplot
 from q2_ps_plot.actions.heatmap import proteinHeatmap
 
@@ -235,4 +238,60 @@ plugin.visualizers.register_function(
     },
     name='Protein Alignment Heatmap',
     description="Creates a heatmap based on the alignment of peptides in the enriched peptides"
+)
+
+# action set up for mutantScatters module
+plugin.visualizers.register_function(
+    function=mutantScatters,
+    inputs={
+        'zscore': FeatureTable[Zscore],
+        'reference_file': MutantReference
+    },
+    parameters={
+        'source': MetadataColumn[Categorical],
+        'metadata': Metadata,
+        'peptide_header': Str,
+        'reference_header': Str,
+        'x_axis_header': Str,
+        'category_header': Str,
+        'label_header': Str,
+        'x_axis_label': Str,
+        'y_axis_label': Str,
+        'min_wobble': Float,
+        'max_wobble': Float,
+        'wobble': Bool,
+        'scatter_only': Bool,
+        'scatter_boxplot': Bool,
+        'boxplot_only': Bool
+
+    },
+    input_descriptions={
+        'zscore': "FeatureTable containing z scores of the normalized read counts. "
+                "Fist column header must be 'Sequence Name' as produced by pepsirf.",
+        'reference_file': "File containing the reference peptides and the peptide sequence. "
+                        "Column one header must be 'CodeName' that contains the peptide references, "
+                        "and column two must contain the related peptide sequence to be shown on the "
+                        "x axis."
+    },
+    parameter_descriptions={
+        'source': "Metadata file containing all sample names and their source groups.",
+        'metadata': "The peptide metadata file that contains all of the positions, "
+                "peptides, references, etc.",
+        'peptide_header': "The name of the header of the pepides.",
+        'reference_header': "The name of the header of the references",
+        'x_axis_header': "The name of the header of the x-axis positions to be plotted",
+        'category_header': "The name of the header of the category to color the points by",
+        'label_header': "The name of the header that conatins the label for the tooltip",
+        'x_axis_label': "The name to title the x-axis",
+        'y_axis_label': "The name to title the y-axis",
+        'min_wobble': "The minimum range of the wobble",
+        'max_wobble': "The maximum range of the wobble",
+        'wobble': "Include this flag if you would like the points to be on a wobble",
+        'scatter_only': "Include this flag if you only want to view the scatterplot",
+        'scatter_boxplot': "Include this flag if you want to view the scatterplot "
+                        "and the corresponding boxplot.",
+        'boxplot_only': "Include this flag if you only want to view the boxplot"
+    },
+    name='Mutant Scatters',
+    description="Creates a scatterplot for mutant peptides"
 )
