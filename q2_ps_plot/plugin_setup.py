@@ -25,6 +25,7 @@ from q2_ps_plot.actions.scatter import repScatters, mutantScatters
 from q2_ps_plot.actions.boxplot import readCountsBoxplot, enrichmentRCBoxplot
 from q2_ps_plot.actions.heatmap import proteinHeatmap
 from q2_ps_plot.actions.scatter_tsv import repScatters_tsv
+from q2_ps_plot.actions.heatmap_tsv import proteinHeatmap_dir
 
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 
@@ -239,6 +240,22 @@ plugin.visualizers.register_function(
     description="Creates a boxplot for the read counts of enriched peptides"
 )
 
+proteinHeatmap_parameters = {
+        'enriched_suffix': Str,
+        'align_header': Str,
+        'color_scheme': Str,
+        'align_delim': Str
+    }
+
+proteinHeatmap_parameter_descriptions = {
+        'enriched_suffix': "The outfile suffix of the enriched peptide files.",
+        'align_header': "The name of the header to which identifies the alignment positions separated by "
+        "the align_delim (Example column: '1~2~3~4').",
+        'color_scheme': "String of the name of a color scheme for the heatmap. Color schemes can be found"
+                    " here: https://vega.github.io/vega/docs/schemes/",
+        'align_delim': "The deliminator that separates the alignment positions."
+    }
+
 # action set up for proteinHeatmap module
 plugin.visualizers.register_function(
     function=proteinHeatmap,
@@ -246,29 +263,45 @@ plugin.visualizers.register_function(
         'enriched_dir':  PairwiseEnrichment,
         'protein_alignment': ProteinAlignment
     },
-    parameters={
-        'enriched_suffix': Str,
-        'align_header': Str,
-        'color_scheme': Str,
-        'align_delim': Str
-    },
+    parameters=proteinHeatmap_parameters,
     input_descriptions={
         'enriched_dir': "A PairwiseEnrichment semantic type or .qza. This file is the output of "
                     "q2-pepsirf's enrich module",
-        'protein_alignment': "A tab delimited file containing the protein and the filepath "
+        'protein_alignment': "A director containing a tab delimited file containing the protein and the filepath "
                             "to the associated alignment file. The file should start with the "
-                            "header as 'ProtName'"
+                            "header as 'ProtName' and be named 'manifest.tsv'. And the files containing the protein alignment "
+                            "information"
     },
-    parameter_descriptions={
-        'enriched_suffix': "The outfile suffix of the enriched peptide files.",
-        'align_header': "The name of the header to which identifies the alignment positions separated by "
-        "the align_delim (Example column: '1~2~3~4').",
-        'color_scheme': "String of the name of a color scheme for the heatmap. Color schemes can be found"
-                    " here: https://vega.github.io/vega/docs/schemes/",
-        'align_delim': "The deliminator that separates the alignment positions."
-    },
+    parameter_descriptions=proteinHeatmap_parameter_descriptions,
     name='Protein Alignment Heatmap',
     description="Creates a heatmap based on the alignment of peptides in the enriched peptides"
+)
+
+plugin.pipelines.register_function(
+    function=proteinHeatmap_dir,
+    inputs={},
+    outputs=[
+        ("protein_heatmap_vis", Visualization)
+    ],
+    parameters={
+        'enriched_dir_filepath':  Str,
+        'protein_alignment_filepath': Str,
+        **proteinHeatmap_parameters
+    },
+    input_descriptions=None,
+    output_descriptions=None,
+    parameter_descriptions={
+        'enriched_dir_filepath': "Enriched directory filepath. This file is the output of "
+                    "q2-pepsirf's enrich module",
+        'protein_alignment_filepath': "A director containing a tab delimited file containing the protein and the filepath "
+                            "to the associated alignment file. The file should start with the "
+                            "header as 'ProtName' and be named 'manifest.tsv'. And the files containing the protein alignment "
+                            "information",
+        **proteinHeatmap_parameter_descriptions
+    },
+    name='Protein Alignment Heatmap Dir',
+    description="Creates a heatmap based on the alignment of peptides in the enriched peptides "
+    "with directory filepaths instead of QZA files"
 )
 
 # action set up for mutantScatters module
