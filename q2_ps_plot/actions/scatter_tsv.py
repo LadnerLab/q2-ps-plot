@@ -7,7 +7,8 @@ def repScatters_tsv(
     plot_log= False,
     zscore_filepath = None,
     col_sum_filepath = None,
-    facet_charts = False
+    facet_charts = False,
+    xy_threshold = None
 ):
     repScatters = ctx.get_action('ps-plot', 'repScatters')
 
@@ -33,7 +34,8 @@ def repScatters_tsv(
         plot_log = plot_log,
         zscore = zscore,
         col_sum = col_sum,
-        facet_charts = facet_charts
+        facet_charts = facet_charts,
+        xy_threshold = xy_threshold
     )
 
     return repScatters_vis
