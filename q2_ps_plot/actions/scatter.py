@@ -1,3 +1,4 @@
+from altair.vegalite.v4.schema.channels import Tooltip
 import pandas as pd
 import altair as alt
 import numpy as np
@@ -45,7 +46,8 @@ def repScatters(
     plot_log: bool = False,
     zscore: pd.DataFrame = None,
     col_sum: pd.DataFrame = None,
-    facet_charts: bool = False)->None:
+    facet_charts: bool = False,
+    xy_threshold: int = None)->None:
 
     # check wether zscore matrix or colsum matrix was provided
     if zscore is not None:
@@ -58,6 +60,12 @@ def repScatters(
     columnNms = ['sample', 'bin_x_start', 'bin_x_end', 'bin_y_start', 'bin_y_end', 'count']
     for nm in columnNms:
         hmDic[nm]
+
+    # start the default dict for collecting scatterplot values and add the following keys
+    scatterDict = defaultdict(list)
+    scatter_columnNms = ['sample', 'x_value', 'y_value']
+    for nm in scatter_columnNms:
+        scatterDict[nm]
 
     # call function to collect samples pairs
     if source:
@@ -82,10 +90,18 @@ def repScatters(
                 y = []
                 xData = list(data[tpl[0]])
                 yData = list(data[tpl[1]])
+                peptides = list(data.index)
                 for i in range(len(xData)):
                     if not np.isnan(xData[i]) and not np.isnan(yData[i]):
                         x.append(xData[i])
                         y.append(yData[i])
+
+                        #if xy-threshold provided collect values matching threshold
+                        if xy_threshold and xData[i] > xy_threshold and yData[i] > xy_threshold:
+                            scatterDict["x_value"].append(xData[i])
+                            scatterDict["y_value"].append(yData[i])
+                            scatterDict['peptide'].append(peptides[i])
+                            scatterDict['sample'].append(samp)
             else:
                 samp = tpl
                 samples.append(samp)
@@ -126,6 +142,9 @@ def repScatters(
     #convert the heatmap to a dataframe
     hmDf = pd.DataFrame(hmDic)
 
+    #convert the scatterplot dict to a dataframe
+    scatterDf = pd.DataFrame(scatterDict)
+
     # set the dropdown values
     sample_dropdown = alt.binding_select(options=samples, name='Sample Select')
     sample_select = alt.selection_single(fields=['sample'], bind=sample_dropdown, name="sample", init={'sample': samples[0]})
@@ -155,9 +174,23 @@ def repScatters(
             facet='sample:N',
             columns=5
         )
+    
+    #if xy-threshold then create the scatterplot
+    if xy_threshold:
+        Scatter = alt.Chart(scatterDf).mark_circle(opacity=1, size=100, color="#009E73").encode(
+            x = alt.X("x_value:Q", title = xTitle),
+            y = alt.Y('y_value:Q', title = yTitle),
+            tooltip = ['sample', 'peptide', 'x_value', 'y_value']
+        ).transform_filter(
+            sample_select
+        )
 
-    # save the chart to index.html to be saved to a .qzv file
-    heatmapChart.save(os.path.join(output_dir, "index.html"))
+        chart = alt.layer(heatmapChart, Scatter)
+        chart.save(os.path.join(output_dir, "index.html"))
+
+    if not xy_threshold:
+        # save the chart to index.html to be saved to a .qzv file
+        heatmapChart.save(os.path.join(output_dir, "index.html"))
 
 # Name: mutantScatters
 # Process: creates an interactive scatterplot/boxplot for mutant peptides
