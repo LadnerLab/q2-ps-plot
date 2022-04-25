@@ -204,8 +204,8 @@ def mutantScatters(
     source: qiime2.CategoricalMetadataColumn,
     metadata: pd.DataFrame,
     zscore: pd.DataFrame,
-    reference_file: MutantReferenceFileFmt,
-    peptide_header: str = "SampleID",
+    reference_file: MutantReferenceFileFmt = None,
+    peptide_header: str = "FeatureID",
     reference_header: str = "Reference",
     x_axis_header: str = 'Position',
     category_header: str = 'Category',
@@ -246,29 +246,32 @@ def mutantScatters(
     df = pd.merge(zscore, metadata, how="right", on=peptide_header)
     dfCopy = df.copy()
 
-    #collect information for labeling
-    References = []
-    labeling = []
-    CodeName = []
-    Position = []
-    with open(str(reference_file)) as file:
-        tsv_file = csv.reader(file, delimiter="\t")
-        c = 0
-        for line in tsv_file:
-            c+=1
-            if c != 1:
-                References.append(line[0])
-                ct = 0
-                for item in line[1]:
-                    ct+=1
-                    Position.append(ct)
-                    labeling.append(item)
-                    CodeName.append(line[0])
+    if reference_file:
+        #collect information for labeling
+        References = []
+        labeling = []
+        CodeName = []
+        Position = []
+        with open(str(reference_file)) as file:
+            tsv_file = csv.reader(file, delimiter="\t")
+            c = 0
+            for line in tsv_file:
+                c+=1
+                if c != 1:
+                    References.append(line[0])
+                    ct = 0
+                    for item in line[1]:
+                        ct+=1
+                        Position.append(ct)
+                        labeling.append(item)
+                        CodeName.append(line[0])
                 
-    #create pandas dataframe with collected info
-    labelDict = {reference_header: CodeName, x_axis_header: Position, 'labeling': labeling}
-    label = pd.DataFrame(labelDict)
+        #create pandas dataframe with collected info
+        labelDict = {reference_header: CodeName, x_axis_header: Position, 'labeling': labeling}
+        label = pd.DataFrame(labelDict)
 
+    else:
+        References = list(df['Reference'].unique())
     #create reference dataframe
     refernceDict = {reference_header: References, peptide_header: References}
     ReferenceDf = pd.DataFrame(refernceDict)
@@ -276,10 +279,11 @@ def mutantScatters(
 
     #if wobble selected wobble positions
     if wobble:
+
         df[x_axis_header] = df[x_axis_header].astype(float)
         for index, row in df.iterrows():
             if not math.isnan(df.at[index, x_axis_header]):
-                df.at[index, x_axis_header] = float(df.at[index, x_axis_header]) + random.uniform(min_wobble, max_wobble)
+                df.at[index, x_axis_header + "_value"] = float(df.at[index, x_axis_header]) + random.uniform(min_wobble, max_wobble)
 
     # collect sample and reference names
     samples = list(df[reference_header].unique())
@@ -298,7 +302,25 @@ def mutantScatters(
 
     # if not boxplot only selected create scatterplot
     if not boxplot_only:
-        chart = alt.Chart(df).mark_circle(size=50).encode(
+        if wobble:
+            chart = alt.Chart(df).mark_circle(size=50).encode(
+                x = alt.X(x_axis_header + "_value:Q", title = x_axis_label),
+                y = alt.Y('value:Q', title = y_axis_label),
+                color = alt.Color(category_header + ":N",
+                scale=alt.Scale(range=['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7'])),
+                tooltip = [label_header, peptide_header, category_header]
+            ).add_selection(
+                sample_select,
+                samp_select
+            ).transform_filter(
+                sample_select &
+                samp_select
+            ).properties(
+                width=1000,
+                height=300
+            )
+        else:
+            chart = alt.Chart(df).mark_circle(size=50).encode(
             x = alt.X(x_axis_header + ":Q", title = x_axis_label),
             y = alt.Y('value:Q', title = y_axis_label),
             color = alt.Color(category_header + ":N",
@@ -326,31 +348,34 @@ def mutantScatters(
         #layer the line and scatterplot
         chart1 = alt.layer(line, chart)
 
-        #add the text chart underneath the scatter plot
-        text = alt.Chart(label).mark_text(
-            align='center'
-        ).encode(
-            x = alt.X(x_axis_header + ':Q', title=x_axis_label),
-            text='labeling:N'
-        ).properties(
-            width=1000
-        ).add_selection(
-            sample_select
-        ).transform_filter(
-            sample_select
-        )
+        if reference_file:
+            #add the text chart underneath the scatter plot
+            text = alt.Chart(label).mark_text(
+                align='center'
+            ).encode(
+                x = alt.X(x_axis_header + ':Q', title=x_axis_label),
+                text='labeling:N'
+            ).properties(
+                width=1000
+            ).add_selection(
+                sample_select
+            ).transform_filter(
+                sample_select
+            )
 
-        # layer the text chart underneath the scatterplot
-        chart2 = alt.vconcat(chart1, text)
+            # layer the text chart underneath the scatterplot
+            chart2 = alt.vconcat(chart1, text)
 
         # if only scatter, save the plot
-        if scatter_only:
+        if scatter_only and reference_file:
             chart2.save(os.path.join(output_dir, "index.html"))
+        elif scatter_only:
+            chart1.save(os.path.join(output_dir, "index.html"))
 
     # if scatter_boxplot is chosen create the boxplot with the dropdown menu
     if scatter_boxplot:
         boxplot = alt.Chart(dfCopy).mark_boxplot().encode(
-            x=alt.X('Position:O', title=x_axis_label),
+            x=alt.X(x_axis_header + ':O', title=x_axis_label),
             y=alt.Y('value:Q', title=y_axis_label)
         ).properties(
             width=1000,
@@ -363,9 +388,14 @@ def mutantScatters(
             samp_select
         )
 
-        #layer the chart and save
-        layeredChart = alt.vconcat(chart2, boxplot)
-        layeredChart.save(os.path.join(output_dir, "index.html"))
+        if reference_file:
+            #layer the chart and save
+            layeredChart = alt.vconcat(chart2, boxplot)
+            layeredChart.save(os.path.join(output_dir, "index.html"))
+        else:
+            #layer the chart and save
+            layeredChart = alt.vconcat(chart1, boxplot)
+            layeredChart.save(os.path.join(output_dir, "index.html"))
 
     # if boxplot only create a boxplot chart
     if boxplot_only:
