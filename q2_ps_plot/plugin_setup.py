@@ -24,7 +24,7 @@ import q2_ps_plot.actions as actions
 from q2_ps_plot.actions.scatter import repScatters, mutantScatters
 from q2_ps_plot.actions.boxplot import readCountsBoxplot, enrichmentRCBoxplot
 from q2_ps_plot.actions.heatmap import proteinHeatmap
-from q2_ps_plot.actions.scatter_tsv import repScatters_tsv
+from q2_ps_plot.actions.scatter_tsv import repScatters_tsv, mutantScatters_tsv
 from q2_ps_plot.actions.heatmap_tsv import proteinHeatmap_dir
 
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
@@ -306,14 +306,7 @@ plugin.pipelines.register_function(
     "with directory filepaths instead of QZA files"
 )
 
-# action set up for mutantScatters module
-plugin.visualizers.register_function(
-    function=mutantScatters,
-    inputs={
-        'zscore': FeatureTable[Zscore],
-        'reference_file': MutantReference
-    },
-    parameters={
+mutantScatters_parameters = {
         'source': MetadataColumn[Categorical],
         'metadata': Metadata,
         'peptide_header': Str,
@@ -329,17 +322,9 @@ plugin.visualizers.register_function(
         'scatter_only': Bool,
         'scatter_boxplot': Bool,
         'boxplot_only': Bool
+    }
 
-    },
-    input_descriptions={
-        'zscore': "FeatureTable containing z scores of the normalized read counts. "
-                "Fist column header must be 'Sequence Name' as produced by pepsirf.",
-        'reference_file': "File containing the reference peptides and the peptide sequence. "
-                        "Column one header must be 'CodeName' that contains the peptide references, "
-                        "and column two must contain the related peptide sequence to be shown on the "
-                        "x axis."
-    },
-    parameter_descriptions={
+mutantScatters_param_descript = {
         'source': "Metadata file containing all sample names and their source groups.",
         'metadata': "The peptide metadata file that contains all of the positions, "
                 "peptides, references, etc.",
@@ -357,7 +342,47 @@ plugin.visualizers.register_function(
         'scatter_boxplot': "Include this flag if you want to view the scatterplot "
                         "and the corresponding boxplot.",
         'boxplot_only': "Include this flag if you only want to view the boxplot"
+    }
+
+# action set up for mutantScatters module
+plugin.visualizers.register_function(
+    function=mutantScatters,
+    inputs={
+        'zscore': FeatureTable[Zscore],
+        'reference_file': MutantReference
     },
+    parameters=mutantScatters_parameters,
+    input_descriptions={
+        'zscore': "FeatureTable containing z scores of the normalized read counts. "
+                "Fist column header must be 'Sequence Name' as produced by pepsirf.",
+        'reference_file': "A file containing the reference peptide/probe along with the "
+                        "peptide/probe sequence. Must start with 'CodeName'."
+    },
+    parameter_descriptions=mutantScatters_param_descript,
     name='Mutant Scatters',
     description="Creates a scatterplot for mutant peptides"
+)
+
+plugin.pipelines.register_function(
+    function=mutantScatters_tsv,
+    inputs={},
+    outputs=[
+        ("mutant_scatters_vis", Visualization)
+    ],
+    parameters={
+        'zscore_filepath':  Str,
+        'reference_file_filepath': Str,
+        **mutantScatters_parameters
+    },
+    input_descriptions=None,
+    output_descriptions=None,
+    parameter_descriptions={
+        'zscore_filepath': "TSV file containing z scores of the normalized read counts. "
+                "Fist column header must be 'Sequence Name' as produced by pepsirf.",
+        'reference_file_filepath': "A file containing the reference peptide/probe along with the "
+                        "peptide/probe sequence. Must start with 'CodeName'.",
+        **mutantScatters_param_descript
+    },
+    name='Mutant Scatters',
+    description="Creates a scatterplot for mutant peptides with tsv filepaths instead of QZA files"
 )
