@@ -1,5 +1,4 @@
-from q2_pepsirf.format_types import EnrichedPeptideDirFmt, ProteinAlignmentDirFormat
-
+from q2_pepsirf.format_types import EnrichedPeptideDirFmt, ProteinAlignmentFmt
 def proteinHeatmap_dir(
     ctx,
     enriched_dir_filepath,
@@ -17,7 +16,7 @@ def proteinHeatmap_dir(
 
     protein_alignment = ctx.make_artifact(type='ProteinAlignment',
                                 view=protein_alignment_filepath,
-                                view_type=ProteinAlignmentDirFormat)
+                                view_type=ProteinAlignmentFmt)
 
     proteinHeatmap_vis, = proteinHeatmap(
         enriched_dir = enriched_dir,
