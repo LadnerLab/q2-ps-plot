@@ -23,7 +23,7 @@ def proteinHeatmap(
     # collect enriched peptide files
     enrFiles = glob.glob("%s/*%s" % (str(enriched_dir), enriched_suffix))
 
-    # create a dictionary of a dictionary to collect peptide information
+    # create a dictionary with list values to collect peptide information
     enrDict = defaultdict(list)
 
     # go through each enriched peptide file and collect peptide information
@@ -79,7 +79,7 @@ def proteinHeatmap(
     newDf = newDf.merge(proteinDf, how="right", right_on="peptide", left_on="peptide")
 
     # create a count of the x values
-    newDf['count'] = newDf.groupby(['x', 'sample'])['x'].transform('count')
+    newDf['count'] = newDf.groupby(['x', 'protein', 'sample'])['x'].transform('count')
 
     # convert type of x column into int and collect the max x value
     newDf['x'] = newDf['x'].astype(int)
@@ -97,7 +97,7 @@ def proteinHeatmap(
 
     # generate the heatmap
     chart = alt.Chart(newDf).mark_rect().encode(
-        alt.X('x:Q', title = "Alignment", bin=alt.Bin(maxbins=x_max), scale=alt.Scale(zero=True)),
+        alt.X('x:Q', title = "Alignment", bin=alt.Bin(maxbins=x_max, minstep=1), scale=alt.Scale(zero=True)),
         alt.Y('sample:N', title = "Samples"),
         alt.Color('count:Q', scale = alt.Scale(scheme=color_scheme)),
         tooltip = ['peptide:N']
