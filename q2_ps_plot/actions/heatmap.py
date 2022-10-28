@@ -77,15 +77,15 @@ def proteinHeatmap(
     proteinDf = proteinDf.transpose().reset_index()
     proteinDf = proteinDf.rename(columns={'index': 'peptide'})
     newDf = newDf.merge(proteinDf, how="right", right_on="peptide", left_on="peptide")
-
+    
+    #Create a new sample column to handle NaN values in "sample"
+    newDf['sampleDummy'] = newDf['sample'].fillna('dummy')
     # create a count of the x values
-    newDf['count'] = newDf.groupby(['x', 'protein', 'sample'])['x'].transform('count')
+    newDf['count'] = newDf.groupby(['x', 'protein', 'sampleDummy'])['x'].transform('count')
     # Create new label column with all of the peptides for each protein, sample and position combined
-    print(len(newDf))
-    print(len(newDf['peptide']))
-    print(len(newDf.groupby(['x', 'protein','sample'])['peptide'].transform(lambda x: ",".join(x))))
+    newDf['label'] = newDf.groupby(['x', 'protein','sampleDummy'])['peptide'].transform(lambda x: ",".join(x))
     # Get rid of the 'peptide' column and then remove duplicate rows
-    #newDf = newDf.drop(columns=['peptide']).drop_duplicates()
+    newDf = newDf.drop(columns=['peptide', 'sampleDummy']).drop_duplicates()
     
     # convert type of x column into int and collect the max x value
     newDf['x'] = newDf['x'].astype(int)
