@@ -83,7 +83,7 @@ def proteinHeatmap(
     # Create new label column with all of the peptides for each protein, sample and position combined
     newDf['label'] = newDf.groupby(['x', 'protein','sample'])['peptide'].transform(lambda x: ",".join(x))
     # Get rid of the 'peptide' column and then remove duplicate rows
-    newDf = newDf.drop(columns=['peptide']).drop_duplicates()
+    #newDf = newDf.drop(columns=['peptide']).drop_duplicates()
     
     # convert type of x column into int and collect the max x value
     newDf['x'] = newDf['x'].astype(int)
