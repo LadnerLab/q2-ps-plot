@@ -81,7 +81,7 @@ def proteinHeatmap(
     #Create a new sample column to handle NaN values in "sample"
     newDf['sampleDummy'] = newDf['sample'].fillna('dummy')
     # create a count of the x values
-    newDf['count'] = newDf.groupby(['x', 'protein', 'sampleDummy'])['x'].transform('count')
+    newDf['count'] = newDf.groupby(['x', 'protein', 'sample'])['x'].transform('count')
     # Create new label column with all of the peptides for each protein, sample and position combined
     newDf['label'] = newDf.groupby(['x', 'protein','sampleDummy'])['peptide'].transform(lambda x: ",".join(x))
     # Get rid of the 'peptide' column and then remove duplicate rows
