@@ -81,8 +81,9 @@ def proteinHeatmap(
     # create a count of the x values
     newDf['count'] = newDf.groupby(['x', 'protein', 'sample'])['x'].transform('count')
     # Create new label column with all of the peptides for each protein, sample and position combined
-    print(len(newDf.groupby(['x', 'protein','sample'])['peptide'].transform(lambda x: ",".join(x))))
     print(len(newDf))
+    print(len(newDf['peptide']))
+    print(len(newDf.groupby(['x', 'protein','sample'])['peptide'].transform(lambda x: ",".join(x))))
     # Get rid of the 'peptide' column and then remove duplicate rows
     #newDf = newDf.drop(columns=['peptide']).drop_duplicates()
     
