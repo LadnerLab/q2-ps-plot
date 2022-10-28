@@ -80,7 +80,11 @@ def proteinHeatmap(
 
     # create a count of the x values
     newDf['count'] = newDf.groupby(['x', 'protein', 'sample'])['x'].transform('count')
-
+    # Create new label column with all of the peptides for each protein, sample and position combined
+    newDf['label'] = newDf.groupby(['x', 'protein','sample'])['peptide'].transform(lambda x: ",".join(x))
+    # Get rid of the 'peptide' column and then remove duplicate rows
+    newDf = newDf.drop(columns=['peptide']).drop_duplicates()
+    
     # convert type of x column into int and collect the max x value
     newDf['x'] = newDf['x'].astype(int)
     x_max = max(newDf['x'])
@@ -100,7 +104,7 @@ def proteinHeatmap(
         alt.X('x:Q', title = "Alignment", bin=alt.Bin(maxbins=x_max, minstep=1), scale=alt.Scale(zero=True)),
         alt.Y('sample:N', title = "Samples"),
         alt.Color('count:Q', scale = alt.Scale(scheme=color_scheme)),
-        tooltip = ['peptide:N']
+        tooltip = ['label:N']
     ).add_selection(
         sample_select
     ).transform_filter(
