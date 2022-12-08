@@ -175,21 +175,22 @@ def zenrich(output_dir: str,
                 #collect information for the pandas data frame
                 with open(file, 'r') as fin:
                     for row in fin:
-                        pep = row.rstrip("\n")
-                        if (pep,sample) not in pepSamp:
-                            x = np.mean([float(negative_data[sn][pep]) for sn in negative_controls])
-                            y = np.mean([float(data[sn][pep]) for sn in sNames])
-                            z = [zData[sn][pep] for sn in sNames]
-                            zToStr = ', '.join([str(elem) for elem in z])
+                        pep = row.rstrip()
+                        if pep:
+                            if (pep,sample) not in pepSamp:
+                                x = np.mean([float(negative_data[sn][pep]) for sn in negative_controls])
+                                y = np.mean([float(data[sn][pep]) for sn in sNames])
+                                z = [zData[sn][pep] for sn in sNames]
+                                zToStr = ', '.join([str(elem) for elem in z])
 
-                            #add all enriched peptide info to enriched dictionary
-                            enrDict['Peptide'].append(pep)
-                            enrDict['sample'].append(sample)
-                            enrDict['sample_value'].append(np.log10(y+1))
-                            enrDict['negative_control'].append(np.log10(x+1))
-                            enrDict['z_score_threshold'].append(oD)
-                            enrDict['Zscores'].append(zToStr)
-                            pepSamp[(pep,sample)] = ""
+                                #add all enriched peptide info to enriched dictionary
+                                enrDict['Peptide'].append(pep)
+                                enrDict['sample'].append(sample)
+                                enrDict['sample_value'].append(np.log10(y+1))
+                                enrDict['negative_control'].append(np.log10(x+1))
+                                enrDict['z_score_threshold'].append(oD)
+                                enrDict['Zscores'].append(zToStr)
+                                pepSamp[(pep,sample)] = ""
             
             #check if there were any samples that had no enriched peptides
             if os.path.exists(os.path.join(oD, failOut)): 
