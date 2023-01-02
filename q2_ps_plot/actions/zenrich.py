@@ -14,7 +14,7 @@ import qiime2
 from q2_types.feature_table import BIOMV210Format
 
 # Name: _make_reps_file
-# Process: makes a pairs file for the purpose of inputting it
+# Process: makes a replicate file for the purpose of inputting it
 # into enrich
 # Method Inputs/Parameters: column and outpath
 # Method Outputs/Returned: list of pairs
