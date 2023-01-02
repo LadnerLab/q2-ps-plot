@@ -13,23 +13,21 @@ from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, Zscore, Pepsirf
 import qiime2
 from q2_types.feature_table import BIOMV210Format
 
-# Name: _make_pairs_file
+# Name: _make_reps_file
 # Process: makes a pairs file for the purpose of inputting it
 # into enrich
 # Method Inputs/Parameters: column and outpath
 # Method Outputs/Returned: list of pairs
 # Dependencies: itertools
-def _make_pairs_file(column, outpath):
+def _make_reps_file(column, outpath):
     series = column.to_series()
     pairs = {k: v.index for k,v in series.groupby(series)}
-    result = []
-    for _, ids in pairs.items():
-        result.append(list(itertools.combinations(ids, 2)))
-    with open(outpath, 'w') as fh:
-        for pair in result:
-            for a, b in pair:
-                fh.write(a + '\t' + b + '\n')
-    return result
+    with open( outpath, 'w' ) as of:
+        for _, reps in pairs.items():
+            for rep in reps[:len(reps) - 1]:
+                of.write( rep + "\t" )
+            of.write( reps[ len(reps) - 1] )
+            of.write( "\n" )
 
 # Name: zenrich
 # Process: runs the enrich module to collect enriched peptides at
@@ -87,7 +85,7 @@ def zenrich(output_dir: str,
         #create pairs file
         if source:
             pairsFile = os.path.join(tempdir, 'pairs.tsv')
-            _make_pairs_file(source, pairsFile)
+            _make_reps_file(source, pairsFile)
 
         #flip data frame
         data_file = str(data)
