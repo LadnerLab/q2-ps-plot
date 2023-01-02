@@ -17,7 +17,7 @@ from q2_types.feature_table import BIOMV210Format
 # Process: makes a replicate file for the purpose of inputting it
 # into enrich
 # Method Inputs/Parameters: column and outpath
-# Method Outputs/Returned: list of pairs
+# Method Outputs/Returned: None
 # Dependencies: itertools
 def _make_reps_file(column, outpath):
     series = column.to_series()
