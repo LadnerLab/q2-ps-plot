@@ -13,7 +13,7 @@ from qiime2.plugin import (Plugin,
                         List,
                         Visualization,
                         Metadata,
-                        Bool, 
+                        Bool,
                         Float)
 
 from q2_pepsirf.format_types import (
@@ -51,7 +51,8 @@ shared_parameters = {
     "negative_controls": List[Str],
     "negative_id": Str,
     "tooltip": List[Str],
-    "color_by": Str
+    "color_by": Str,
+    "flex_reps": Bool
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {

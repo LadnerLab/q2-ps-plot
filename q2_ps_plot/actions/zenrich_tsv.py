@@ -14,6 +14,7 @@ import qiime2
 def zenrich_tsv(ctx,
             data_filepath,
             zscores_filepath,
+            flex_reps = False,
             negative_controls = None,
             negative_id = None,
             source = None,
@@ -42,7 +43,7 @@ def zenrich_tsv(ctx,
         zscores = ctx.make_artifact(type='FeatureTable[Zscore]',
                                         view=zscores_filepath,
                                         view_type=PepsirfContingencyTSVFormat)
-        
+
         # if negative data provided import into an artifact
         if negative_data_filepath:
                 negative_data = ctx.make_artifact(type='FeatureTable[Normed]',
@@ -64,6 +65,7 @@ def zenrich_tsv(ctx,
         # run the zenrich module with all the inputs and parameters given
         zenrich_vis, = zenrich(data = data,
             zscores = zscores,
+            flex_reps = flex_reps,
             negative_controls = negative_controls,
             negative_id = negative_id,
             highlight_probes = highlighted_probes,
