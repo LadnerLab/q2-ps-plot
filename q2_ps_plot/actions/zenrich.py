@@ -101,12 +101,12 @@ def zenrich(output_dir: str,
     with tempfile.TemporaryDirectory() as tempdir:
         os.chdir(tempdir)
 
-        #create pairs file
+        # check for invocation with flexible reps and create replicate file
         if source and flex_reps:
             pairsFile = os.path.join(tempdir, 'pairs.tsv')
             _make_reps_file(source, pairsFile)
             
-        elif source:
+        elif source: # assume invocation with pair inferrencing and create pairs file
             pairsFile = os.path.join(tempdir, 'pairs.tsv')
             _make_pairs_file(source, pairsFile)
 
