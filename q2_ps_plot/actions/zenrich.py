@@ -61,7 +61,7 @@ def zenrich(output_dir: str,
             exact_cs_thresh: str = '20',
             pepsirf_binary: str="pepsirf") -> None:
 
-    old = os.getcwd() # TODO: bug in framework, remove this when fixed
+    old = os.getcwd()
 
     #collect absolute filepath of pairs file
     if pn_filepath:
@@ -338,5 +338,5 @@ def zenrich(output_dir: str,
         else:
             finalChart.save(os.path.join(output_dir, "index.html"))
 
-    os.chdir(old)  # TODO: found a bug in the framework, remove when fixed
-    
+    os.chdir(old)
+ 
