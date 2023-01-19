@@ -93,15 +93,15 @@ def proteinHeatmap(
     # create a count of the x values
     newDf["count"] = newDf.groupby(["x",
                                     "protein",
-                                    "sample"]
-                                   )["x"].transform("count")
+                                    "sample"
+                                    ])["x"].transform("count")
     # Create new label column with all of the peptides for each protein, sample and position combined
     newDf["label"] = newDf.groupby(["x",
                                     "protein",
-                                    "sampleDummy"]
-                                   )["peptide"].transform(
-                                           lambda x: ",".join(x)
-                                           )
+                                    "sampleDummy"
+                                    ])["peptide"].transform(
+                                            lambda x: ",".join(x)
+                                    )
     # Get rid of the 'peptide' column and then remove duplicate rows
     newDf = newDf.drop(columns=["peptide", "sampleDummy"]).drop_duplicates()
     
@@ -127,14 +127,23 @@ def proteinHeatmap(
 
     # generate the heatmap
     chart = alt.Chart(newDf).mark_rect().encode(
-        alt.X("x:Q",
-              title="Alignment",
-              bin=alt.Bin(maxbins=x_max, minstep=1),
-              scale=alt.Scale(zero=True)
-              ),
-        alt.Y("sample:N", title="Samples"),
-        alt.Color("count:Q", scale=alt.Scale(scheme=color_scheme)),
-        tooltip = ["label:N"]
+        alt.X(
+            "x:Q",
+            title="Alignment",
+            bin=alt.Bin(maxbins=x_max, minstep=1),
+            scale=alt.Scale(zero=True)
+        ),
+        alt.Y(
+            "sample:N",
+            title="Samples"
+        ),
+        alt.Color(
+            "count:Q",
+            scale=alt.Scale(
+                scheme=color_scheme
+            )
+        ),
+        tooltip=["label:N"]
     ).add_selection(
         sample_select
     ).transform_filter(

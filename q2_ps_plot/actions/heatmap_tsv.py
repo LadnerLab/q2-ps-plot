@@ -4,19 +4,19 @@ def proteinHeatmap_dir(
         ctx,
         enriched_dir_filepath,
         protein_alignment_filepath,
-        enriched_suffix = "_enriched.txt",
-        align_header = "AlignPos",
-        align_delim = "~",
-        color_scheme = "viridis"):
+        enriched_suffix="_enriched.txt",
+        align_header="AlignPos",
+        align_delim="~",
+        color_scheme="viridis"):
     
-    proteinHeatmap = ctx.get_action('ps-plot', 'proteinHeatmap')
+    proteinHeatmap = ctx.get_action("ps-plot", "proteinHeatmap")
 
-    enriched_dir = ctx.make_artifact(type='PairwiseEnrichment',
+    enriched_dir = ctx.make_artifact(type="PairwiseEnrichment",
                                      view=enriched_dir_filepath,
                                      view_type=EnrichedPeptideDirFmt
                                      )
 
-    protein_alignment = ctx.make_artifact(type='ProteinAlignment',
+    protein_alignment = ctx.make_artifact(type="ProteinAlignment",
                                           view=protein_alignment_filepath,
                                           view_type=ProteinAlignmentFmt
                                           )

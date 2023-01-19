@@ -15,15 +15,21 @@ def _make_box_plot(dataframe, key, output_dir, png_out, rc_min, rc_max):
     #creates boxplot
     chart = alt.Chart(dataframe).transform_fold(
             [key], as_=["key", "value"]
-            ).mark_boxplot(
-                    size=50
-                    ).encode(
-                            x=alt.X("key:N",
-                                    axis=alt.Axis(title="Sum Of Probes")),
-                            y=alt.Y("value:Q",
-                                    axis=alt.Axis(title="Value"),
-                                    scale=alt.Scale(domain=[rc_min, rc_max]))
-                            ).properties(width=300)
+    ).mark_boxplot(
+            size=50
+    ).encode(
+            x=alt.X(
+                "key:N",
+                axis=alt.Axis(
+                    title="Sum Of Probes"
+                )
+            ),
+            y=alt.Y(
+                "value:Q",
+                axis=alt.Axis(title="Value"),
+                scale=alt.Scale(domain=[rc_min, rc_max])
+            )
+    ).properties(width=300)
 
     #collect current working directory
     oldDir = os.getcwd()
@@ -89,7 +95,9 @@ def enrichmentRCBoxplot(
 
     # loop through the file names and collect sum of True values for enriched
     for f in files:
-        sumDict["sum of enriched"].append(len(enriched_dir[enriched_dir[f] == True]))
+        sumDict["sum of enriched"].append(len(
+            enriched_dir[enriched_dir[f] == True]
+            ))
 
     # convert dictionary to dataframe
     sumDf = pd.DataFrame(sumDict)
