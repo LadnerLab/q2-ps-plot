@@ -71,9 +71,9 @@ def mutantScatters_tsv(
     
     # import data into an artifact
     if reference_file_filepath:
-        reference_file = ctx.make_artifact(type = "MutantReference",
-                                           view = reference_file_filepath,
-                                           view_type = MutantReferenceFileFmt
+        reference_file = ctx.make_artifact(type="MutantReference",
+                                           view=reference_file_filepath,
+                                           view_type=MutantReferenceFileFmt
                                            )
 
     mutantScatters_vis, = mutantScatters(source = source,

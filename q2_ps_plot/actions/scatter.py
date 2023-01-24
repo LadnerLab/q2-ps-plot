@@ -273,12 +273,12 @@ def mutantScatters(
             tsv_file = csv.reader(file, delimiter="\t")
             c = 0
             for line in tsv_file:
-                c+=1
+                c += 1
                 if c != 1:
                     References.append(line[0])
                     ct = 0
                     for item in line[1]:
-                        ct+=1
+                        ct += 1
                         Position.append(ct)
                         labeling.append(item)
                         CodeName.append(line[0])
@@ -361,10 +361,11 @@ def mutantScatters(
                     x = alt.X(x_axis_header + ":Q", title = x_axis_label),
                     y = alt.Y("value:Q", title = y_axis_label),
                     color = alt.Color(category_header + ":N",
-                    scale=alt.Scale(range=["#E69F00", "#56B4E9", "#009E73",
-                                           "#F0E442", "#0072B2", "#D55E00",
-                                           "#CC79A7"
-                                           ])),
+                        scale=alt.Scale(range=["#E69F00", "#56B4E9", "#009E73",
+                                               "#F0E442", "#0072B2", "#D55E00",
+                                               "#CC79A7"
+                                               ])
+                                      ),
                     tooltip = [label_header, peptide_header, category_header]
                 ).add_selection(
                     sample_select,

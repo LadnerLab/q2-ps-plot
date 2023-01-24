@@ -49,7 +49,7 @@ def zenrich_tsv(
     
     # if negative data provided import into an artifact
     if negative_data_filepath:
-        negative_data = ctx.make_artifact(type='FeatureTable[Normed]',
+        negative_data = ctx.make_artifact(type="FeatureTable[Normed]",
                                           view=negative_data_filepath,
                                           view_type=PepsirfContingencyTSVFormat
                                           )
@@ -59,7 +59,7 @@ def zenrich_tsv(
 
     # if highlihgted probes provided import into an aftifact
     if highlighted_probes_filepath:
-        highlighted_probes = ctx.make_artifact(type='InfoSNPN',
+        highlighted_probes = ctx.make_artifact(type="InfoSNPN",
                                                view=highlighted_probes_filepath,
                                                view_type=PepsirfInfoSNPNFormat
                                                )
