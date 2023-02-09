@@ -1,4 +1,6 @@
-from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, MutantReferenceFileFmt
+from q2_pepsirf.format_types import (
+    PepsirfContingencyTSVFormat, MutantReferenceFileFmt
+)
 
 def repScatters_tsv(
         ctx,
@@ -14,30 +16,33 @@ def repScatters_tsv(
 
     # import data into an artifact
     if zscore_filepath:
-        zscore = ctx.make_artifact(type="FeatureTable[Zscore]",
-                                   view=zscore_filepath,
-                                   view_type=PepsirfContingencyTSVFormat
-                                   )
+        zscore = ctx.make_artifact(
+            type="FeatureTable[Zscore]",
+            view=zscore_filepath,
+            view_type=PepsirfContingencyTSVFormat
+        )
     else:
         zscore = None
 
     # import data into an artifact
     if col_sum_filepath:
-        col_sum = ctx.make_artifact(type="FeatureTable[Normed]",
-                                    view=col_sum_filepath,
-                                    view_type=PepsirfContingencyTSVFormat
-                                    )
+        col_sum = ctx.make_artifact(
+            type="FeatureTable[Normed]",
+            view=col_sum_filepath,
+            view_type=PepsirfContingencyTSVFormat
+        )
     else:
         col_sum = None
 
-    repScatters_vis, = repScatters(source = source,
-                                   pn_filepath = pn_filepath,
-                                   plot_log = plot_log,
-                                   zscore = zscore,
-                                   col_sum = col_sum,
-                                   facet_charts = facet_charts,
-                                   xy_threshold = xy_threshold
-                                   )
+    repScatters_vis, = repScatters(
+        source=source,
+        pn_filepath=pn_filepath,
+        plot_log=plot_log,
+        zscore=zscore,
+        col_sum=col_sum,
+        facet_charts=facet_charts,
+        xy_threshold=xy_threshold
+    )
 
     return repScatters_vis
 
@@ -64,36 +69,39 @@ def mutantScatters_tsv(
     mutantScatters = ctx.get_action("ps-plot", "mutantScatters")
 
     # import data into an artifact
-    zscore = ctx.make_artifact(type="FeatureTable[Zscore]",
-                               view=zscore_filepath,
-                               view_type=PepsirfContingencyTSVFormat
-                               )
+    zscore = ctx.make_artifact(
+        type="FeatureTable[Zscore]",
+        view=zscore_filepath,
+        view_type=PepsirfContingencyTSVFormat
+    )
     
     # import data into an artifact
     if reference_file_filepath:
-        reference_file = ctx.make_artifact(type="MutantReference",
-                                           view=reference_file_filepath,
-                                           view_type=MutantReferenceFileFmt
-                                           )
+        reference_file = ctx.make_artifact(
+            type="MutantReference",
+            view=reference_file_filepath,
+            view_type=MutantReferenceFileFmt
+        )
 
-    mutantScatters_vis, = mutantScatters(source = source,
-                                         metadata = metadata,
-                                         zscore = zscore,
-                                         reference_file = reference_file,
-                                         peptide_header = peptide_header,
-                                         reference_header = reference_header,
-                                         x_axis_header = x_axis_header,
-                                         category_header = category_header,
-                                         label_header = label_header,
-                                         x_axis_label = x_axis_label,
-                                         y_axis_label = y_axis_label,
-                                         min_wobble = min_wobble,
-                                         max_wobble = max_wobble,
-                                         wobble = wobble,
-                                         scatter_only = scatter_only,
-                                         scatter_boxplot = scatter_boxplot,
-                                         boxplot_only = boxplot_only
-                                         )
+    mutantScatters_vis, = mutantScatters(
+        source=source,
+        metadata=metadata,
+        zscore=zscore,
+        reference_file=reference_file,
+        peptide_header=peptide_header,
+        reference_header=reference_header,
+        x_axis_header=x_axis_header,
+        category_header=category_header,
+        label_header=label_header,
+        x_axis_label=x_axis_label,
+        y_axis_label=y_axis_label,
+        min_wobble=min_wobble,
+        max_wobble=max_wobble,
+        wobble=wobble,
+        scatter_only=scatter_only,
+        scatter_boxplot=scatter_boxplot,
+        boxplot_only=boxplot_only
+    )
 
     return mutantScatters_vis
 

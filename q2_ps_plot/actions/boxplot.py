@@ -1,8 +1,8 @@
 from altair_saver import save
 
 import altair as alt
-import pandas as pd
 import os
+import pandas as pd
 import tempfile
 
 # Name: _make_box_plot
@@ -60,7 +60,7 @@ def _make_box_plot(dataframe, key, output_dir, png_out, rc_min, rc_max):
 def readCountsBoxplot(
         output_dir: str,
         read_counts: pd.DataFrame,
-        png_out_dir: str = "./",) -> None:
+        png_out_dir: str = "./") -> None:
 
     #collects min and max values of sum of probes for scaling of graph
     rc_min = min(read_counts["Sum of probe scores"])
@@ -71,10 +71,11 @@ def readCountsBoxplot(
         os.mkdir(png_out_dir)
 
     # create and save boxplot
-    _make_box_plot(read_counts, "Sum of probe scores", output_dir,
-                   os.path.join(png_out_dir, "readCountBoxplot.png"),
-                   rc_min, rc_max
-                   )
+    _make_box_plot(
+        read_counts, "Sum of probe scores", output_dir,
+        os.path.join(png_out_dir, "readCountBoxplot.png"),
+        rc_min, rc_max
+    )
 
 # Name: readCountsBoxplot
 # Process: creates a boxplot based on the enriched directory of
@@ -85,7 +86,7 @@ def readCountsBoxplot(
 def enrichmentRCBoxplot(
         output_dir: str,
         enriched_dir: pd.DataFrame,
-        png_out_dir: str = "./",) -> None:
+        png_out_dir: str = "./") -> None:
 
     # collect file names
     files = list(enriched_dir.columns)
@@ -97,7 +98,7 @@ def enrichmentRCBoxplot(
     for f in files:
         sumDict["sum of enriched"].append(len(
             enriched_dir[enriched_dir[f] == True]
-            ))
+        ))
 
     # convert dictionary to dataframe
     sumDf = pd.DataFrame(sumDict)
@@ -111,8 +112,9 @@ def enrichmentRCBoxplot(
         os.mkdir(png_out_dir)
 
     # create and save boxplot
-    _make_box_plot(sumDf, "sum of enriched", output_dir,
-                   os.path.join(png_out_dir, "enrichedCountBoxplot.png"),
-                   rc_min, rc_max
-                   )
+    _make_box_plot(
+        sumDf, "sum of enriched", output_dir,
+        os.path.join(png_out_dir, "enrichedCountBoxplot.png"),
+        rc_min, rc_max
+    )
 

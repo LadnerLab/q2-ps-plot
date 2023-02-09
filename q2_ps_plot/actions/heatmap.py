@@ -54,9 +54,10 @@ def proteinHeatmap(
 
                 # put the alignment file into a pandas DataFrame to easily
                 # collect alignment information
-                proteinDf = pd.read_csv(str(protein_alignment.path /file),
-                                        sep="\t", index_col=0
-                                        )
+                proteinDf = pd.read_csv(
+                    str(protein_alignment.path /file),
+                    sep="\t", index_col=0
+                )
                 align = dict(proteinDf[align_header])
                 
                 # collect the alignment and the protein
@@ -67,14 +68,14 @@ def proteinHeatmap(
 
     # put the alignment dictionary into a pandas dataframe and merge with the
     # enriched dataframe
-    alignDf = pd.DataFrame(dict([(k,pd.Series(v))
-                                 for k,v in alignDict.items()
-                                 ])
-                           )
+    alignDf = pd.DataFrame(
+        dict([(k,pd.Series(v)) for k,v in alignDict.items()])
+    )
     alignDf = alignDf.melt(var_name="peptide", value_name="x")
-    newDf = df.merge(alignDf, how="right",
-                     right_on="peptide", left_on="peptide"
-                     )
+    newDf = df.merge(
+        alignDf, how="right",
+        right_on="peptide", left_on="peptide"
+    )
 
     # drop rows with no x value
     newDf.dropna(subset=["x"], inplace=True)
@@ -84,24 +85,22 @@ def proteinHeatmap(
     proteinDf = pd.DataFrame(proteinDict)
     proteinDf = proteinDf.transpose().reset_index()
     proteinDf = proteinDf.rename(columns={"index": "peptide"})
-    newDf = newDf.merge(proteinDf, how="right",
-                        right_on="peptide", left_on="peptide"
-                        )
+    newDf = newDf.merge(
+        proteinDf, how="right",
+        right_on="peptide", left_on="peptide"
+    )
     
     #Create a new sample column to handle NaN values in "sample"
     newDf["sampleDummy"] = newDf["sample"].fillna("dummy")
     # create a count of the x values
-    newDf["count"] = newDf.groupby(["x",
-                                    "protein",
-                                    "sample"
-                                    ])["x"].transform("count")
-    # Create new label column with all of the peptides for each protein, sample and position combined
-    newDf["label"] = newDf.groupby(["x",
-                                    "protein",
-                                    "sampleDummy"
-                                    ])["peptide"].transform(
-                                            lambda x: ",".join(x)
-                                    )
+    newDf["count"] = newDf.groupby(
+        ["x", "protein", "sample"]
+    )["x"].transform("count")
+    # Create new label column with all of the peptides for each protein,
+    # sample and position combined
+    newDf["label"] = newDf.groupby(
+        ["x", "protein", "sampleDummy"]
+    )["peptide"].transform(lambda x: ",".join(x))
     # Get rid of the 'peptide' column and then remove duplicate rows
     newDf = newDf.drop(columns=["peptide", "sampleDummy"]).drop_duplicates()
     
@@ -113,14 +112,13 @@ def proteinHeatmap(
     proteinList = list(newDf.protein.unique())
 
     # create the dropdown menus for the chart
-    sample_dropdown = alt.binding_select(options=proteinList,
-                                         name="Protein Select"
-                                         )
-    sample_select = alt.selection_single(fields=["protein"],
-                                         bind=sample_dropdown,
-                                         name="protein",
-                                         init={"protein": proteinList[0]}
-                                         )
+    sample_dropdown = alt.binding_select(
+        options=proteinList, name="Protein Select"
+    )
+    sample_select = alt.selection_single(
+        fields=["protein"], bind=sample_dropdown,
+        name="protein", init={"protein": proteinList[0]}
+    )
 
     #set max rows for altair to none
     alt.data_transformers.enable("default", max_rows=None)
