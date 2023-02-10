@@ -35,10 +35,26 @@ def _make_pairs_file(column, outpath):
                 fh.write(a + "\t" + b + "\n")
     return result
 
+# Name: _make_reps_file
+# Process: makes a replicate file for the purpose of inputting it
+# into enrich
+# Method Inputs/Parameters: column and outpath
+# Method Outputs/Returned: None
+# Dependencies: itertools
+def _make_reps_file(column, outpath):
+    series = column.to_series()
+    pairs = {k: v.index for k,v in series.groupby(series)}
+    with open( outpath, 'w' ) as of:
+        for _, reps in pairs.items():
+            for rep in reps[:len(reps) - 1]:
+                of.write( rep + "\t" )
+            of.write( reps[ len(reps) - 1] )
+            of.write( "\n" )
+
 # Name: zenrich
 # Process: runs the enrich module to collect enriched peptides at
 # different z score thresholds, then creates an interactive graph with
-# the enriched peptides highlighted and the sample available in the 
+# the enriched peptides highlighted and the sample available in the
 # dropdown menu
 # Method inputs/parameters: output_dir, data, zscores, negative_controls,
 # negative_id, highlight_probes, source, pn_filepath, peptide_metadata
@@ -50,6 +66,7 @@ def zenrich(
         output_dir: str,
         data: PepsirfContingencyTSVFormat,
         zscores: PepsirfContingencyTSVFormat,
+        flex_reps: bool = False,
         negative_controls: list = None,
         negative_id: str = None,
         highlight_probes: PepsirfInfoSNPNFormat = None,
@@ -89,8 +106,12 @@ def zenrich(
     with tempfile.TemporaryDirectory() as tempdir:
         os.chdir(tempdir)
 
-        #create pairs file
-        if source:
+        # check for invocation with flexible reps and create replicate file
+        if source and flex_reps:
+            pairsFile = os.path.join(tempdir, "pairs.tsv")
+            _make_reps_file(source, pairsFile)
+            
+        elif source: # assume invocation with pair inferrencing and create pairs file
             pairsFile = os.path.join(tempdir, "pairs.tsv")
             _make_pairs_file(source, pairsFile)
 
@@ -119,18 +140,18 @@ def zenrich(
 
         #set max rows for altair to none
         alt.data_transformers.enable("default", max_rows=None)
-        
+
         #values created by user input
         threshFile = "tempThreshFile.tsv"
-        
+
         #set values for pepsirf
         outSuffix = "_tempEnriched.txt"
         failOut = "enrichFail.txt"
         outputDir = []
-        
+
         #convert colsum data to pandas data frame
         peptideNames = negative_data.index
-        
+
         #get list of thresholds
         if not exact_z_thresh:
             threshRange = list(reversed(range(
@@ -148,7 +169,7 @@ def zenrich(
                     tsv_writer = csv.writer(out_file, delimiter="\t")
                     tsv_writer.writerow([str(zscores), score])
                     tsv_writer.writerow([str(data_file), str(exact_cs_thresh)])
-            
+
             #run p enrich module
             cmd = (
                 "%s enrich -t %s -s %s"
@@ -177,20 +198,20 @@ def zenrich(
         #iterate through created directories
         for oD in outputDir:
             enrFiles = glob.glob("%s/*%s" % (oD, outSuffix))
-            
+
             #iterate through enriched files to gather the peptides
             for file in enrFiles:
-                
+
                 #get individual sample names
                 sNames = os.path.basename(file).split(outSuffix)[0].split("~")
-                
+
                 #get joined sample name
                 sample = "~".join(sNames)
 
                 #generate a list of sample names
                 if sample not in dropNames:
                     dropNames[sample] = ""
-                
+
                 #collect information for the pandas data frame
                 with open(file, "r") as fin:
                     for row in fin:
@@ -215,7 +236,7 @@ def zenrich(
                                 enrDict["z_score_threshold"].append(oD)
                                 enrDict["Zscores"].append(zToStr)
                                 pepSamp[(pep,sample)] = ""
-            
+
             #check if there were any samples that had no enriched peptides
             if os.path.exists(os.path.join(oD, failOut)):
 
@@ -431,4 +452,3 @@ def zenrich(
             finalChart.save(os.path.join(output_dir, "index.html"))
 
     os.chdir(old)
- 

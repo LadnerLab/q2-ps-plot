@@ -42,7 +42,8 @@ shared_parameters = {
     "negative_controls": List[Str],
     "negative_id": Str,
     "tooltip": List[Str],
-    "color_by": Str
+    "color_by": Str,
+    "flex_reps": Bool
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
@@ -412,4 +413,3 @@ plugin.pipelines.register_function(
     description="Creates a scatterplot for mutant peptides with tsv filepaths"
         " instead of QZA files"
 )
-

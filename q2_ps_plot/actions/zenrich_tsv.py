@@ -19,6 +19,7 @@ def zenrich_tsv(
         ctx,
         data_filepath,
         zscores_filepath,
+        flex_reps=False,
         negative_controls=None,
         negative_id=None,
         source=None,
@@ -78,6 +79,7 @@ def zenrich_tsv(
     zenrich_vis, = zenrich(
         data=data,
         zscores=zscores,
+        flex_reps=flex_reps,
         negative_controls=negative_controls,
         negative_id=negative_id,
         highlight_probes=highlighted_probes,
@@ -97,4 +99,3 @@ def zenrich_tsv(
 
     #return the visualization
     return zenrich_vis
-
