@@ -140,6 +140,7 @@ plugin.visualizers.register_function(
 
 repScatters_parameters = {
         'source': MetadataColumn[Categorical],
+        'user_spec_pairs': List[Str],
         'plot_log': Bool,
         'facet_charts': Bool,
         'pn_filepath': Str,
@@ -149,6 +150,7 @@ repScatters_parameters = {
 repScatters_parameter_descriptions = {
         'source': "Metadata file containing all sample names and their source groups. "
             "Used to create pairs tsv to run pepsirf enrich module.",
+        'user_spec_pairs': "!!!Write a description!!!",
         'plot_log': "Use if you want axes to be shown on a log-scale.",
         'facet_charts': "Allows for view of all tables on one page instead of the "
                     "available dropdown menu.",
