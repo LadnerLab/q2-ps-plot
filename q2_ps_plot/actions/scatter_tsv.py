@@ -3,6 +3,7 @@ from q2_pepsirf.format_types import PepsirfContingencyTSVFormat, MutantReference
 def repScatters_tsv(
     ctx,
     source = None,
+    user_spec_pairs=None,
     pn_filepath= None,
     plot_log= False,
     zscore_filepath = None,
@@ -30,6 +31,7 @@ def repScatters_tsv(
 
     repScatters_vis, = repScatters(
         source = source,
+        user_spec_pairs = user_spec_pairs,
         pn_filepath = pn_filepath,
         plot_log = plot_log,
         zscore = zscore,
