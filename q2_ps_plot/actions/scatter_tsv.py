@@ -3,16 +3,17 @@ from q2_pepsirf.format_types import (
 )
 
 def repScatters_tsv(
-        ctx,
-        source=None,
-        pn_filepath=None,
-        plot_log=False,
-        zscore_filepath=None,
-        col_sum_filepath=None,
-        facet_charts=False,
-        xy_threshold=None):
-
-    repScatters = ctx.get_action("ps-plot", "repScatters")
+    ctx,
+    source = None,
+    user_spec_pairs=None,
+    pn_filepath= None,
+    plot_log= False,
+    zscore_filepath = None,
+    col_sum_filepath = None,
+    facet_charts = False,
+    xy_threshold = None
+):
+    repScatters = ctx.get_action('ps-plot', 'repScatters')
 
     # import data into an artifact
     if zscore_filepath:
@@ -35,13 +36,14 @@ def repScatters_tsv(
         col_sum = None
 
     repScatters_vis, = repScatters(
-        source=source,
-        pn_filepath=pn_filepath,
-        plot_log=plot_log,
-        zscore=zscore,
-        col_sum=col_sum,
-        facet_charts=facet_charts,
-        xy_threshold=xy_threshold
+        source = source,
+        user_spec_pairs = user_spec_pairs,
+        pn_filepath = pn_filepath,
+        plot_log = plot_log,
+        zscore = zscore,
+        col_sum = col_sum,
+        facet_charts = facet_charts,
+        xy_threshold = xy_threshold
     )
 
     return repScatters_vis
@@ -104,4 +106,3 @@ def mutantScatters_tsv(
     )
 
     return mutantScatters_vis
-

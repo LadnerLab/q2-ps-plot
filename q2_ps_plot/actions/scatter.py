@@ -45,15 +45,16 @@ def _make_pairs_list(column, type):
 # facet_charts
 # Dependencies: os, pandas, numpy, altair, and defaultdict
 def repScatters(
-        output_dir: str,
-        source: qiime2.CategoricalMetadataColumn = None,
-        pn_filepath: str = None,
-        plot_log: bool = False,
-        zscore: pd.DataFrame = None,
-        col_sum: pd.DataFrame = None,
-        facet_charts: bool = False,
-        xy_threshold: int = None) -> None:
-
+    output_dir: str,
+    source: qiime2.CategoricalMetadataColumn = None,
+    user_spec_pairs: list = None,
+    pn_filepath: str = None,
+    plot_log: bool = False,
+    zscore: pd.DataFrame = None,
+    col_sum: pd.DataFrame = None,
+    facet_charts: bool = False,
+    xy_threshold: int = None
+) -> None:
     # check wether zscore matrix or colsum matrix was provided
     if zscore is not None:
         data = zscore.transpose()
@@ -77,7 +78,9 @@ def repScatters(
         scatterDict[nm]
 
     # call function to collect samples pairs
-    if source:
+    if user_spec_pairs:
+        pairs = [tuple(tuple(user_spec_pairs[i:i+2]) for i in range(0, len(user_spec_pairs), 2))]
+    elif source:
         pairs = _make_pairs_list(source, "sourceCol")
     elif pn_filepath:
         pairs = _make_pairs_list(pn_filepath, "pnFile")
@@ -89,7 +92,7 @@ def repScatters(
     for lst in pairs:
         for tpl in lst:
 
-            #set x and y values from the dataframe
+            # set x and y values from the dataframe
             if type(tpl) is tuple:
                 samp = "~".join(tpl)
                 samples.append(samp)
@@ -454,4 +457,3 @@ def mutantScatters(
 
         # save the boxplot chart
         boxplot.save(os.path.join(output_dir, "index.html"))
-
