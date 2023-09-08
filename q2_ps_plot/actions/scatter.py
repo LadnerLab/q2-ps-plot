@@ -1,7 +1,3 @@
-from altair.vegalite.v4.schema.channels import Tooltip
-from collections import defaultdict
-from q2_pepsirf.format_types import MutantReferenceFileFmt
-
 import altair as alt
 import csv
 import itertools
@@ -11,6 +7,10 @@ import os
 import pandas as pd
 import qiime2
 import random
+
+from altair.vegalite.v5.schema.channels import Tooltip
+from collections import defaultdict
+from q2_pepsirf.format_types import MutantReferenceFileFmt
 
 # Name: _make_pairs_list
 # Process: creates a list of sample replicates
