@@ -158,11 +158,12 @@ def repScatters(
 
     # set the dropdown values
     sample_dropdown = alt.binding_select(options=samples, name="Sample Select")
-    sample_select = alt.selection_single(
+    # TODO: change to selection_point() to avoid further complications with altair v5
+    sample_select = alt.selection_point(
         fields=["sample"],
         bind=sample_dropdown,
         name="sample",
-        init={"sample": samples[0]}
+        value={"sample": samples[0]}
     )
 
     if not facet_charts:
@@ -173,7 +174,7 @@ def repScatters(
             alt.Y("bin_y_start:Q", title=yTitle),
             alt.Y2("bin_y_end:Q"),
             alt.Color("count:Q", scale = alt.Scale(scheme="plasma"))
-        ).add_selection(
+        ).add_params(
             sample_select
         ).transform_filter(
             sample_select
@@ -321,6 +322,7 @@ def mutantScatters(
     sample_dropdown = alt.binding_select(
         options=samples, name="Reference Select"
     )
+    # TODO: change to selection_point() to avoid further complications with altair v5
     sample_select = alt.selection_single(
         fields=[reference_header], bind=sample_dropdown,
         name="Reference", init={reference_header: samples[0]}
@@ -328,6 +330,7 @@ def mutantScatters(
 
     # set the dropdown values
     samp_dropdown = alt.binding_select(options=samp, name="Sample Select")
+    # TODO: change to selection_point() to avoid further complications with altair v5
     samp_select = alt.selection_single(
         fields=["Samples"], bind=samp_dropdown,
         name="Samples", init={"Samples": samp[0]}
@@ -351,7 +354,7 @@ def mutantScatters(
                     ])
                 ),
                 tooltip=[label_header, peptide_header, category_header]
-            ).add_selection(
+            ).add_params(
                 sample_select, samp_select
             ).transform_filter(
                 sample_select &
@@ -373,7 +376,7 @@ def mutantScatters(
                     ])
                 ),
                 tooltip = [label_header, peptide_header, category_header]
-            ).add_selection(
+            ).add_params(
                 sample_select,
                 samp_select
             ).transform_filter(
@@ -406,7 +409,7 @@ def mutantScatters(
                 text="labeling:N"
             ).properties(
                 width=1000
-            ).add_selection(
+            ).add_params(
                 sample_select
             ).transform_filter(
                 sample_select
@@ -429,7 +432,7 @@ def mutantScatters(
         ).properties(
             width=1000,
             height=300
-        ).add_selection(
+        ).add_params(
             sample_select,
             samp_select
         ).transform_filter(
