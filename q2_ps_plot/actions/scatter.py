@@ -158,12 +158,10 @@ def repScatters(
 
     # set the dropdown values
     sample_dropdown = alt.binding_select(options=samples, name="Sample Select")
-    # TODO: change to selection_point() to avoid further complications with altair v5
     sample_select = alt.selection_point(
         fields=["sample"],
         bind=sample_dropdown,
-        name="sample",
-        value={"sample": samples[0]}
+        name="sample"
     )
 
     if not facet_charts:
