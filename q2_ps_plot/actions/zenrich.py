@@ -350,7 +350,8 @@ def zenrich(
         sample_select = alt.selection_point(
             fields=["sample"],
             bind=sample_dropdown,
-            name="sample"
+            name="sample",
+            value=dropList[0]
         )
         
         # set color by as nominal

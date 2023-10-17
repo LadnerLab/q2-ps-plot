@@ -161,7 +161,8 @@ def repScatters(
     sample_select = alt.selection_point(
         fields=["sample"],
         bind=sample_dropdown,
-        name="sample"
+        name="sample",
+        value=samples[0]
     )
 
     if not facet_charts:
