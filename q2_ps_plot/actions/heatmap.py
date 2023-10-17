@@ -115,9 +115,9 @@ def proteinHeatmap(
     sample_dropdown = alt.binding_select(
         options=proteinList, name="Protein Select"
     )
-    sample_select = alt.selection_single(
+    sample_select = alt.selection_point(
         fields=["protein"], bind=sample_dropdown,
-        name="protein", init={"protein": proteinList[0]}
+        name="protein", value=[{"protein": proteinList[0]}]
     )
 
     #set max rows for altair to none
@@ -142,7 +142,7 @@ def proteinHeatmap(
             )
         ),
         tooltip=["label:N"]
-    ).add_selection(
+    ).add_params(
         sample_select
     ).transform_filter(
         sample_select

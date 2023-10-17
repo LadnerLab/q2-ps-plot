@@ -321,18 +321,16 @@ def mutantScatters(
     sample_dropdown = alt.binding_select(
         options=samples, name="Reference Select"
     )
-    # TODO: change to selection_point() to avoid further complications with altair v5
-    sample_select = alt.selection_single(
+    sample_select = alt.selection_point(
         fields=[reference_header], bind=sample_dropdown,
-        name="Reference", init={reference_header: samples[0]}
+        name="Reference", value=[{reference_header: samples[0]}]
     )
 
     # set the dropdown values
     samp_dropdown = alt.binding_select(options=samp, name="Sample Select")
-    # TODO: change to selection_point() to avoid further complications with altair v5
-    samp_select = alt.selection_single(
+    samp_select = alt.selection_point(
         fields=["Samples"], bind=samp_dropdown,
-        name="Samples", init={"Samples": samp[0]}
+        name="Samples", value=[{"Samples": samp[0]}]
     )
 
     #set max rows for altair to none

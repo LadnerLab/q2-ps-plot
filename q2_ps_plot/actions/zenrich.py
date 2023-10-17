@@ -378,7 +378,7 @@ def zenrich(
                 legend=alt.Legend(title="Z Score Thresholds")
             ),
             tooltip=tooltip
-        ).add_selection(
+        ).add_params(
             sample_select
         ).transform_filter(
             sample_select
