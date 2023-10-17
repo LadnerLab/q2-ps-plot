@@ -351,7 +351,7 @@ def zenrich(
             fields=["sample"],
             bind=sample_dropdown,
             name="sample",
-            value=dropList[0]
+            value=[{"sample": dropList[0]}]
         )
         
         # set color by as nominal

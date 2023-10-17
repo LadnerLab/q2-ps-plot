@@ -162,7 +162,7 @@ def repScatters(
         fields=["sample"],
         bind=sample_dropdown,
         name="sample",
-        value=samples[0]
+        value=[{"sample": samples[0]}]
     )
 
     if not facet_charts:
