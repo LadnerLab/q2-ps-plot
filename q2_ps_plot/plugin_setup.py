@@ -283,17 +283,17 @@ plugin.visualizers.register_function(
     parameters=proteinHeatmap_parameters,
     input_descriptions={
         "enriched_dir": "A PairwiseEnrichment semantic type or .qza. This file"
-            " is the output of q2-pepsirf's enrich module",
-        "protein_alignment": "A director containing a tab delimited file"
-            " containing the protein and the filepath to the associated"
-            " alignment file. The file should start with the header as"
-            " 'ProtName' and be named 'manifest.tsv'. And the files containing"
-            " the protein alignment information"
+        " is the output of q2-pepsirf's enrich module",
+        "protein_alignment": "A directory containing a tab delimited file"
+        " containing the protein and the filepath to the associated"
+        " alignment file. The file should start with the header as"
+        " 'ProtName' and be named 'manifest.tsv'. And the files containing"
+        " the protein alignment information"
     },
     parameter_descriptions=proteinHeatmap_parameter_descriptions,
     name="Protein Alignment Heatmap",
     description="Creates a heatmap based on the alignment of peptides in the"
-        " enriched peptides"
+    " enriched peptides."
 )
 
 plugin.pipelines.register_function(
@@ -311,17 +311,17 @@ plugin.pipelines.register_function(
     output_descriptions=None,
     parameter_descriptions={
         "enriched_dir_filepath": "Enriched directory filepath. This file is"
-            " the output of q2-pepsirf's enrich module",
-        "protein_alignment_filepath": "A director containing a tab delimited"
-            " file containing the protein and the filepath to the associated"
-            " alignment file. The file should start with the header as"
-            " 'ProtName' and be named 'manifest.tsv'. And the files containing"
-            " the protein alignment information",
+        " the output of q2-pepsirf's enrich module.",
+        "protein_alignment_filepath": "Filepath of the protein alignment"
+        " manifest file. The manifest file is tab delimited containing a"
+        " header with the column names 'ProtName' and 'AlignFile'. Each line"
+        " specifies the protein and the filepath to the associated alignment"
+        " file.",
         **proteinHeatmap_parameter_descriptions
     },
     name="Protein Alignment Heatmap Dir",
     description="Creates a heatmap based on the alignment of peptides in the"
-        " enriched peptides with directory filepaths instead of QZA files"
+    " enriched peptides with directory filepaths instead of QZA files."
 )
 
 mutantScatters_parameters = {
