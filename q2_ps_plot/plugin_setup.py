@@ -43,7 +43,8 @@ shared_parameters = {
     "negative_id": Str,
     "tooltip": List[Str],
     "color_by": Str,
-    "flex_reps": Bool
+    "flex_reps": Bool,
+    "psea": Bool
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
@@ -74,7 +75,8 @@ shared_descriptions = {
         " not provided just 'Peptide' and 'Zscores' will be shown.",
     "color_by": "A column within the metadata file to base the coloring of the"
         " enriched peptide points. This parameter is case sensitive and the"
-        " default is the different zscore thresholds."
+        " default is the different zscore thresholds.",
+    "psea": "Specifies zenrich is creating plots for PSEA."
 }
 
 # action set up for zenrich tsv pipeline

@@ -34,6 +34,7 @@ def zenrich_tsv(
         lower_z_thresh=5,
         exact_z_thresh=None,
         exact_cs_thresh="20",
+        psea=False,
         pepsirf_binary="pepsirf"):
 
     # collect the zenrich module action
@@ -94,6 +95,7 @@ def zenrich_tsv(
         lower_z_thresh=lower_z_thresh,
         exact_z_thresh=exact_z_thresh,
         exact_cs_thresh=exact_cs_thresh,
+        psea_plot=psea_plot,
         pepsirf_binary=pepsirf_binary
     )
 
