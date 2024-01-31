@@ -375,16 +375,16 @@ def zenrich(
             x=alt.X("sample0:Q", title=samples[0]),
             y=alt.Y("sample1:Q", title=samples[1]),
             color=alt.Color(
-                "peptide",
+                "peptide:N",
                 scale=alt.Scale(range=[
                     "#E69F00", "#56B4E9", "#009E73",
                     "#F0E442", "#0072B2", "#D55E00",
                     "#CC79A7"
                 ]),
                 sort=threshRange,
-                legend=alt.Legend(title="Z Score Thresholds")
+                legend=alt.Legend(title="Z Score Satter")
             ),
-            # TODO: integrate tooltip
+            tooltip="peptide"
         )  # TODO: take care of sample select
         finalChart = alt.layer(scatter).properties(title="PSEA")  # TODO: get suggestion for better name
 
