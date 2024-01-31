@@ -366,18 +366,14 @@ def zenrich(
         for i in range(len(samples)):
             for peptide in peptides:
                 scatter_dict[f"sample{i}"].append(zData.loc[peptide, samples[i]])
-        print(f"Scatter dict:\n{scatter_dict}")
-        print(f"peptides: {len(scatter_dict['peptide'])}")
-        print(f"sample0: {len(scatter_dict['sample0'])}")
-        print(f"sample1: {len(scatter_dict['sample1'])}")
         
         # set color by as nominal
         color_by = color_by + ":N"
 
         # scatter plot comparing two samples
         scatter = alt.Chart(pd.DataFrame(scatter_dict)).mark_circle().encode(
-            x="sample0:Q",
-            y="sample1:Q",
+            x=alt.X("sample0:Q", title=samples[0]),
+            y=alt.Y("sample1:Q", title=samples[1]),
             color=alt.Color(
                 "peptide",
                 scale=alt.Scale(range=[
