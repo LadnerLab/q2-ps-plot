@@ -66,6 +66,8 @@ def zenrich(
         output_dir: str,
         data: PepsirfContingencyTSVFormat,
         zscores: PepsirfContingencyTSVFormat,
+        spline_x: list = None,
+        spline_y: list = None,
         flex_reps: bool = False,
         negative_controls: list = None,
         negative_id: str = None,
@@ -86,6 +88,8 @@ def zenrich(
     ) -> None:
 
     old = os.getcwd()
+    if spline_x and spline_y:
+        print(f"Spline was received: ({spline_x}, {spline_y})")
 
     # collect absolute filepath of pairs file
     # if pn_filepath:

@@ -19,6 +19,8 @@ def zenrich_tsv(
         ctx,
         data_filepath,
         zscores_filepath,
+        spline_x=None,
+        spline_y=None,
         flex_reps=False,
         negative_controls=None,
         negative_id=None,
@@ -80,6 +82,8 @@ def zenrich_tsv(
     zenrich_vis, = zenrich(
         data=data,
         zscores=zscores,
+        spline_x=spline_x,
+        spline_y=spline_y,
         flex_reps=flex_reps,
         negative_controls=negative_controls,
         negative_id=negative_id,
