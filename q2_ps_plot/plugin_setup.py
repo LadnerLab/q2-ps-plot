@@ -45,8 +45,8 @@ shared_parameters = {
     "color_by": Str,
     "flex_reps": Bool,
     "psea": Bool,
-    "spline_x": List[Int],
-    "spline_y": List[Int]
+    "spline_x": List[Float],
+    "spline_y": List[Float]
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
