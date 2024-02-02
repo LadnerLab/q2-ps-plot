@@ -419,3 +419,20 @@ plugin.pipelines.register_function(
     name='Mutant Scatters',
     description="Creates a scatterplot for mutant peptides with tsv filepaths instead of QZA files"
 )
+
+plugin.visualizers.register_function(
+    function=actions.volcano,
+    inputs={},
+    input_descriptions={},
+    parameters={
+        "p_vals": List[Float],
+        "es": List[Float]
+    },
+    parameter_descriptions={
+        "p_vals": "Calculated p-values to dictate a point's position on the"
+            " y-axis.",
+        "es": "Calculated Enrichment Score (ES) of genes."
+    },
+    name="Volcano Visualizer",
+    description=""
+)
