@@ -88,8 +88,6 @@ def zenrich(
     ) -> None:
 
     old = os.getcwd()
-    if spline_x and spline_y:
-        print(f"Spline was received: ({spline_x}, {spline_y})")
 
     # collect absolute filepath of pairs file
     # if pn_filepath:
@@ -109,12 +107,12 @@ def zenrich(
     #     pepsirf_binary = "%s" % pepsirf_binary
 
     # collect probe names in a list if higlighted is provided
-    peptides = []
+    hprobes = []
     if highlight_probes:
         with open(str(highlight_probes), "r") as fin:
                     for row in fin:
-                        pep = row.rstrip("\n")
-                        peptides.append(pep)
+                        probe = row.rstrip("\n")
+                        hprobes.append(probe)
 
     # create temporary directory to work in
     with tempfile.TemporaryDirectory() as tempdir:
@@ -370,6 +368,7 @@ def zenrich(
         for i in range(len(samples)):
             for peptide in peptides:
                 scatter_dict[f"sample{i}"].append(zData.loc[peptide, samples[i]])
+        scatter_df = pd.DataFrame(scatter_dict)
 
         spline_dict = {
             "x": spline_x,
@@ -380,8 +379,30 @@ def zenrich(
         color_by = color_by + ":N"
 
         # scatter plot comparing two samples
-        scatter = alt.Chart(pd.DataFrame(scatter_dict)).mark_circle(
-            size=50
+        scatter_chart = alt.Chart(scatter_df).mark_circle(size=50).encode(
+            x=alt.X("sample0:Q", title=samples[0]),
+            y=alt.Y("sample1:Q", title=samples[1]),
+            tooltip="peptide"
+        )  # TODO: take care of sample select
+        
+        spline_chart = alt.Chart(
+            pd.DataFrame(spline_dict)
+        ).mark_square(size=20).encode(
+            x="x:Q",
+            y="y:Q",
+            color=alt.Color(
+                "x:N",
+                scale=alt.Scale(range=["#FF0000"]),
+                # reference: https://github.com/altair-viz/altair/issues/620
+                legend=None
+            )
+        )
+
+        # TODO: possibly used in both use cases of zenrich - figure a way to
+        # have this go for both cases
+        highlight_df = scatter_df.loc[scatter_df["peptide"].isin(hprobes)]
+        highlight_chart = alt.Chart(highlight_df).mark_circle(
+            size=60
         ).encode(
             x=alt.X("sample0:Q", title=samples[0]),
             y=alt.Y("sample1:Q", title=samples[1]),
@@ -392,17 +413,21 @@ def zenrich(
                     "#F0E442", "#0072B2", "#D55E00",
                     "#CC79A7"
                 ]),
-                sort=threshRange,
-                legend=alt.Legend(title="Z Score Satter")
+                # TODO: figure a way to pass the species names and/or IDs
+                legend=alt.Legend(title="Leading Edge Peptides")
             ),
             tooltip="peptide"
-        )  # TODO: take care of sample select
-        spline = alt.Chart(pd.DataFrame(spline_dict)).mark_circle().encode(
-            x="x:Q",
-            y="y:Q"
-        )
-        finalChart = alt.layer(scatter, spline).properties(title="Z Score Scatter with Spline")  # TODO: get suggestion for better name
-
+        )  # TODO: integrate transform_filter()?
+        finalChart = alt.layer(
+            scatter_chart,
+            highlight_chart,
+            spline_chart
+        ).properties(
+            title="PSEA Scatter"
+        # reference: https://github.com/altair-viz/altair/issues/1030
+        ).resolve_scale(color="independent")
+        # TODO: get suggestion for better name
+        
         #create scatterplot of enriched peptides
         # scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
         #     x=alt.X(
