@@ -370,12 +370,19 @@ def zenrich(
         for i in range(len(samples)):
             for peptide in peptides:
                 scatter_dict[f"sample{i}"].append(zData.loc[peptide, samples[i]])
+
+        spline_dict = {
+            "x": spline_x,
+            "y": spline_y
+        }
         
         # set color by as nominal
         color_by = color_by + ":N"
 
         # scatter plot comparing two samples
-        scatter = alt.Chart(pd.DataFrame(scatter_dict)).mark_circle().encode(
+        scatter = alt.Chart(pd.DataFrame(scatter_dict)).mark_circle(
+            size=50
+        ).encode(
             x=alt.X("sample0:Q", title=samples[0]),
             y=alt.Y("sample1:Q", title=samples[1]),
             color=alt.Color(
@@ -390,7 +397,11 @@ def zenrich(
             ),
             tooltip="peptide"
         )  # TODO: take care of sample select
-        finalChart = alt.layer(scatter).properties(title="PSEA")  # TODO: get suggestion for better name
+        spline = alt.Chart(pd.DataFrame(spline_dict)).mark_circle().encode(
+            x="x:Q",
+            y="y:Q"
+        )
+        finalChart = alt.layer(scatter, spline).properties(title="Z Score Scatter with Spline")  # TODO: get suggestion for better name
 
         #create scatterplot of enriched peptides
         # scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
