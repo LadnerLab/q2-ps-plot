@@ -66,8 +66,8 @@ def zenrich(
         output_dir: str,
         data: PepsirfContingencyTSVFormat,
         zscores: PepsirfContingencyTSVFormat,
-        spline_x: list = None,
-        spline_y: list = None,
+        spline_x_filepath: str = None,
+        spline_y_filepath: str = None,
         flex_reps: bool = False,
         negative_controls: list = None,
         negative_id: str = None,
@@ -113,6 +113,13 @@ def zenrich(
                     for row in fin:
                         probe = row.rstrip("\n")
                         hprobes.append(probe)
+    if spline_x_filepath and spline_y_filepath:
+        spline_x = pd.read_csv(
+            spline_x_filepath, sep="\t", index_col=0
+        ).to_numpy().tolist()
+        spline_y = pd.read_csv(
+            spline_y_filepath, sep="\t", index_col=0
+        ).to_numpy().tolist() 
 
     # create temporary directory to work in
     with tempfile.TemporaryDirectory() as tempdir:
@@ -371,8 +378,8 @@ def zenrich(
         scatter_df = pd.DataFrame(scatter_dict)
 
         spline_dict = {
-            "x": spline_x,
-            "y": spline_y
+            "x": [spline_x[i] for i in range(len(spline_x))],
+            "y": [spline_y[i] for i in range(len(spline_y))]
         }
         
         # set color by as nominal

@@ -11,7 +11,7 @@ from q2_ps_plot.actions.scatter_tsv import repScatters_tsv, mutantScatters_tsv
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 from qiime2.plugin import (
     Plugin, SemanticType, model, Int, Range, MetadataColumn, Categorical, Str,
-    List, Visualization, Metadata, Bool, Float
+    List, Visualization, Metadata, Bool, Float, Metadata, Numeric
 )
 
 import importlib
@@ -45,8 +45,8 @@ shared_parameters = {
     "color_by": Str,
     "flex_reps": Bool,
     "psea": Bool,
-    "spline_x": List[Float],
-    "spline_y": List[Float]
+    "spline_x_filepath": Str,
+    "spline_y_filepath": Str
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
@@ -79,8 +79,8 @@ shared_descriptions = {
         " enriched peptide points. This parameter is case sensitive and the"
         " default is the different zscore thresholds.",
     "psea": "Specifies zenrich is creating plots for PSEA.",
-    "spline_x": "",
-    "spline_y": ""
+    "spline_x_filepath": "",
+    "spline_y_filepath": ""
 }
 
 # action set up for zenrich tsv pipeline
