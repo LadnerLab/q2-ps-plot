@@ -26,7 +26,8 @@ def volcano(
         ),
         y=alt.Y(
             "p_vals:Q",
-            title="Adjusted p-values"
+            title="Adjusted p-values",
+            sort="descending"
         ),
         # TODO: integrate tooltip
     )
