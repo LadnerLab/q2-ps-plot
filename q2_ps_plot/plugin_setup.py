@@ -426,12 +426,16 @@ plugin.visualizers.register_function(
     input_descriptions={},
     parameters={
         "p_vals": List[Float],
-        "es": List[Float]
+        "es": List[Float],
+        "p_val_thresh": Float,
+        "es_thresh": Float
     },
     parameter_descriptions={
         "p_vals": "Calculated p-values to dictate a point's position on the"
             " y-axis.",
-        "es": "Calculated Enrichment Score (ES) of genes."
+        "es": "Calculated Enrichment Score (ES) of genes.",
+        "p_val_thresh": "",
+        "es_thresh": ""
     },
     name="Volcano Visualizer",
     description=""
