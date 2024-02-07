@@ -427,6 +427,7 @@ plugin.visualizers.register_function(
     parameters={
         "p_vals": List[Float],
         "es": List[Float],
+        "taxa": List[Str],
         "p_val_thresh": Float,
         "es_thresh": Float
     },
@@ -434,8 +435,21 @@ plugin.visualizers.register_function(
         "p_vals": "Calculated p-values to dictate a point's position on the"
             " y-axis.",
         "es": "Calculated Enrichment Score (ES) of genes.",
-        "p_val_thresh": "",
-        "es_thresh": ""
+        "taxa": "List of identifiers, positionally associated with passed"
+            " p-values and enrichment scores. These identifiers will be"
+            " displayed when the user mouses over a point in the chart.",
+        "p_val_thresh": "Specifies the maximum p-value a taxa can have in"
+            " order to be highlighted in the plot. If a taxa's p-value is"
+            " greater than the provided threshold, then the taxa is not"
+            " eligible to be highlighted. Please not the taxa must also have"
+            " an ES greater than the provided ES threshold to also be eligible"
+            " for highlighting.",
+        "es_thresh": "Specifies the minimum ES a taxa can have in order to be"
+            " highlighted in the plot. If a taxa's ES is less than the"
+            " provided threshold, then the taxa is not eligible to be"
+            " highlighted. Please note the taxa must also have a p-value less"
+            " than the provided p-value threshold to also be eligible for"
+            " highlighting."
     },
     name="Volcano Visualizer",
     description=""
