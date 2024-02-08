@@ -72,6 +72,7 @@ def zenrich(
         negative_controls: list = None,
         negative_id: str = None,
         highlight_probes: PepsirfInfoSNPNFormat = None,
+        taxa: list = None,
         source: qiime2.CategoricalMetadataColumn = None,
         pn_filepath: str = None,
         peptide_metadata: qiime2.Metadata = None,
@@ -110,9 +111,9 @@ def zenrich(
     hprobes = []
     if highlight_probes:
         with open(str(highlight_probes), "r") as fin:
-                    for row in fin:
-                        probe = row.rstrip("\n")
-                        hprobes.append(probe)
+            for row in fin:
+                probe = row.rstrip("\n")
+                hprobes.append(probe)
     if spline_x_filepath and spline_y_filepath:
         spline_x = pd.read_csv(
             spline_x_filepath, sep="\t", index_col=0
@@ -367,14 +368,18 @@ def zenrich(
         # )
 
         scatter_dict = {
-            col_name: list() for col_name in ["peptide", "sample0", "sample1"]
+            "peptide": list(),
+            "sample0": list(),
+            "sample1": list()
         }
         samples = zData.columns.to_list()
         peptides = zData.index.to_list()
         scatter_dict["peptide"] = peptides
         for i in range(len(samples)):
             for peptide in peptides:
-                scatter_dict[f"sample{i}"].append(zData.loc[peptide, samples[i]])
+                scatter_dict[f"sample{i}"].append(
+                    zData.loc[peptide, samples[i]]
+                )
         scatter_df = pd.DataFrame(scatter_dict)
 
         spline_dict = {
@@ -392,6 +397,7 @@ def zenrich(
             tooltip="peptide"
         )  # TODO: take care of sample select
         
+        # spline is unique to PSEA
         spline_chart = alt.Chart(
             pd.DataFrame(spline_dict)
         ).mark_square(size=20).encode(
@@ -407,7 +413,8 @@ def zenrich(
 
         # TODO: possibly used in both use cases of zenrich - figure a way to
         # have this go for both cases
-        highlight_df = scatter_df.loc[scatter_df["peptide"].isin(hprobes)]
+        highlight_dict = scatter_df.loc[scatter_df["peptide"].isin(hprobes)].to_dict()
+        highlight_df = pd.DataFrame(highlight_dict)
         highlight_chart = alt.Chart(highlight_df).mark_circle(
             size=60
         ).encode(

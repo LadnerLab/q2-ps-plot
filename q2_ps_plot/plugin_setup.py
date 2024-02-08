@@ -46,7 +46,8 @@ shared_parameters = {
     "flex_reps": Bool,
     "psea": Bool,
     "spline_x_filepath": Str,
-    "spline_y_filepath": Str
+    "spline_y_filepath": Str,
+    "taxa": List[Str]
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
@@ -80,7 +81,8 @@ shared_descriptions = {
         " default is the different zscore thresholds.",
     "psea": "Specifies zenrich is creating plots for PSEA.",
     "spline_x_filepath": "",
-    "spline_y_filepath": ""
+    "spline_y_filepath": "",
+    "taxa": ""
 }
 
 # action set up for zenrich tsv pipeline
