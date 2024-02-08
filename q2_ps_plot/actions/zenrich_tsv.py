@@ -21,7 +21,7 @@ def zenrich_tsv(
         zscores_filepath,
         spline_x_filepath=None,
         spline_y_filepath=None,
-        taxa=None,
+        taxa_peps_filepath=None,
         flex_reps=False,
         negative_controls=None,
         negative_id=None,
@@ -37,8 +37,8 @@ def zenrich_tsv(
         lower_z_thresh=5,
         exact_z_thresh=None,
         exact_cs_thresh="20",
-        psea=False,
-        pepsirf_binary="pepsirf"):
+        pepsirf_binary="pepsirf"
+    ):
 
     # collect the zenrich module action
     zenrich = ctx.get_action("ps-plot", "zenrich")
@@ -85,7 +85,7 @@ def zenrich_tsv(
         zscores=zscores,
         spline_x_filepath=spline_x_filepath,
         spline_y_filepath=spline_y_filepath,
-        taxa=taxa,
+        taxa_peps_filepath=taxa_peps_filepath,
         flex_reps=flex_reps,
         negative_controls=negative_controls,
         negative_id=negative_id,
@@ -101,7 +101,6 @@ def zenrich_tsv(
         lower_z_thresh=lower_z_thresh,
         exact_z_thresh=exact_z_thresh,
         exact_cs_thresh=exact_cs_thresh,
-        psea_plot=psea_plot,
         pepsirf_binary=pepsirf_binary
     )
 

@@ -44,10 +44,9 @@ shared_parameters = {
     "tooltip": List[Str],
     "color_by": Str,
     "flex_reps": Bool,
-    "psea": Bool,
     "spline_x_filepath": Str,
     "spline_y_filepath": Str,
-    "taxa": List[Str]
+    "taxa_peps_filepath": Str
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
@@ -79,10 +78,9 @@ shared_descriptions = {
     "color_by": "A column within the metadata file to base the coloring of the"
         " enriched peptide points. This parameter is case sensitive and the"
         " default is the different zscore thresholds.",
-    "psea": "Specifies zenrich is creating plots for PSEA.",
     "spline_x_filepath": "",
     "spline_y_filepath": "",
-    "taxa": ""
+    "taxa_peps_filepath": ""
 }
 
 # action set up for zenrich tsv pipeline

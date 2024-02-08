@@ -71,8 +71,8 @@ def zenrich(
         flex_reps: bool = False,
         negative_controls: list = None,
         negative_id: str = None,
+        taxa_peps_filepath: str = None,
         highlight_probes: PepsirfInfoSNPNFormat = None,
-        taxa: list = None,
         source: qiime2.CategoricalMetadataColumn = None,
         pn_filepath: str = None,
         peptide_metadata: qiime2.Metadata = None,
@@ -84,7 +84,6 @@ def zenrich(
         lower_z_thresh: int = 5,
         exact_z_thresh: list = None,
         exact_cs_thresh: str = "20",
-        psea: bool = False,  # TODO: revisit necessity
         pepsirf_binary: str = "pepsirf"
     ) -> None:
 
@@ -114,6 +113,17 @@ def zenrich(
             for row in fin:
                 probe = row.rstrip("\n")
                 hprobes.append(probe)
+    elif taxa_peps_filepath:
+        taxa_peps_dict = {}
+        with open(taxa_peps_filepath, "r") as fh:
+            lines = [
+                line.replace("\n", "").split("\t") for line in fh.readlines()
+            ]
+        for line in lines:
+            taxa = line.pop(0)
+            taxa_peps_dict[taxa] = line
+            hprobes.extend(line)
+    
     if spline_x_filepath and spline_y_filepath:
         spline_x = pd.read_csv(
             spline_x_filepath, sep="\t", index_col=0
@@ -413,15 +423,21 @@ def zenrich(
 
         # TODO: possibly used in both use cases of zenrich - figure a way to
         # have this go for both cases
-        highlight_dict = scatter_df.loc[scatter_df["peptide"].isin(hprobes)].to_dict()
-        highlight_df = pd.DataFrame(highlight_dict)
+        highlight_df = scatter_df.loc[scatter_df["peptide"].isin(hprobes)]
+        sig_taxa = []
+        for pep in highlight_df.loc[:, "peptide"].to_list():
+            for taxa, leading_peps in taxa_peps_dict.items():
+                if pep in leading_peps:
+                    sig_taxa.append(taxa)
+        highlight_df.insert(0, "sig-taxa", sig_taxa, True)
+        print(f"Highlight DataFrame:\n{highlight_df}")
         highlight_chart = alt.Chart(highlight_df).mark_circle(
             size=60
         ).encode(
             x=alt.X("sample0:Q", title=samples[0]),
             y=alt.Y("sample1:Q", title=samples[1]),
             color=alt.Color(
-                "peptide:N",
+                "sig-taxa:N",
                 scale=alt.Scale(range=[
                     "#E69F00", "#56B4E9", "#009E73",
                     "#F0E442", "#0072B2", "#D55E00",
