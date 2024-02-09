@@ -12,7 +12,7 @@ def volcano(
     es: list,
     taxa: list,
     p_val_thresh: float,
-    es_thresh: float
+    es_thresh: float = 0.4
 ) -> None:
     # TODO: change into temp directory
     alt.data_transformers.enable("default", max_rows=None)
@@ -20,7 +20,9 @@ def volcano(
     volcano_dict = {"p-vals": p_vals, "es": es}
     volcano_df = pd.DataFrame(volcano_dict)
 
-    volcano_chart = alt.Chart(volcano_df).mark_circle(size=50).encode(
+    volcano_chart = alt.Chart(volcano_df).mark_circle(
+        size=50, color="black"
+    ).encode(
         x=alt.X(
             "es:Q",
             title="Enrichment score"
@@ -38,7 +40,7 @@ def volcano(
         sig_taxa_dict = {"id": list(), "p-vals": list(), "es": list()}
         # TODO: assuming taxa, p_vals, and es are the same length
         for i in range(len(taxa)):
-            if p_vals[i] < p_val_thresh and es[i] > es_thresh:
+            if p_vals[i] < p_val_thresh and abs(es[i]) > es_thresh:
                 sig_taxa_dict["id"].append(taxa[i])
                 sig_taxa_dict["p-vals"].append(p_vals[i])
                 sig_taxa_dict["es"].append(es[i])
