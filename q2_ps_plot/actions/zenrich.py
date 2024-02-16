@@ -71,7 +71,9 @@ def zenrich(
         flex_reps: bool = False,
         negative_controls: list = None,
         negative_id: str = None,
-        taxa_peps_filepath: str = None,
+        p_val_thresh: float = 0.05,
+        p_vals: list = None,
+        taxa_peps_md: qiime2.Metadata = None,
         highlight_probes: PepsirfInfoSNPNFormat = None,
         source: qiime2.CategoricalMetadataColumn = None,
         pn_filepath: str = None,
@@ -113,16 +115,6 @@ def zenrich(
             for row in fin:
                 probe = row.rstrip("\n")
                 hprobes.append(probe)
-    elif taxa_peps_filepath:
-        taxa_peps_dict = {}
-        with open(taxa_peps_filepath, "r") as fh:
-            lines = [
-                line.replace("\n", "").split("\t") for line in fh.readlines()
-            ]
-        for line in lines:
-            taxa = line.pop(0)
-            taxa_peps_dict[taxa] = line
-            hprobes.extend(line)
     
     if spline_x_filepath and spline_y_filepath:
         spline_x = pd.read_csv(
@@ -392,21 +384,59 @@ def zenrich(
                 )
         scatter_df = pd.DataFrame(scatter_dict)
 
+        # TODO: check for call from PSEA
+        heatmap_dict = {
+            "bin_x_start": list(), "bin_x_end": list(), "bin_y_start": list(),
+            "bin_y_end": list(), "count": list()
+        }
+        heatmap, x_edges, y_edges = np.histogram2d(
+            scatter_df.loc[:, "sample0"],
+            scatter_df.loc[:, "sample1"],
+            bins=(70, 70)
+        )
+        for x in range(0, heatmap.shape[0]):
+            for y in range(0, heatmap.shape[1]):
+                # assumes count is for a peptide
+                count = heatmap[x, y]
+                if count == 0.0:
+                    continue
+                bin_x_start = x_edges[x]
+                bin_x_end = x_edges[x + 1]
+                bin_y_start = y_edges[y]
+                bin_y_end = y_edges[y + 1]
+
+                heatmap_dict["bin_x_start"].append(bin_x_start)
+                heatmap_dict["bin_x_end"].append(bin_x_end)
+                heatmap_dict["bin_y_start"].append(bin_y_start)
+                heatmap_dict["bin_y_end"].append(bin_y_end)
+                heatmap_dict["count"].append(count)
+        heatmap_df = pd.DataFrame(heatmap_dict)
+        xy_max = heatmap_df.loc[:, ["bin_x_end", "bin_y_end"]].max()
+        ratio = (xy_max[0] / xy_max[1]) - 1
+        chart_height = 500
+        chart_width = chart_height + (20*ratio)
+
+        # set color by as nominal
+        color_by = color_by + ":N"
+
+        heatmap_chart = alt.Chart(
+            heatmap_df, width=chart_width, height=chart_height
+        ).mark_rect().encode(
+            alt.X("bin_x_start:Q"),
+            alt.X2("bin_x_end:Q"),
+            alt.Y("bin_y_start:Q"),
+            alt.Y2("bin_y_end:Q"),
+            alt.Color(
+                "count:Q",
+                scale=alt.Scale(scheme="greys"),
+                legend=alt.Legend(title="Point Frequency")
+            )
+        )
+        
         spline_dict = {
             "x": [spline_x[i] for i in range(len(spline_x))],
             "y": [spline_y[i] for i in range(len(spline_y))]
         }
-        
-        # set color by as nominal
-        color_by = color_by + ":N"
-
-        # scatter plot comparing two samples
-        scatter_chart = alt.Chart(scatter_df).mark_circle(size=50).encode(
-            x=alt.X("sample0:Q", title=samples[0]),
-            y=alt.Y("sample1:Q", title=samples[1]),
-            tooltip="peptide"
-        )  # TODO: take care of sample select
-        
         # spline is unique to PSEA
         spline_chart = alt.Chart(
             pd.DataFrame(spline_dict)
@@ -420,43 +450,63 @@ def zenrich(
                 legend=None
             )
         )
+        final_chart = alt.layer(heatmap_chart)
 
         # TODO: possibly used in both use cases of zenrich - figure a way to
         # have this go for both cases
-        highlight_df = scatter_df.loc[scatter_df["peptide"].isin(hprobes)]
-        sig_taxa = []
-        for pep in highlight_df.loc[:, "peptide"].to_list():
-            for taxa, leading_peps in taxa_peps_dict.items():
-                if pep in leading_peps:
-                    sig_taxa.append(taxa)
-        highlight_df.insert(0, "sig-taxa", sig_taxa, True)
-        print(f"Highlight DataFrame:\n{highlight_df}")
-        highlight_chart = alt.Chart(highlight_df).mark_circle(
-            size=60
-        ).encode(
-            x=alt.X("sample0:Q", title=samples[0]),
-            y=alt.Y("sample1:Q", title=samples[1]),
-            color=alt.Color(
-                "sig-taxa:N",
-                scale=alt.Scale(range=[
-                    "#E69F00", "#56B4E9", "#009E73",
-                    "#F0E442", "#0072B2", "#D55E00",
-                    "#CC79A7"
-                ]),
-                # TODO: figure a way to pass the species names and/or IDs
-                legend=alt.Legend(title="Leading Edge Peptides")
-            ),
-            tooltip="peptide"
-        )  # TODO: integrate transform_filter()?
-        finalChart = alt.layer(
-            scatter_chart,
-            highlight_chart,
-            spline_chart
-        ).properties(
-            title="PSEA Scatter"
-        # reference: https://github.com/altair-viz/altair/issues/1030
-        ).resolve_scale(color="independent")
-        # TODO: get suggestion for better name
+        if taxa_peps_md and p_vals:
+            taxa_peps_df = taxa_peps_md.to_dataframe()
+            highlight_dict = {
+                "peptide": list(), "sample0": list(),
+                "sample1": list(), "sig-taxa": list()
+            }
+            for i in range(len(p_vals)):
+                if p_vals[i] < p_val_thresh:
+                    le_peps = taxa_peps_df.iloc[i, 1].split("/")
+                    sig_taxa = taxa_peps_df.iloc[i, 0]
+                    for le_pep in le_peps:
+                        highlight_dict["sample0"].append(
+                            zData.loc[le_pep, samples[0]]
+                        )
+                        highlight_dict["sample1"].append(
+                            zData.loc[le_pep, samples[1]]
+                        )
+                        highlight_dict["peptide"].append(le_pep)
+                        highlight_dict["sig-taxa"].append(sig_taxa)
+            highlight_df = pd.DataFrame(highlight_dict)
+            
+            highlight_chart = alt.Chart(highlight_df).mark_point(
+                filled=True, size=60
+            ).encode(
+                x=alt.X("sample0:Q", title=samples[0]),
+                y=alt.Y("sample1:Q", title=samples[1]),
+                color=alt.Color(
+                    "sig-taxa:N",
+                    scale=alt.Scale(range=[
+                        "#E69F00", "#56B4E9", "#009E73",
+                        "#F0E442", "#0072B2", "#D55E00",
+                        "#CC79A7"
+                    ]),
+                    legend=alt.Legend(title="Significant Taxa")
+                ),
+                # https://github.com/altair-viz/altair/issues/1181
+                shape=alt.Shape(
+                    "sig-taxa:N",
+                    legend=None
+                ),
+                tooltip="peptide"
+            )
+            final_chart = alt.layer(
+                final_chart,
+                highlight_chart
+            ).resolve_scale(
+                color="independent",
+                shape="independent"
+            )
+
+        final_chart = alt.layer(
+            final_chart, spline_chart
+        )
         
         #create scatterplot of enriched peptides
         # scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
@@ -553,6 +603,6 @@ def zenrich(
         #otherwise, save the final chart without the higlighted probes
         # else:
         #     finalChart.save(os.path.join(output_dir, "index.html"))
-        finalChart.save(os.path.join(output_dir, "index.html"))
+        final_chart.save(os.path.join(output_dir, "index.html"))
 
     os.chdir(old)

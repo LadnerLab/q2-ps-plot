@@ -46,7 +46,9 @@ shared_parameters = {
     "flex_reps": Bool,
     "spline_x_filepath": Str,
     "spline_y_filepath": Str,
-    "taxa_peps_filepath": Str
+    "taxa_peps_md": Metadata,
+    "p_val_thresh": Float,
+    "p_vals": List[Float]
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
@@ -80,7 +82,9 @@ shared_descriptions = {
         " default is the different zscore thresholds.",
     "spline_x_filepath": "",
     "spline_y_filepath": "",
-    "taxa_peps_filepath": ""
+    "taxa_peps_md": "",
+    "p_val_thresh": "",
+    "p_vals": ""
 }
 
 # action set up for zenrich tsv pipeline
@@ -428,6 +432,8 @@ plugin.visualizers.register_function(
         "p_vals": List[Float],
         "es": List[Float],
         "taxa": List[Str],
+        "x_label": Str,
+        "y_label": Str,
         "p_val_thresh": Float,
         "es_thresh": Float
     },
@@ -438,6 +444,8 @@ plugin.visualizers.register_function(
         "taxa": "List of identifiers, positionally associated with passed"
             " p-values and enrichment scores. These identifiers will be"
             " displayed when the user mouses over a point in the chart.",
+        "x_label": "Name of plot's x-axis.",
+        "y_label": "Name of plot's y-axis.",
         "p_val_thresh": "Specifies the maximum p-value a taxa can have in"
             " order to be highlighted in the plot. If a taxa's p-value is"
             " greater than the provided threshold, then the taxa is not"
