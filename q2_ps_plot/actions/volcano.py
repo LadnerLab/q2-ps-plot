@@ -8,71 +8,92 @@ import pandas as pd
 # TODO: suggest making this action as general as possible
 def volcano(
         output_dir: str, 
-        p_vals: list,
-        es: list,
+        y: list,
+        x: list,
         taxa: list,
-        x_label: str = None,
-        y_label: str = None,
-        p_val_thresh: float = 0.05,
-        es_thresh: float = 0.4
+        y_thresh: float = 0.05,
+        x_thresh: float = 0.4,
+        log: bool = True,
+        x_label: str = "x",
+        y_label: str = "y",
+        title: str = ""
 ) -> None:
     # TODO: change into temp directory
     alt.data_transformers.enable("default", max_rows=None)
 
-    log_adjusted_p_vals = -np.log10(p_vals)
-
-    volcano_dict = {"adjust-p-vals": log_adjusted_p_vals, "es": es}
+    if log:
+        log_adjusted_y = -np.log10(y)
+        volcano_dict = {"y": log_adjusted_y, "x": x}
+        sig_taxa_df = make_sig_taxa_df(
+            log_adjusted_y, x, taxa, y, y_thresh, x_thresh
+        )
+        sort = "ascending"
+    else:
+        volcano_dict = {"y": y, "x": x}
+        sig_taxa_df = make_sig_taxa_df(y, x, taxa, y, y_thresh, x_thresh)
+        sort = "descending"
     volcano_df = pd.DataFrame(volcano_dict)
 
     volcano_chart = alt.Chart(volcano_df).mark_circle(
         size=50, color="black"
     ).encode(
         x=alt.X(
-            "es:Q",
+            "x:Q",
             title=x_label
         ),
         y=alt.Y(
-            "adjust-p-vals:Q",
-            title=y_label
+            "y:Q",
+            title=y_label,
+            sort=sort
         ),
-        # TODO: integrate tooltip?
     )
+    final_chart = alt.layer(volcano_chart)
 
-    sig_taxa_dict = {"id": list(), "adjust-p-vals": list(), "es": list()}
-    # TODO: assuming taxa, log_adjusted_p_vals, and es are the same length
-    for i in range(len(taxa)):
-        if p_vals[i] < p_val_thresh and abs(es[i]) > es_thresh:
-            sig_taxa_dict["id"].append(taxa[i])
-            sig_taxa_dict["adjust-p-vals"].append(log_adjusted_p_vals[i])
-            sig_taxa_dict["es"].append(es[i])
-    sig_taxa_df = pd.DataFrame(sig_taxa_dict)
+    if sig_taxa_df is not None:
+        sig_taxa = alt.Chart(sig_taxa_df).mark_circle(size=60).encode(
+            x=alt.X(
+                "x:Q",
+                title=x_label
+            ),
+            y=alt.Y(
+                "y:Q",
+                title=y_label,
+                sort=sort
+            ),
+            color=alt.Color(
+                "taxa:N",
+                scale=alt.Scale(range=[
+                    "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00",
+                    "#CC79A7"
+                ]),
+                legend=None
+            ),
+            tooltip="taxa"
+        )
+        final_chart = alt.layer(final_chart, sig_taxa).resolve_scale(
+            color="independent"
+        )
 
-    sig_taxa = alt.Chart(sig_taxa_df).mark_circle(size=60).encode(
-        x=alt.X(
-            "es:Q",
-            title=x_label
-        ),
-        y=alt.Y(
-            "adjust-p-vals:Q",
-            title=y_label
-        ),
-        color=alt.Color(
-            "id:N",
-            scale=alt.Scale(range=[
-                "#E69F00", "#56B4E9", "#009E73",
-                "#F0E442", "#0072B2", "#D55E00",
-                "#CC79A7"
-            ]),
-            legend=None  # TODO: do we want a legend?
-        ),
-        tooltip="id"
-    )
-
-    final_chart = alt.layer(
-        volcano_chart,
-        sig_taxa
-    ).properties(
-        title="PSEA"  # TODO: get suggestion for a better name
-    ).resolve_scale(color="independent")
-
+    final_chart.properties(title=title)
     final_chart.save(os.path.join(output_dir, "index.html"))
+
+
+def make_sig_taxa_df(
+    y,
+    x,
+    taxa,
+    y_test,
+    y_thresh,
+    x_thresh
+) -> pd.DataFrame:
+    if taxa is None:
+        return None
+
+    sig_taxa_dict = {"taxa": list(), "y": list(), "x": list()}
+    for i in range(len(taxa)):
+        if y_test[i] < y_thresh and abs(x[i]) > x_thresh:
+            sig_taxa_dict["taxa"].append(taxa[i])
+            sig_taxa_dict["y"].append(y[i])
+            sig_taxa_dict["x"].append(x[i])
+    return pd.DataFrame(sig_taxa_dict)

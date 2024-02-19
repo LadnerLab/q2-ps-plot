@@ -429,36 +429,43 @@ plugin.visualizers.register_function(
     inputs={},
     input_descriptions={},
     parameters={
-        "p_vals": List[Float],
-        "es": List[Float],
+        "y": List[Float],
+        "x": List[Float],
         "taxa": List[Str],
+        "y_thresh": Float,
+        "x_thresh": Float,
+        "log": Bool,
         "x_label": Str,
         "y_label": Str,
-        "p_val_thresh": Float,
-        "es_thresh": Float
+        "title": Str
     },
     parameter_descriptions={
-        "p_vals": "Calculated p-values to dictate a point's position on the"
-            " y-axis.",
-        "es": "Calculated Enrichment Score (ES) of genes.",
+        "x": "Coordinates along the x-axis at which to plot points.",
+        "y": "Coordinates along the y-axis at which to plot points.",
         "taxa": "List of identifiers, positionally associated with passed"
             " p-values and enrichment scores. These identifiers will be"
             " displayed when the user mouses over a point in the chart.",
-        "x_label": "Name of plot's x-axis.",
-        "y_label": "Name of plot's y-axis.",
-        "p_val_thresh": "Specifies the maximum p-value a taxa can have in"
+        "x_thresh": "Specifies the minimum ES a taxa can have in order to be"
+            " highlighted in the plot. If a taxa's ES is less than the"
+            " provided threshold, then the taxa is not eligible to be"
+            " highlighted. Please note the taxa must also have a p-value less"
+            " than the provided p-value threshold to also be eligible for"
+            " highlighting.",
+        "y_thresh": "Specifies the maximum p-value a taxa can have in"
             " order to be highlighted in the plot. If a taxa's p-value is"
             " greater than the provided threshold, then the taxa is not"
             " eligible to be highlighted. Please not the taxa must also have"
             " an ES greater than the provided ES threshold to also be eligible"
             " for highlighting.",
-        "es_thresh": "Specifies the minimum ES a taxa can have in order to be"
-            " highlighted in the plot. If a taxa's ES is less than the"
-            " provided threshold, then the taxa is not eligible to be"
-            " highlighted. Please note the taxa must also have a p-value less"
-            " than the provided p-value threshold to also be eligible for"
-            " highlighting."
+        "log": "Specifies whether to or not transform y values. If True, the"
+            " log (base 10) of the y values will be plotted in ascending"
+            " order; otherwise, the passed y values will be plotted in"
+            " descending order.",
+        "x_label": "Name of plot's x-axis.",
+        "y_label": "Name of plot's y-axis.",
+        "title": "Name of the resulting plot."
     },
     name="Volcano Visualizer",
-    description=""
+    description="Generates a volcano plot given x and y values. Significant"
+        " points will be highlighted is identifiers are provided."
 )
