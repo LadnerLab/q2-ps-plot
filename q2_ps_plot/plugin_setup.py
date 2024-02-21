@@ -469,3 +469,30 @@ plugin.visualizers.register_function(
     description="Generates a volcano plot given x and y values. Significant"
         " points will be highlighted is identifiers are provided."
 )
+
+
+plugin.visualizers.register_function(
+    function=actions.zscatter,
+    inputs={
+        "zscores": FeatureTable[Zscore],
+    },
+    input_descriptions={
+        "zscores": "Matrix of Z scores."
+    },
+    parameters={
+        "spline_md": Metadata,
+        "highlight_thresh": Float,
+        "highlight_md": Metadata
+    },
+    parameter_descriptions={
+        "spline_md": "Table with x and y coordinates from spline"
+            " operation.",
+        "highlight_thresh": "Maximum value queries can be to be highlighted.",
+        "highlight_md": "Table with legend and tooltip information for"
+            " highlighting. For example, passing species names and associated"
+            " peptides will vary the mark and color based on species, and"
+            " provide the peptide name when the mouse is over a mark."
+    },
+    name="zscatter",
+    description=""
+)
