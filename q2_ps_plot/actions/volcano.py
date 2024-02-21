@@ -15,8 +15,7 @@ def volcano(
         x_thresh: float = 0.4,
         log: bool = True,
         x_label: str = "x",
-        y_label: str = "y",
-        title: str = ""
+        y_label: str = "y"
 ) -> None:
     # TODO: change into temp directory
     alt.data_transformers.enable("default", max_rows=None)
@@ -75,7 +74,6 @@ def volcano(
             color="independent"
         )
 
-    final_chart.properties(title=title)
     final_chart.save(os.path.join(output_dir, "index.html"))
 
 

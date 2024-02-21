@@ -66,14 +66,9 @@ def zenrich(
         output_dir: str,
         data: PepsirfContingencyTSVFormat,
         zscores: PepsirfContingencyTSVFormat,
-        spline_x_filepath: str = None,
-        spline_y_filepath: str = None,
         flex_reps: bool = False,
         negative_controls: list = None,
         negative_id: str = None,
-        p_val_thresh: float = 0.05,
-        p_vals: list = None,
-        taxa_peps_md: qiime2.Metadata = None,
         highlight_probes: PepsirfInfoSNPNFormat = None,
         source: qiime2.CategoricalMetadataColumn = None,
         pn_filepath: str = None,
@@ -86,62 +81,44 @@ def zenrich(
         lower_z_thresh: int = 5,
         exact_z_thresh: list = None,
         exact_cs_thresh: str = "20",
-        pepsirf_binary: str = "pepsirf"
-    ) -> None:
+        pepsirf_binary: str = "pepsirf") -> None:
 
     old = os.getcwd()
 
-    # collect absolute filepath of pairs file
-    # if pn_filepath:
-    #     pairsFile = os.path.abspath(pn_filepath)
-        
-    # get list of thresholds
-    if not exact_z_thresh:
-        threshRange = list(reversed(range(
-            lower_z_thresh, upper_z_thresh, step_z_thresh
-        )))
-    else:
-        threshRange = exact_z_thresh
+    #collect absolute filepath of pairs file
+    if pn_filepath:
+        pairsFile = os.path.abspath(pn_filepath)
 
-    # collect absolute filepath of
-    # if os.path.isfile(pepsirf_binary):
-    #     pepsirf_binary = os.path.abspath(pepsirf_binary)
-    #     pepsirf_binary = "%s" % pepsirf_binary
+    #collect absolute filepath of
+    if os.path.isfile(pepsirf_binary):
+        pepsirf_binary = os.path.abspath(pepsirf_binary)
+        pepsirf_binary = "%s" % pepsirf_binary
 
     # collect probe names in a list if higlighted is provided
-    hprobes = []
+    peptides = []
     if highlight_probes:
         with open(str(highlight_probes), "r") as fin:
-            for row in fin:
-                probe = row.rstrip("\n")
-                hprobes.append(probe)
-    
-    if spline_x_filepath and spline_y_filepath:
-        spline_x = pd.read_csv(
-            spline_x_filepath, sep="\t", index_col=0
-        ).to_numpy().tolist()
-        spline_y = pd.read_csv(
-            spline_y_filepath, sep="\t", index_col=0
-        ).to_numpy().tolist() 
+                    for row in fin:
+                        pep = row.rstrip("\n")
+                        peptides.append(pep)
 
-    # create temporary directory to work in
+    #create temporary directory to work in
     with tempfile.TemporaryDirectory() as tempdir:
         os.chdir(tempdir)
 
         # check for invocation with flexible reps and create replicate file
-        # if source and flex_reps:
-        #     pairsFile = os.path.join(tempdir, "pairs.tsv")
-        #     _make_reps_file(source, pairsFile)
-        # otherwise, assume invocation with pair inferrencing and create pairs
-        # file
-        # elif source:
-        #     pairsFile = os.path.join(tempdir, "pairs.tsv")
-        #     _make_pairs_file(source, pairsFile)
+        if source and flex_reps:
+            pairsFile = os.path.join(tempdir, "pairs.tsv")
+            _make_reps_file(source, pairsFile)
+            
+        elif source: # assume invocation with pair inferrencing and create pairs file
+            pairsFile = os.path.join(tempdir, "pairs.tsv")
+            _make_pairs_file(source, pairsFile)
 
         #flip data frame
-        # data_file = str(data)
-        # data = data.view(pd.DataFrame)
-        # data = data.transpose()
+        data_file = str(data)
+        data = data.view(pd.DataFrame)
+        data = data.transpose()
 
         #put zscores data into dataframe and flip
         zBiom = zscores.view(BIOMV210Format)
@@ -149,460 +126,331 @@ def zenrich(
         zData = zData.transpose()
 
         #set negative matrix
-        # if negative_data is None:
-        #     negative_data = data
-        # else:
-        #     negative_data = negative_data.transpose()
+        if negative_data is None:
+            negative_data = data
+        else:
+            negative_data = negative_data.transpose()
 
-        # if negative_id and not negative_controls:
-        #         negative_controls = []
-        #         neg_cont = negative_data.columns
-        #         for samp in neg_cont:
-        #             if samp.startswith(negative_id):
-        #                 negative_controls.append(samp)
+        if negative_id and not negative_controls:
+                negative_controls = []
+                neg_cont = negative_data.columns
+                for samp in neg_cont:
+                    if samp.startswith(negative_id):
+                        negative_controls.append(samp)
 
         #set max rows for altair to none
         alt.data_transformers.enable("default", max_rows=None)
 
         #values created by user input
-        # threshFile = "tempThreshFile.tsv"
+        threshFile = "tempThreshFile.tsv"
 
         #set values for pepsirf
-        # outSuffix = "_tempEnriched.txt"
-        # failOut = "enrichFail.txt"
-        # outputDir = []
+        outSuffix = "_tempEnriched.txt"
+        failOut = "enrichFail.txt"
+        outputDir = []
 
         #convert colsum data to pandas data frame
-        # peptideNames = negative_data.index
+        peptideNames = negative_data.index
+
+        #get list of thresholds
+        if not exact_z_thresh:
+            threshRange = list(reversed(range(
+                lower_z_thresh, upper_z_thresh, step_z_thresh
+            )))
+        else:
+            threshRange = exact_z_thresh
 
         #iterate through thresholds and generate threshold file to be used to
         #get enriched peptide
-        # for score in threshRange:
-        #     outputDir.append(str(score))
-        #     #write the threshold file for specified zscore
-        #     with open(threshFile, "w", newline="") as out_file:
-        #             tsv_writer = csv.writer(out_file, delimiter="\t")
-        #             tsv_writer.writerow([str(zscores), score])
-        #             tsv_writer.writerow([str(data_file), str(exact_cs_thresh)])
+        for score in threshRange:
+            outputDir.append(str(score))
+            #write the threshold file for specified zscore
+            with open(threshFile, "w", newline="") as out_file:
+                    tsv_writer = csv.writer(out_file, delimiter="\t")
+                    tsv_writer.writerow([str(zscores), score])
+                    tsv_writer.writerow([str(data_file), str(exact_cs_thresh)])
 
-        #     #run p enrich module
-        #     cmd = (
-        #         "%s enrich -t %s -s %s"
-        #         " -x %s -o %s -f %s >> enrich.out"
-        #         % (
-        #             pepsirf_binary, threshFile, pairsFile,
-        #             outSuffix, str(score), failOut
-        #         )
-        #     )
-        #     subprocess.run(cmd, shell=True)
+            #run p enrich module
+            cmd = (
+                "%s enrich -t %s -s %s"
+                " -x %s -o %s -f %s >> enrich.out"
+                % (
+                    pepsirf_binary, threshFile, pairsFile,
+                    outSuffix, str(score), failOut
+                )
+            )
+            subprocess.run(cmd, shell=True)
 
         #create empty dicionaries to collect all sample names and
         #sample/peptide combos
-        # dropNames = {}
-        # pepSamp = {}
+        dropNames = {}
+        pepSamp = {}
 
         #create empty dictionary of lists to collect enriched peptides
-        # enrDict = defaultdict(list)
-        # columnNms = [
-        #     "Peptide", "sample", "sample_value",
-        #     "negative_control", "z_score_threshold", "Zscores"
-        # ]
-        # for nm in columnNms:
-        #     enrDict[nm]
+        enrDict = defaultdict(list)
+        columnNms = [
+            "Peptide", "sample", "sample_value",
+            "negative_control", "z_score_threshold", "Zscores"
+        ]
+        for nm in columnNms:
+            enrDict[nm]
 
         #iterate through created directories
-        # for oD in outputDir:
-        #     enrFiles = glob.glob("%s/*%s" % (oD, outSuffix))
+        for oD in outputDir:
+            enrFiles = glob.glob("%s/*%s" % (oD, outSuffix))
 
-        #     #iterate through enriched files to gather the peptides
-        #     for file in enrFiles:
+            #iterate through enriched files to gather the peptides
+            for file in enrFiles:
 
-        #         #get individual sample names
-        #         sNames = os.path.basename(file).split(outSuffix)[0].split("~")
+                #get individual sample names
+                sNames = os.path.basename(file).split(outSuffix)[0].split("~")
 
-        #         #get joined sample name
-        #         sample = "~".join(sNames)
+                #get joined sample name
+                sample = "~".join(sNames)
 
-        #         #generate a list of sample names
-        #         if sample not in dropNames:
-        #             dropNames[sample] = ""
+                #generate a list of sample names
+                if sample not in dropNames:
+                    dropNames[sample] = ""
 
-        #         #collect information for the pandas data frame
-        #         with open(file, "r") as fin:
-        #             for row in fin:
-        #                 pep = row.rstrip()
-        #                 if pep:
-        #                     if (pep,sample) not in pepSamp:
-        #                         x = np.mean([float(negative_data[sn][pep])
-        #                                      for sn in negative_controls])
-        #                         y = np.mean([float(data[sn][pep])
-        #                                      for sn in sNames])
-        #                         z = [zData[sn][pep] for sn in sNames]
-        #                         zToStr = ", ".join([str(elem) for elem in z])
+                #collect information for the pandas data frame
+                with open(file, "r") as fin:
+                    for row in fin:
+                        pep = row.rstrip()
+                        if pep:
+                            if (pep,sample) not in pepSamp:
+                                x = np.mean([float(negative_data[sn][pep])
+                                             for sn in negative_controls])
+                                y = np.mean([float(data[sn][pep])
+                                             for sn in sNames])
+                                z = [zData[sn][pep] for sn in sNames]
+                                zToStr = ", ".join([str(elem) for elem in z])
 
-        #                         #add all enriched peptide info to enriched
-        #                         #dictionary
-        #                         enrDict["Peptide"].append(pep)
-        #                         enrDict["sample"].append(sample)
-        #                         enrDict["sample_value"].append(np.log10(y + 1))
-        #                         enrDict[
-        #                             "negative_control"
-        #                         ].append(np.log10(x + 1))
-        #                         enrDict["z_score_threshold"].append(oD)
-        #                         enrDict["Zscores"].append(zToStr)
-        #                         pepSamp[(pep,sample)] = ""
+                                #add all enriched peptide info to enriched
+                                #dictionary
+                                enrDict["Peptide"].append(pep)
+                                enrDict["sample"].append(sample)
+                                enrDict["sample_value"].append(np.log10(y + 1))
+                                enrDict[
+                                    "negative_control"
+                                ].append(np.log10(x + 1))
+                                enrDict["z_score_threshold"].append(oD)
+                                enrDict["Zscores"].append(zToStr)
+                                pepSamp[(pep,sample)] = ""
 
-        #     #check if there were any samples that had no enriched peptides
-        #     if os.path.exists(os.path.join(oD, failOut)):
+            #check if there were any samples that had no enriched peptides
+            if os.path.exists(os.path.join(oD, failOut)):
 
-        #         #add sample names that have no enriched peptides to dropNames
-        #         #dict
-        #         with open(os.path.join(oD, failOut), "r") as fh:
-        #             lines = fh.readlines()
-        #             c = 0
-        #             for ln in lines:
-        #                 fail = ln.rstrip("\n").split("\t")
-        #                 samp = "~".join(fail[0].split(", "))
-        #                 if (c > 0 and fail[1] == "No enriched peptides"
-        #                     and samp not in dropNames):
-        #                     dropNames[samp] = ""
-        #                 c += 1
+                #add sample names that have no enriched peptides to dropNames
+                #dict
+                with open(os.path.join(oD, failOut), "r") as fh:
+                    lines = fh.readlines()
+                    c = 0
+                    for ln in lines:
+                        fail = ln.rstrip("\n").split("\t")
+                        samp = "~".join(fail[0].split(", "))
+                        if (c > 0 and fail[1] == "No enriched peptides"
+                            and samp not in dropNames):
+                            dropNames[samp] = ""
+                        c += 1
 
         #convert eriched dictionary to enriched data frame
-        # enrichedDf = pd.DataFrame(enrDict)
+        enrichedDf = pd.DataFrame(enrDict)
 
         #collect peptide metadata information and add it to the enriched data
         #frame
-        # if peptide_metadata:
-        #     metaDf = peptide_metadata.to_dataframe()
-        #     enrichedDf = metaDf.merge(
-        #         enrichedDf, how="right",
-        #         right_on="Peptide", left_index=True
-        #     )
+        if peptide_metadata:
+            metaDf = peptide_metadata.to_dataframe()
+            enrichedDf = metaDf.merge(
+                enrichedDf, how="right",
+                right_on="Peptide", left_index=True
+            )
 
-        #     #add pepsirf to tooltip list and add data type to each item
-        #     tooltip.insert(0, "Peptide")
-        #     tooltip.insert(1, "Zscores")
-        #     i = 0
-        #     for title in tooltip:
-        #         tooltip[i] += ":N"
-        #         i += 1
-        # else:
-        #     tooltip = ["Peptide:N", "Zscores:N"]
+            #add pepsirf to tooltip list and add data type to each item
+            tooltip.insert(0, "Peptide")
+            tooltip.insert(1, "Zscores")
+            i = 0
+            for title in tooltip:
+                tooltip[i] += ":N"
+                i += 1
+        else:
+            tooltip = ["Peptide:N", "Zscores:N"]
 
         # if highlighted probes provided, collect all of the peptides and put
         # into new df
-        # if highlight_probes:
-        #     highlightDf = enrichedDf.loc[enrichedDf["Peptide"].isin(peptides)]
+        if highlight_probes:
+            highlightDf = enrichedDf.loc[enrichedDf["Peptide"].isin(peptides)]
 
         #create empty directory to collect all heatmap information
-        # hmDic = defaultdict(list)
-        # columnNms = [
-        #     "sample", "bin_x_start", "bin_x_end",
-        #     "bin_y_start", "bin_y_end", "count"
-        # ]
-        # for nm in columnNms:
-        #     hmDic[nm]
+        hmDic = defaultdict(list)
+        columnNms = [
+            "sample", "bin_x_start", "bin_x_end",
+            "bin_y_start", "bin_y_end", "count"
+        ]
+        for nm in columnNms:
+            hmDic[nm]
 
-        # #collect x axis data
-        # x = np.array([np.mean([
-        #     float(negative_data[sn][pn])
-        #     for sn in negative_controls
-        #         if not pd.isnull(negative_data[sn][pn])
-        #     ]) for pn in peptideNames
-        # ])
-        # xLog = np.log10(x + 1)
+        #collect x axis data
+        x = np.array([np.mean([
+            float(negative_data[sn][pn])
+            for sn in negative_controls
+                if not pd.isnull(negative_data[sn][pn])
+            ]) for pn in peptideNames
+        ])
+        xLog = np.log10(x + 1)
 
-        # #iterate through samples to fill Data Frame
-        # for sample in dropNames.keys():
-        #     sNames = sample.split("~")
-        #     y = np.array([np.mean([
-        #         float(data[sn][pn])
-        #         for sn in sNames
-        #             if not pd.isnull(data[sn][pn])
-        #         ]) for pn in peptideNames
-        #     ])
-        #     yLog = np.log10(y + 1)
-        #     heatmap, xedges, yedges = np.histogram2d(xLog, yLog, bins=(70, 70))
+        #iterate through samples to fill Data Frame
+        for sample in dropNames.keys():
+            sNames = sample.split("~")
+            y = np.array([np.mean([
+                float(data[sn][pn])
+                for sn in sNames
+                    if not pd.isnull(data[sn][pn])
+                ]) for pn in peptideNames
+            ])
+            yLog = np.log10(y + 1)
+            heatmap, xedges, yedges = np.histogram2d(xLog, yLog, bins=(70, 70))
 
-        #     #fill binned data frame for heatmap generation by row
-        #     for x in range(0, heatmap.shape[0]):
-        #         for y in range(0, heatmap.shape[1]):
-        #             count = heatmap[x,y]
-        #             #do not add data with count of 0
-        #             if count == 0.0:
-        #                 continue
-        #             bin_x_start = xedges[x]
-        #             bin_x_end = xedges[x + 1]
-        #             bin_y_start = yedges[y]
-        #             bin_y_end = yedges[y + 1]
+            #fill binned data frame for heatmap generation by row
+            for x in range(0, heatmap.shape[0]):
+                for y in range(0, heatmap.shape[1]):
+                    count = heatmap[x,y]
+                    #do not add data with count of 0
+                    if count == 0.0:
+                        continue
+                    bin_x_start = xedges[x]
+                    bin_x_end = xedges[x + 1]
+                    bin_y_start = yedges[y]
+                    bin_y_end = yedges[y + 1]
 
-        #             #add all x and y bins to heatmap dictionary
-        #             hmDic["sample"].append(sample)
-        #             hmDic["bin_x_start"].append(bin_x_start)
-        #             hmDic["bin_x_end"].append(bin_x_end)
-        #             hmDic["bin_y_start"].append(bin_y_start)
-        #             hmDic["bin_y_end"].append(bin_y_end)
-        #             hmDic["count"].append(count)
+                    #add all x and y bins to heatmap dictionary
+                    hmDic["sample"].append(sample)
+                    hmDic["bin_x_start"].append(bin_x_start)
+                    hmDic["bin_x_end"].append(bin_x_end)
+                    hmDic["bin_y_start"].append(bin_y_start)
+                    hmDic["bin_y_end"].append(bin_y_end)
+                    hmDic["count"].append(count)
 
-        # #convert heatmap dictionary to data frame
-        # heatmapDf = pd.DataFrame(hmDic)
+        #convert heatmap dictionary to data frame
+        heatmapDf = pd.DataFrame(hmDic)
 
-        # #find axis ratio for chart width an height
-        # xy_max = heatmapDf[["bin_x_end", "bin_y_end"]].max()
-        # ratio = (xy_max[0] / xy_max[1]) - 1
-        # chartHeight = 500
-        # chartWidth =  chartHeight + (20*ratio)
+        #find axis ratio for chart width an height
+        xy_max = heatmapDf[["bin_x_end", "bin_y_end"]].max()
+        ratio = (xy_max[0] / xy_max[1]) - 1
+        chartHeight = 500
+        chartWidth =  chartHeight + (20*ratio)
 
         #create a sorted list for dropNames
-        # dropList = list(dropNames.keys())
-        # dropList.sort()
+        dropList = list(dropNames.keys())
+        dropList.sort()
 
         #create dropdown specs
-        # sample_dropdown = alt.binding_select(
-        #     options=dropList, name="Sample Select"
-        # )
-        # sample_select = alt.selection_point(
-        #     fields=["sample"],
-        #     bind=sample_dropdown,
-        #     name="sample",
-        #     value=[{"sample": dropList[0]}]
-        # )
-
-        scatter_dict = {
-            "peptide": list(),
-            "sample0": list(),
-            "sample1": list()
-        }
-        samples = zData.columns.to_list()
-        peptides = zData.index.to_list()
-        scatter_dict["peptide"] = peptides
-        for i in range(len(samples)):
-            for peptide in peptides:
-                scatter_dict[f"sample{i}"].append(
-                    zData.loc[peptide, samples[i]]
-                )
-        scatter_df = pd.DataFrame(scatter_dict)
-
-        # TODO: check for call from PSEA
-        heatmap_dict = {
-            "bin_x_start": list(), "bin_x_end": list(), "bin_y_start": list(),
-            "bin_y_end": list(), "count": list()
-        }
-        heatmap, x_edges, y_edges = np.histogram2d(
-            scatter_df.loc[:, "sample0"],
-            scatter_df.loc[:, "sample1"],
-            bins=(70, 70)
+        sample_dropdown = alt.binding_select(
+            options=dropList, name="Sample Select"
         )
-        for x in range(0, heatmap.shape[0]):
-            for y in range(0, heatmap.shape[1]):
-                # assumes count is for a peptide
-                count = heatmap[x, y]
-                if count == 0.0:
-                    continue
-                bin_x_start = x_edges[x]
-                bin_x_end = x_edges[x + 1]
-                bin_y_start = y_edges[y]
-                bin_y_end = y_edges[y + 1]
-
-                heatmap_dict["bin_x_start"].append(bin_x_start)
-                heatmap_dict["bin_x_end"].append(bin_x_end)
-                heatmap_dict["bin_y_start"].append(bin_y_start)
-                heatmap_dict["bin_y_end"].append(bin_y_end)
-                heatmap_dict["count"].append(count)
-        heatmap_df = pd.DataFrame(heatmap_dict)
-        xy_max = heatmap_df.loc[:, ["bin_x_end", "bin_y_end"]].max()
-        ratio = (xy_max[0] / xy_max[1]) - 1
-        chart_height = 500
-        chart_width = chart_height + (20*ratio)
-
+        sample_select = alt.selection_point(
+            fields=["sample"],
+            bind=sample_dropdown,
+            name="sample",
+            value=[{"sample": dropList[0]}]
+        )
+        
         # set color by as nominal
         color_by = color_by + ":N"
 
-        heatmap_chart = alt.Chart(
-            heatmap_df, width=chart_width, height=chart_height
+        #create scatterplot of enriched peptides
+        scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
+            x=alt.X(
+                "negative_control:Q",
+                title="Negative Control log10(value+1.0)"
+            ),
+            y=alt.Y(
+                "sample_value:Q",
+                title="Sample log10(value+1.0)"
+            ),
+            color=alt.Color(
+                color_by,
+                scale=alt.Scale(range=[
+                    "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00",
+                    "#CC79A7"
+                ]),
+                sort=threshRange,
+                legend=alt.Legend(title="Z Score Thresholds")
+            ),
+            tooltip=tooltip
+        ).add_params(
+            sample_select
+        ).transform_filter(
+            sample_select
+        )
+
+        #create heatmap of all peptides
+        heatmapChart = alt.Chart(
+            heatmapDf,
+            width=chartWidth,
+            height=chartHeight
         ).mark_rect().encode(
-            alt.X("bin_x_start:Q"),
+            alt.X(
+                "bin_x_start:Q",
+                scale=alt.Scale(domain=(0, xy_max[0]))
+            ),
             alt.X2("bin_x_end:Q"),
-            alt.Y("bin_y_start:Q"),
+            alt.Y(
+                "bin_y_start:Q",
+                scale=alt.Scale(domain=(0, xy_max[1]))
+            ),
             alt.Y2("bin_y_end:Q"),
             alt.Color(
                 "count:Q",
                 scale=alt.Scale(scheme="greys"),
                 legend=alt.Legend(title="Point Frequency")
             )
+        ).transform_filter(
+            sample_select
         )
-        
-        spline_dict = {
-            "x": [spline_x[i] for i in range(len(spline_x))],
-            "y": [spline_y[i] for i in range(len(spline_y))]
-        }
-        # spline is unique to PSEA
-        spline_chart = alt.Chart(
-            pd.DataFrame(spline_dict)
-        ).mark_square(size=20).encode(
-            x="x:Q",
-            y="y:Q",
-            color=alt.Color(
-                "x:N",
-                scale=alt.Scale(range=["#FF0000"]),
-                # reference: https://github.com/altair-viz/altair/issues/620
-                legend=None
-            )
-        )
-        final_chart = alt.layer(heatmap_chart)
 
-        # TODO: possibly used in both use cases of zenrich - figure a way to
-        # have this go for both cases
-        if taxa_peps_md and p_vals:
-            taxa_peps_df = taxa_peps_md.to_dataframe()
-            highlight_dict = {
-                "peptide": list(), "sample0": list(),
-                "sample1": list(), "sig-taxa": list()
-            }
-            for i in range(len(p_vals)):
-                if p_vals[i] < p_val_thresh:
-                    le_peps = taxa_peps_df.iloc[i, 1].split("/")
-                    sig_taxa = taxa_peps_df.iloc[i, 0]
-                    for le_pep in le_peps:
-                        highlight_dict["sample0"].append(
-                            zData.loc[le_pep, samples[0]]
-                        )
-                        highlight_dict["sample1"].append(
-                            zData.loc[le_pep, samples[1]]
-                        )
-                        highlight_dict["peptide"].append(le_pep)
-                        highlight_dict["sig-taxa"].append(sig_taxa)
-            highlight_df = pd.DataFrame(highlight_dict)
-            
-            highlight_chart = alt.Chart(highlight_df).mark_point(
-                filled=True, size=60
-            ).encode(
-                x=alt.X("sample0:Q", title=samples[0]),
-                y=alt.Y("sample1:Q", title=samples[1]),
+        #layer scatterplot and heatmap
+        finalChart = alt.layer(
+            heatmapChart,
+            scatter
+        ).properties(title="Z Score Threshold Variance")
+
+        # if highlighted probes provided, create square scatterplot
+        if highlight_probes:
+            highlightedChart = alt.Chart(
+                highlightDf
+            ).mark_square(size=60).encode(
+                x=alt.X(
+                    "negative_control:Q",
+                    title="Negative Control log10(value+1.0)"
+                ),
+                y=alt.Y(
+                    "sample_value:Q",
+                    title="Sample log10(value+1.0)"
+                ),
                 color=alt.Color(
-                    "sig-taxa:N",
+                    color_by,
                     scale=alt.Scale(range=[
                         "#E69F00", "#56B4E9", "#009E73",
                         "#F0E442", "#0072B2", "#D55E00",
                         "#CC79A7"
                     ]),
-                    legend=alt.Legend(title="Significant Taxa")
+                    sort=threshRange,
+                    legend=alt.Legend(title="Z Score Thresholds")
                 ),
-                # https://github.com/altair-viz/altair/issues/1181
-                shape=alt.Shape(
-                    "sig-taxa:N",
-                    legend=None
-                ),
-                tooltip="peptide"
+                tooltip = tooltip
+            ).transform_filter(
+                sample_select
             )
-            final_chart = alt.layer(
-                final_chart,
-                highlight_chart
-            ).resolve_scale(
-                color="independent",
-                shape="independent"
-            )
-
-        final_chart = alt.layer(
-            final_chart, spline_chart
-        )
-        
-        #create scatterplot of enriched peptides
-        # scatter = alt.Chart(enrichedDf).mark_circle(size=50).encode(
-        #     x=alt.X(
-        #         "negative_control:Q",
-        #         title="Negative Control log10(value+1.0)"
-        #     ),
-        #     y=alt.Y(
-        #         "sample_value:Q",
-        #         title="Sample log10(value+1.0)"
-        #     ),
-        #     color=alt.Color(
-        #         color_by,
-        #         scale=alt.Scale(range=[
-        #             "#E69F00", "#56B4E9", "#009E73",
-        #             "#F0E442", "#0072B2", "#D55E00",
-        #             "#CC79A7"
-        #         ]),
-        #         sort=threshRange,
-        #         legend=alt.Legend(title="Z Score Thresholds")
-        #     ),
-        #     tooltip=tooltip
-        # ).add_params(
-        #     sample_select
-        # ).transform_filter(
-        #     sample_select
-        # )
-
-        #create heatmap of all peptides
-        # heatmapChart = alt.Chart(
-        #     heatmapDf,
-        #     width=chartWidth,
-        #     height=chartHeight
-        # ).mark_rect().encode(
-        #     alt.X(
-        #         "bin_x_start:Q",
-        #         scale=alt.Scale(domain=(0, xy_max[0]))
-        #     ),
-        #     alt.X2("bin_x_end:Q"),
-        #     alt.Y(
-        #         "bin_y_start:Q",
-        #         scale=alt.Scale(domain=(0, xy_max[1]))
-        #     ),
-        #     alt.Y2("bin_y_end:Q"),
-        #     alt.Color(
-        #         "count:Q",
-        #         scale=alt.Scale(scheme="greys"),
-        #         legend=alt.Legend(title="Point Frequency")
-        #     )
-        # ).transform_filter(
-        #     sample_select
-        # )
-
-        #layer scatterplot and heatmap
-        # finalChart = alt.layer(
-        #     heatmapChart,
-        #     scatter
-        # ).properties(title="Z Score Threshold Variance")
-
-        # if highlighted probes provided, create square scatterplot
-        # if highlight_probes:
-            # highlightedChart = alt.Chart(
-            #     highlightDf
-            # ).mark_square(size=60).encode(
-            #     x=alt.X(
-            #         "negative_control:Q",
-            #         title="Negative Control log10(value+1.0)"
-            #     ),
-            #     y=alt.Y(
-            #         "sample_value:Q",
-            #         title="Sample log10(value+1.0)"
-            #     ),
-            #     color=alt.Color(
-            #         color_by,
-            #         scale=alt.Scale(range=[
-            #             "#E69F00", "#56B4E9", "#009E73",
-            #             "#F0E442", "#0072B2", "#D55E00",
-            #             "#CC79A7"
-            #         ]),
-            #         sort=threshRange,
-            #         legend=alt.Legend(title="Z Score Thresholds")
-            #     ),
-            #     tooltip = tooltip
-            # ).transform_filter(
-            #     sample_select
-            # )
 
             #layer the square scatterplot over the final chart
-            # finalCharts = alt.layer(finalChart, highlightedChart)
+            finalCharts = alt.layer(finalChart, highlightedChart)
 
             #save the plot
-            # finalCharts.save(os.path.join(output_dir, "index.html"))
+            finalCharts.save(os.path.join(output_dir, "index.html"))
 
         #otherwise, save the final chart without the higlighted probes
-        # else:
-        #     finalChart.save(os.path.join(output_dir, "index.html"))
-        final_chart.save(os.path.join(output_dir, "index.html"))
+        else:
+            finalChart.save(os.path.join(output_dir, "index.html"))
 
     os.chdir(old)

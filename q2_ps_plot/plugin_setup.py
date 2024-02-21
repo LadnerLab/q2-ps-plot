@@ -43,12 +43,7 @@ shared_parameters = {
     "negative_id": Str,
     "tooltip": List[Str],
     "color_by": Str,
-    "flex_reps": Bool,
-    "spline_x_filepath": Str,
-    "spline_y_filepath": Str,
-    "taxa_peps_md": Metadata,
-    "p_val_thresh": Float,
-    "p_vals": List[Float]
+    "flex_reps": Bool
 }
 # shared parameter decriptions for zenrich and zenrich tsv pipeline
 shared_descriptions = {
@@ -79,12 +74,7 @@ shared_descriptions = {
         " not provided just 'Peptide' and 'Zscores' will be shown.",
     "color_by": "A column within the metadata file to base the coloring of the"
         " enriched peptide points. This parameter is case sensitive and the"
-        " default is the different zscore thresholds.",
-    "spline_x_filepath": "",
-    "spline_y_filepath": "",
-    "taxa_peps_md": "",
-    "p_val_thresh": "",
-    "p_vals": ""
+        " default is the different zscore thresholds."
 }
 
 # action set up for zenrich tsv pipeline
@@ -436,8 +426,7 @@ plugin.visualizers.register_function(
         "x_thresh": Float,
         "log": Bool,
         "x_label": Str,
-        "y_label": Str,
-        "title": Str
+        "y_label": Str
     },
     parameter_descriptions={
         "x": "Coordinates along the x-axis at which to plot points.",
@@ -462,8 +451,7 @@ plugin.visualizers.register_function(
             " order; otherwise, the passed y values will be plotted in"
             " descending order.",
         "x_label": "Name of plot's x-axis.",
-        "y_label": "Name of plot's y-axis.",
-        "title": "Name of the resulting plot."
+        "y_label": "Name of plot's y-axis."
     },
     name="Volcano Visualizer",
     description="Generates a volcano plot given x and y values. Significant"
@@ -493,6 +481,8 @@ plugin.visualizers.register_function(
             " peptides will vary the mark and color based on species, and"
             " provide the peptide name when the mouse is over a mark."
     },
-    name="zscatter",
-    description=""
+    name="Z Score Scatter Visualization",
+    description="Creates a scatter plot using Z scores from two samples."
+        " A spline line can also be added. Significant points can also be"
+        " highlighted by passing metadata, as well."
 )

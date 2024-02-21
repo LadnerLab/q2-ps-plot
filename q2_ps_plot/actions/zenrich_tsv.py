@@ -19,11 +19,6 @@ def zenrich_tsv(
         ctx,
         data_filepath,
         zscores_filepath,
-        spline_x_filepath=None,
-        spline_y_filepath=None,
-        taxa_peps_md=None,  # TODO: change back to filepath
-        p_val_thresh=0.05,
-        p_vals=None,
         flex_reps=False,
         negative_controls=None,
         negative_id=None,
@@ -85,11 +80,6 @@ def zenrich_tsv(
     zenrich_vis, = zenrich(
         data=data,
         zscores=zscores,
-        spline_x_filepath=spline_x_filepath,
-        spline_y_filepath=spline_y_filepath,
-        taxa_peps_md=taxa_peps_md,
-        p_val_thresh=p_val_thresh,
-        p_vals=p_vals,
         flex_reps=flex_reps,
         negative_controls=negative_controls,
         negative_id=negative_id,
