@@ -5,6 +5,10 @@ import altair as alt
 import glob
 import os
 import pandas as pd
+import numpy as np
+
+# make species an option (create checks that file is)
+
 
 # Name: proteinHeatmap
 # Process: creates an interactive heatmap to show the alignment of proteins
@@ -18,10 +22,17 @@ def proteinHeatmap(
         enriched_suffix: str = "_enriched.txt",
         align_header: str = "AlignPos",
         align_delim: str = "~",
+        #include_species: bool = False,
         color_scheme: str = "viridis") -> None:
 
     print(os.listdir(str(protein_alignment)))
     
+    '''
+    if( include_species ):
+        with open("optiontest.txt", 'w') as file:
+            file.write("worked")
+    '''
+
     # collect enriched peptide files
     enrFiles = glob.glob("%s/*%s" % (str(enriched_dir), enriched_suffix))
 
@@ -40,11 +51,12 @@ def proteinHeatmap(
     df = pd.DataFrame(dict([(k,pd.Series(v)) for k,v in enrDict.items()]))
     df = df.melt(var_name="sample", value_name="peptide")
 
-    # create a dictionary of a dictionary to collect alignment/protein information
+    # create a dictionary of a dictionary to collect alignment/protein/species information
     alignDict = defaultdict()
     proteinDict = defaultdict(dict)
+    speciesDict = defaultdict(dict)
 
-    # open the alignment files and collect the protein, and alignment information
+    # open the alignment files and collect the protein, and alignment information, also species
     with open(str(protein_alignment.path /"manifest.tsv"), "r") as fin:
         ct = 0
         for row in fin:
@@ -58,12 +70,20 @@ def proteinHeatmap(
                     str(protein_alignment.path /file),
                     sep="\t", index_col=0
                 )
+
                 align = dict(proteinDf[align_header])
-                
+
+                species = dict(proteinDf["Species"])
+
                 # collect the alignment and the protein
                 for peptide, alignment in align.items():
                     alignDict[peptide] = alignment.split(align_delim)
                     proteinDict[peptide]["protein"] = protein
+
+                # collect species
+                for peptide, species in species.items():
+                    speciesDict[peptide] = species;
+
             ct += 1
 
     # put the alignment dictionary into a pandas dataframe and merge with the
@@ -71,6 +91,7 @@ def proteinHeatmap(
     alignDf = pd.DataFrame(
         dict([(k,pd.Series(v)) for k,v in alignDict.items()])
     )
+
     alignDf = alignDf.melt(var_name="peptide", value_name="x")
     newDf = df.merge(
         alignDf, how="right",
@@ -89,17 +110,29 @@ def proteinHeatmap(
         proteinDf, how="right",
         right_on="peptide", left_on="peptide"
     )
-    
+
+    # put the species dictionary into pandas dataframe and merge with newDf
+    speciesDf = pd.DataFrame(speciesDict, index=["species"])
+    speciesDf = speciesDf.transpose().reset_index()
+    speciesDf = speciesDf.rename(columns={"index": "peptide"})
+    newDf = newDf.merge(
+        speciesDf, how="right", 
+        right_on="peptide", left_on="peptide"
+    )
+
+    # remove rows with no sample
+    newDf.dropna(subset=["sample"], inplace=True)
+
     #Create a new sample column to handle NaN values in "sample"
     newDf["sampleDummy"] = newDf["sample"].fillna("dummy")
     # create a count of the x values
     newDf["count"] = newDf.groupby(
-        ["x", "protein", "sample"]
+        ["x", "protein", "sample", "species"]
     )["x"].transform("count")
     # Create new label column with all of the peptides for each protein,
     # sample and position combined
     newDf["label"] = newDf.groupby(
-        ["x", "protein", "sampleDummy"]
+        ["x", "protein", "sampleDummy", "species"]
     )["peptide"].transform(lambda x: ",".join(x))
     # Get rid of the 'peptide' column and then remove duplicate rows
     newDf = newDf.drop(columns=["peptide", "sampleDummy"]).drop_duplicates()
@@ -111,13 +144,24 @@ def proteinHeatmap(
     # collect all of the protein values
     proteinList = list(newDf.protein.unique())
 
+    # collect all sample values
+    sampleList = list(newDf["sample"].unique())
+
     # create the dropdown menus for the chart
-    sample_dropdown = alt.binding_select(
+    protein_dropdown = alt.binding_select(
         options=proteinList, name="Protein Select"
     )
-    sample_select = alt.selection_point(
-        fields=["protein"], bind=sample_dropdown,
+    protein_select = alt.selection_point(
+        fields=["protein"], bind=protein_dropdown,
         name="protein", value=[{"protein": proteinList[0]}]
+    )
+    # create the dropdown menus for the chart
+    sample_dropdown = alt.binding_select(
+        options=sampleList, name="Sample Select"
+    )
+    sample_select = alt.selection_point(
+        fields=["sample"], bind=sample_dropdown,
+        name="sample", value=[{"sample": sampleList[0]}]
     )
 
     #set max rows for altair to none
@@ -131,9 +175,10 @@ def proteinHeatmap(
             bin=alt.Bin(maxbins=x_max, minstep=1),
             scale=alt.Scale(zero=True)
         ),
+
         alt.Y(
-            "sample:N",
-            title="Samples"
+            "species:N",
+            title="Species"
         ),
         alt.Color(
             "count:Q",
@@ -146,6 +191,10 @@ def proteinHeatmap(
         sample_select
     ).transform_filter(
         sample_select
+    ).add_params(
+        protein_select
+    ).transform_filter(
+        protein_select
     )
 
     # save the chart into the qzv file index
