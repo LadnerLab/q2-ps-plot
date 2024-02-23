@@ -5,9 +5,6 @@ import altair as alt
 import glob
 import os
 import pandas as pd
-import numpy as np
-
-# make species an option (create checks that file is)
 
 
 # Name: proteinHeatmap
