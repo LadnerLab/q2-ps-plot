@@ -260,7 +260,9 @@ proteinHeatmap_parameters = {
     "enriched_suffix": Str,
     "align_header": Str,
     "color_scheme": Str,
-    "align_delim": Str
+    "align_delim": Str,
+    "include_species": Bool,
+    "species_header": Str
 }
 
 proteinHeatmap_parameter_descriptions = {
@@ -270,7 +272,9 @@ proteinHeatmap_parameter_descriptions = {
     "color_scheme": "String of the name of a color scheme for the heatmap."
         " Color schemes can be found here: https://vega.github.io/vega/docs/"
         "schemes/",
-    "align_delim": "The deliminator that separates the alignment positions."
+    "align_delim": "The deliminator that separates the alignment positions.",
+    "include_species": "Use if alignment file(s) include a \'Species\' column.",
+    "species_header": "The name of the header to which identifies the species column"
 }
 
 # action set up for proteinHeatmap module
