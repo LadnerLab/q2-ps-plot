@@ -468,18 +468,18 @@ plugin.visualizers.register_function(
         "zscores": "Matrix of Z scores."
     },
     parameters={
-        "spline_md": Metadata,
+        "pairs_file": Str,
+        "spline_file": Str,
+        "highlight_data": Str,
         "highlight_thresh": Float,
-        "highlight_md": Metadata
+        "species_taxa_file": Str
     },
     parameter_descriptions={
-        "spline_md": "Table with x and y coordinates from spline"
-            " operation.",
+        "pairs_file": "",
+        "spline_file": "",
+        "highlight_data": "",
         "highlight_thresh": "Maximum value queries can be to be highlighted.",
-        "highlight_md": "Table with legend and tooltip information for"
-            " highlighting. For example, passing species names and associated"
-            " peptides will vary the mark and color based on species, and"
-            " provide the peptide name when the mouse is over a mark."
+        "species_taxa_file": ""
     },
     name="Z Score Scatter Visualization",
     description="Creates a scatter plot using Z scores from two samples."
