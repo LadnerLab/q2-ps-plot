@@ -471,14 +471,15 @@ plugin.visualizers.register_function(
         "pairs_file": Str,
         "spline_file": Str,
         "highlight_data": Str,
-        "highlight_thresh": Float,
+        "highlight_thresholds": List[Float],
         "species_taxa_file": Str
     },
     parameter_descriptions={
         "pairs_file": "",
         "spline_file": "",
         "highlight_data": "",
-        "highlight_thresh": "Maximum value queries can be to be highlighted.",
+        "highlight_thresholds": "Maximum value queries can be to be"
+            " highlighted.",
         "species_taxa_file": ""
     },
     name="Z Score Scatter Visualization",
