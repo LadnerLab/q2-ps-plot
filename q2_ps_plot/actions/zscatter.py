@@ -18,7 +18,8 @@ def zscatter(
 ) -> None:
     pd.set_option("display.max_rows", None)
     pd.set_option("display.max_columns", None)
-    alt.data_transformers.enable("default", max_rows=None)
+    #alt.data_transformers.enable("default", max_rows=None)
+    alt.data_transformers.disable_max_rows()
     zscores = zscores.view(pd.DataFrame)
     zscores = zscores.transpose()
 
@@ -197,11 +198,8 @@ def zscatter(
                 # reference: https://github.com/altair-viz/altair/issues/620
                 legend=None
             )
-        ).add_params(pairs_select).transform_filter(pairs_select)
+        ).transform_filter(pairs_select)
         final_chart = alt.layer(final_chart, spline_chart)
-        # final_chart = alt.layer(
-        #     final_chart, spline_chart
-        # ).add_params(pairs_select).transform_filter(pairs_select)
 
     final_chart.save(os.path.join(output_dir, "index.html"))
 
