@@ -43,6 +43,7 @@ def zscatter(
     else:
         files = highlight_data
         path = "."
+    files = sorted(files)
 
     charts = []
     f = 0
@@ -174,3 +175,4 @@ def zscatter(
 
     final_chart = alt.concat(*charts)
     final_chart.save(os.path.join(output_dir, "index.html"))
+    fnal
