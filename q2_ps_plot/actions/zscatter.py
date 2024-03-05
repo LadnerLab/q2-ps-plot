@@ -173,6 +173,5 @@ def zscatter(
         charts.append(chart)
         f += 1
 
-    final_chart = alt.concat(*charts)
+    final_chart = alt.vconcat(*charts)
     final_chart.save(os.path.join(output_dir, "index.html"))
-    fnal
