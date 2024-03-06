@@ -139,11 +139,16 @@ def zscatter(
                     sig_taxa = highlight_df.iloc[i, 2]
                     le_peps = highlight_df.iloc[i, 1].split("/")
                     for le_pep in le_peps:
-                        highlight_dict["x"] = zscores.loc[le_pep, samples[0]]
-                        highlight_dict["y"] = zscores.loc[le_pep, samples[1]]
+                        highlight_dict["x"].append(
+                            zscores.loc[le_pep, pair[0]]
+                        )
+                        highlight_dict["y"].append(
+                            zscores.loc[le_pep, pair[1]]
+                        )
                         highlight_dict["tooltip"].append(le_pep)
                         highlight_dict["highlight"].append(sig_taxa)
             highlight_df = pd.DataFrame(highlight_dict)
+            highlight_df.to_csv(f"{pair[0]}~{pair[1]}_highlight_df.tsv", sep="\t", index=False)
             highlight_chart = alt.Chart(highlight_df).mark_point(
                 filled=True, size=60
             ).encode(
