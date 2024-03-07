@@ -52,13 +52,14 @@ def volcano(
     else:
         print(
             "A directory with tables, as well as unrelated parameters were"
-            "provided:"
+            "provided:\n"
+            f"x = {x}\n"
+            f"y = {y}\n"
+            f"taxa = {taxa}\n"
+            f"xy_access = {xy_access}\n"
+            f"taxa_access = {taxa_access}\n"
+            "Please review and edit parameters accordingly."
         )
-        print(
-            f"x = {x}\ny = {y}\ntaxa = {taxa}\nxy_access = {xy_access}\n"
-            f"taxa_access = {taxa_access}"
-        )
-        print("Please review and edit parameters accordingly.")
         return
 
     charts = []
@@ -66,7 +67,7 @@ def volcano(
         titles_len = len(titles)
         if log:
             log_adjusted_y = -np.log10(y[i])
-            volcano_dict = {"y": log_adjusted_y, "x": x[i]}
+            volcano_dict = { "y": log_adjusted_y, "x": x[i] }
             sig_taxa_df = make_sig_taxa_df(
                 log_adjusted_y, x[i], taxa[i],
                 y[i], y_thresholds[i], x_threshold
@@ -132,20 +133,20 @@ def volcano(
 
 
 def make_sig_taxa_df(
-    y,
-    x,
-    taxa,
-    y_test,
-    y_thresh,
-    x_thresh
+        y,
+        x,
+        taxa,
+        y_test,
+        y_thresh,
+        x_thresh
 ) -> pd.DataFrame:
     if taxa is None:
         return None
 
-    sig_taxa_dict = {"taxa": list(), "y": list(), "x": list()}
+    sig_taxa_dict = { "y": list(), "x": list(), "taxa": list() }
     for i in range(len(taxa)):
         if y_test[i] < y_thresh and abs(x[i]) > x_thresh:
-            sig_taxa_dict["taxa"].append(taxa[i])
             sig_taxa_dict["y"].append(y[i])
             sig_taxa_dict["x"].append(x[i])
+            sig_taxa_dict["taxa"].append(taxa[i])
     return pd.DataFrame(sig_taxa_dict)

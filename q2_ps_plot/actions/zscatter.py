@@ -148,7 +148,6 @@ def zscatter(
                         highlight_dict["tooltip"].append(le_pep)
                         highlight_dict["highlight"].append(sig_taxa)
             highlight_df = pd.DataFrame(highlight_dict)
-            highlight_df.to_csv(f"{pair[0]}~{pair[1]}_highlight_df.tsv", sep="\t", index=False)
             highlight_chart = alt.Chart(highlight_df).mark_point(
                 filled=True, size=60
             ).encode(
