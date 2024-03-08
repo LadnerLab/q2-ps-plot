@@ -119,7 +119,7 @@ def volcano(
                         "#F0E442", "#0072B2", "#D55E00",
                         "#CC79A7"
                     ]),
-                    legend=None
+                    legend=alt.Legend(title="Significant Taxa")
                 ),
                 tooltip="taxa"
             )
