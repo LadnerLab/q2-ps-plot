@@ -102,7 +102,7 @@ def volcano(
         if sig_taxa_df is not None:
             sig_taxa = alt.Chart(
                 sig_taxa_df, title=titles[i % titles_len]
-            ).mark_circle(size=60).encode(
+            ).mark_circle(size=60, opacity=1.0).encode(
                 x=alt.X(
                     "x:Q",
                     title=xy_labels[0]
