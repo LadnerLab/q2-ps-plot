@@ -103,7 +103,7 @@ def volcano(
         if sig_taxa_df is not None:
             sig_taxa = alt.Chart(
                 sig_taxa_df, title=titles[i % titles_len]
-            ).mark_circle(size=60, opacity=1.0).encode(
+            ).mark_point(filled=True, size=60, opacity=1.0).encode(
                 x=alt.X(
                     "x:Q",
                     title=xy_labels[0]
@@ -122,10 +122,15 @@ def volcano(
                     ]),
                     legend=alt.Legend(title="Significant Taxa")
                 ),
+                shape=alt.Shape(
+                    "taxa:N",
+                    legend=None
+                ),
                 tooltip="taxa"
             )
             chart = alt.layer(chart, sig_taxa).resolve_scale(
-                color="independent"
+                color="independent",
+                shape="independent"
             )
         charts.append(chart)
 
