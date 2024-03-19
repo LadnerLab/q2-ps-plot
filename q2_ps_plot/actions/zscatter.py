@@ -134,8 +134,9 @@ def zscatter(
             ).iloc[:, [3, 4, 8]]
             p_vals = highlight_df.iloc[:, 0].to_list()
 
+            thresh_count = len(highlight_thresholds)
             for i in range(len(p_vals)):
-                if p_vals[i] < highlight_thresholds[f]:
+                if p_vals[i] < highlight_thresholds[f % thresh_count]:
                     sig_taxa = highlight_df.iloc[i, 2]
                     le_peps = highlight_df.iloc[i, 1].split("/")
                     for le_pep in le_peps:

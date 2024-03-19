@@ -63,6 +63,7 @@ def volcano(
         return
 
     charts = []
+    y_thresh_count = len(y_thresholds)
     for i in range(len(x)):
         titles_len = len(titles)
         if log:
@@ -70,7 +71,7 @@ def volcano(
             volcano_dict = { "y": log_adjusted_y, "x": x[i] }
             sig_taxa_df = make_sig_taxa_df(
                 log_adjusted_y, x[i], taxa[i],
-                y[i], y_thresholds[i], x_threshold
+                y[i], y_thresholds[i % y_thresh_count], x_threshold
             )
             sort = "ascending"
         else:
