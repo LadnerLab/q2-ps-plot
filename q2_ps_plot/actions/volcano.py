@@ -63,6 +63,7 @@ def volcano(
         return
 
     charts = []
+    y_thresh_count = len(y_thresholds)
     for i in range(len(x)):
         titles_len = len(titles)
         if log:
@@ -70,7 +71,7 @@ def volcano(
             volcano_dict = { "y": log_adjusted_y, "x": x[i] }
             sig_taxa_df = make_sig_taxa_df(
                 log_adjusted_y, x[i], taxa[i],
-                y[i], y_thresholds[i], x_threshold
+                y[i], y_thresholds[i % y_thresh_count], x_threshold
             )
             sort = "ascending"
         else:
@@ -102,7 +103,7 @@ def volcano(
         if sig_taxa_df is not None:
             sig_taxa = alt.Chart(
                 sig_taxa_df, title=titles[i % titles_len]
-            ).mark_circle(size=60, opacity=1.0).encode(
+            ).mark_point(filled=True, size=60, opacity=1.0).encode(
                 x=alt.X(
                     "x:Q",
                     title=xy_labels[0]
@@ -121,10 +122,15 @@ def volcano(
                     ]),
                     legend=alt.Legend(title="Significant Taxa")
                 ),
+                shape=alt.Shape(
+                    "taxa:N",
+                    legend=None
+                ),
                 tooltip="taxa"
             )
             chart = alt.layer(chart, sig_taxa).resolve_scale(
-                color="independent"
+                color="independent",
+                shape="independent"
             )
         charts.append(chart)
 

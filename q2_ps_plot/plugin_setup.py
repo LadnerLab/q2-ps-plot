@@ -462,7 +462,8 @@ plugin.visualizers.register_function(
             " greater than the provided threshold, then the taxa is not"
             " eligible to be highlighted. Please not the taxa must also have"
             " an ES greater than the provided ES threshold to also be eligible"
-            " for highlighting.",
+            " for highlighting. Note: If calling from a function with one"
+            " threshold, please put that value in a list.",
         "log": "Specifies whether to or not transform y values. If True, the"
             " log (base 10) of the y values will be plotted in ascending"
             " order; otherwise, the passed y values will be plotted in"
@@ -502,7 +503,8 @@ plugin.visualizers.register_function(
             " which contain information needed to highlight significant taxa."
             " The file(s) should be tab delimited (TSV format).",
         "highlight_thresholds": "Maximum value queries can be to be"
-            " highlighted.",
+            " highlighted. Note: If calling this function with one threshold,"
+            " please also include that value in a list.",
         "species_taxa_file": "Tab delimited (TSV) file which maps a species"
             " name to an ID."
     },
