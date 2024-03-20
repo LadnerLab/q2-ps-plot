@@ -122,15 +122,10 @@ def volcano(
                     ]),
                     legend=alt.Legend(title="Significant Taxa")
                 ),
-                shape=alt.Shape(
-                    "taxa:N",
-                    legend=None
-                ),
                 tooltip="taxa"
             )
             chart = alt.layer(chart, sig_taxa).resolve_scale(
-                color="independent",
-                shape="independent"
+                color="independent"
             )
         charts.append(chart)
 
