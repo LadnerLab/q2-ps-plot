@@ -8,6 +8,8 @@ from q2_ps_plot.actions.heatmap import proteinHeatmap
 from q2_ps_plot.actions.heatmap_tsv import proteinHeatmap_dir
 from q2_ps_plot.actions.scatter import repScatters, mutantScatters
 from q2_ps_plot.actions.scatter_tsv import repScatters_tsv, mutantScatters_tsv
+from q2_ps_plot.actions.epimap import epimap
+from q2_ps_plot.actions.epimap_tsv import epimap_dir
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 from qiime2.plugin import (
     Plugin, SemanticType, model, Int, Range, MetadataColumn, Categorical, Str,
@@ -375,7 +377,7 @@ mutantScatters_param_descript = {
 # action set up for mutantScatters module
 plugin.visualizers.register_function(
     function=mutantScatters,
-    inputs={
+    inputs={ 
         "zscore": FeatureTable[Zscore],
         "reference_file": MutantReference
     },
@@ -416,4 +418,77 @@ plugin.pipelines.register_function(
     },
     name='Mutant Scatters',
     description="Creates a scatterplot for mutant peptides with tsv filepaths instead of QZA files"
+)
+
+
+# all for now, but type should be converted later
+epimap_shared_parameters = {
+    "metadata_filepath": Str,
+    "peptide_seq_filepath": Str,
+    "zscore_filepath": Str,
+    "p_thresh": Float,
+    "g1_enrichment_subset": List[Str],
+    "g2_enrichment_subset": List[Str],
+    "fullname_header": Str,
+    "codename_header": Str,
+    "protein_header": Str,
+    "category_header": Str,
+    "alascanpos_header": Str,
+    "include_categories": List[Str],
+    "horizontal_line_pos": List[Float],
+    "color_by_col": Str,
+    "color_scheme": Str
+}
+
+epimap_shared_param_description = {
+    "metadata_filepath": "",
+    "peptide_seq_filepath": "",
+    "zscore_filepath": "",
+    "p_thresh": "",
+    "g1_enrichment_subset": "subnames to use for group 1."
+                            " (Example argument: --g1-enrichment-subset string1 string2 string3).",
+    "g2_enrichment_subset": "subnames to use for group 2."
+                            " (Example argument: --g2-enrichment-subset string1 string2 string3)."
+                            " if not used, group 2 will be everything not in group 1.",
+    "fullname_header": "",
+    "codename_header": "",
+    "protein_header": "",
+    "category_header": "",
+    "alascanpos_header": "",
+    "include_categories": "category types to be included "
+                            " (Example argument: --p-include-categories string1 string2 string3).",
+    "horizontal_line_pos": "Positions for horizional lines on the graph."
+                    " p_thresh will always be a line."
+                    " (Example argument: --p-horizontal-line-pos float1 float2 float3)",
+    "color_by_col": "",
+    "color_scheme": ""
+}
+
+# action set up for epimap module
+plugin.visualizers.register_function(
+    function=epimap,
+    inputs={},
+    parameters=epimap_shared_parameters,
+    input_descriptions=None,
+    parameter_descriptions=epimap_shared_param_description,
+    name="Epitope Mapping",
+    description="Test"
+)
+
+plugin.pipelines.register_function(
+    function=epimap_dir,
+    inputs={},
+    outputs=[
+        ("epimap_vis", Visualization)
+    ],
+    parameters={
+    **epimap_shared_parameters
+    },
+    input_descriptions=None,
+    output_descriptions=None,
+    parameter_descriptions={
+    **epimap_shared_param_description
+    },
+    name="Epitope Mapping Dir",
+    description="Test."
 )
