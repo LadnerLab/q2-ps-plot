@@ -427,6 +427,7 @@ epimap_shared_parameters = {
     "peptide_seq_filepath": Str,
     "zscore_filepath": Str,
     "p_thresh": Float,
+    "z_thresh": Float,
     "g1_enrichment_subset": List[Str],
     "g2_enrichment_subset": List[Str],
     "fullname_header": Str,
@@ -436,6 +437,7 @@ epimap_shared_parameters = {
     "alascanpos_header": Str,
     "include_categories": List[Str],
     "horizontal_line_pos": List[Float],
+    "xtick_spacing": Int,
     "color_by_col": Str,
     "color_scheme": Str
 }
@@ -445,6 +447,7 @@ epimap_shared_param_description = {
     "peptide_seq_filepath": "",
     "zscore_filepath": "",
     "p_thresh": "",
+    "z_thresh": "",
     "g1_enrichment_subset": "subnames to use for group 1."
                             " (Example argument: --g1-enrichment-subset string1 string2 string3).",
     "g2_enrichment_subset": "subnames to use for group 2."
@@ -460,6 +463,7 @@ epimap_shared_param_description = {
     "horizontal_line_pos": "Positions for horizional lines on the graph."
                     " p_thresh will always be a line."
                     " (Example argument: --p-horizontal-line-pos float1 float2 float3)",
+    "xtick_spacing": "",
     "color_by_col": "",
     "color_scheme": ""
 }

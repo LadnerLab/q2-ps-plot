@@ -10,6 +10,7 @@ import pandas as pd
 import scipy
 import numpy as np
 import random
+import math
 
 '''
 TODO:
@@ -35,6 +36,8 @@ def epimap(
     alascanpos_header: str = "AlaScanPos",
     include_categories: list = ["Target", "Scaffold", "Adjuvant"],
     horizontal_line_pos: list = [0.01, 0.001],
+    z_thresh: float = 0,
+    xtick_spacing: int = 20,
     color_by_col: str = "Category",
     color_scheme: str = "dark2") -> None:
 
@@ -87,7 +90,13 @@ def epimap(
         alt.X(
             "ZScoreDiff:Q",
             title="Zscore Difference",
-            bin=alt.Bin(maxbins=max(chartDf["ZScoreDiff"]), minstep=0)
+            axis=alt.Axis(
+                values=[z_thresh] + list(range(
+                        round("down", (chartDf["ZScoreDiff"].min())), round("up", (chartDf["ZScoreDiff"].max())), 
+                        xtick_spacing
+                        )
+                    )
+                )
             ),
         alt.Y(
             "PVal:Q",
@@ -111,7 +120,12 @@ def epimap(
             ]
         )
 
-    chart.save(os.path.join(output_dir, "index.html"), scale_factor=10.0)
+    y_line = alt.Chart(pd.DataFrame({'y': [p_thresh]})).mark_rule(strokeDash=[2,1], strokeWidth=2).encode(y='y')
+    x_line = alt.Chart(pd.DataFrame({'x': [z_thresh]})).mark_rule(strokeDash=[2,1], strokeWidth=2).encode(x='x')
+
+    final_plot = chart + x_line + y_line
+
+    final_plot.save(os.path.join(output_dir, "index.html"), scale_factor=10.0)
 
 
 # source: https://github.com/jtladner/Modules
@@ -140,3 +154,14 @@ def read_fasta_dict_upper(file):
     seqs = [x.upper() for x in seqs]
     fasta_dict = dict(zip(names, seqs))
     return fasta_dict
+
+def round(type: str, x: float) -> int:
+    if type=="up":
+        return math.ceil(x / 10.0) * 10
+    if type=="down":
+        return math.floor(x / 10.0) * 10
+
+
+
+
+

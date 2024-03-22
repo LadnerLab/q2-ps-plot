@@ -21,6 +21,8 @@ def epimap_dir(
     alascanpos_header="AlaScanPos",
     include_categories=["Target", "Scaffold", "Adjuvant"],
     horizontal_line_pos=[0.01, 0.001],
+    z_thresh=0,
+    xtick_spacing=20,
     color_by_col="Category",
     color_scheme="dark2"
     ):
@@ -44,6 +46,8 @@ def epimap_dir(
         alascanpos_header=alascanpos_header,
         include_categories=include_categories,
         horizontal_line_pos=horizontal_line_pos,
+        z_thresh=z_thresh,
+        xtick_spacing=xtick_spacing,
         color_by_col=color_by_col,
         color_scheme=color_scheme
     )
