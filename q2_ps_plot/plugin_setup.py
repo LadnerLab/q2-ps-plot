@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from q2_pepsirf.format_types import (
     Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment,
     InfoSNPN, ProteinAlignment, MutantReference
@@ -13,7 +14,7 @@ from q2_ps_plot.actions.epimap_tsv import epimap_dir
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 from qiime2.plugin import (
     Plugin, SemanticType, model, Int, Range, MetadataColumn, Categorical, Str,
-    List, Visualization, Metadata, Bool, Float
+    List, Visualization, Metadata, Bool, Float, Metadata, Numeric
 )
 
 import importlib
@@ -495,4 +496,98 @@ plugin.pipelines.register_function(
     },
     name="Epitope Mapping Dir",
     description="Test."
+
+plugin.visualizers.register_function(
+    function=actions.volcano,
+    inputs={},
+    input_descriptions={},
+    parameters={
+        "x": List[Float],
+        "y": List[Float],
+        "taxa": List[Str],
+        "xy_dir": Str,
+        "xy_access": List[Str],
+        "taxa_access": Str,
+        "x_threshold": Float,
+        "y_thresholds": List[Float],
+        "log": Bool,
+        "xy_labels": List[Str],
+        "titles": List[Str]
+    },
+    parameter_descriptions={
+        "x": "Coordinates along the x-axis at which to plot points.",
+        "y": "Coordinates along the y-axis at which to plot points.",
+        "taxa": "List of identifiers, positionally associated with passed"
+            " p-values and enrichment scores. These identifiers will be"
+            " displayed when the user mouses over a point in the chart.",
+        "xy_dir": "Directory containing tab delimited (TSV) files with"
+            " plotting data. Provide this as an alternative if many plots are"
+            " required.",
+        "xy_access": "List with column names in the tables collected in the"
+            " 'xy_dir' which should be used to grab x and y values,"
+            " respectively. Refer to default as an example. Only list length"
+            " of 2 is supported.",
+        "taxa_access": "Column name in tables collected in the 'xy_dir' which"
+            " should be used to grab highlighting information.",
+        "x_threshold": "Specifies the minimum ES a taxa can have in order to"
+            " be highlighted in the plot. If a taxa's ES is less than the"
+            " provided threshold, then the taxa is not eligible to be"
+            " highlighted. Please note the taxa must also have a p-value less"
+            " than the provided p-value threshold to also be eligible for"
+            " highlighting.",
+        "y_thresholds": "Specifies the maximum p-value a taxa can have in"
+            " order to be highlighted in the plot. If a taxa's p-value is"
+            " greater than the provided threshold, then the taxa is not"
+            " eligible to be highlighted. Please not the taxa must also have"
+            " an ES greater than the provided ES threshold to also be eligible"
+            " for highlighting. Note: If calling from a function with one"
+            " threshold, please put that value in a list.",
+        "log": "Specifies whether to or not transform y values. If True, the"
+            " log (base 10) of the y values will be plotted in ascending"
+            " order; otherwise, the passed y values will be plotted in"
+            " descending order.",
+        "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
+        "titles": "List of chart titles. This will most likely be useful when"
+            " multiple visualizations of different data is required."
+    },
+    name="Volcano Visualizer",
+    description="Generates a volcano plot given x and y values. Significant"
+        " points will be highlighted is identifiers are provided."
+)
+
+
+plugin.visualizers.register_function(
+    function=actions.zscatter,
+    inputs={
+        "zscores": FeatureTable[Zscore],
+    },
+    input_descriptions={
+        "zscores": "Matrix of Z scores."
+    },
+    parameters={
+        "pairs_file": Str,
+        "spline_file": Str,
+        "highlight_data": Str,
+        "highlight_thresholds": List[Float],
+        "species_taxa_file": Str
+    },
+    parameter_descriptions={
+        "pairs_file": "Tab delimited (TSV) file with a pair of sample"
+            " replicates on each line.",
+        "spline_file": "Tab delimited (TSV) file with spline results. The"
+            " first timepoint provides the x coordinates, and the second"
+            " provides the y coordinates.",
+        "highlight_data": "Path to a file or a directory with multiple files"
+            " which contain information needed to highlight significant taxa."
+            " The file(s) should be tab delimited (TSV format).",
+        "highlight_thresholds": "Maximum value queries can be to be"
+            " highlighted. Note: If calling this function with one threshold,"
+            " please also include that value in a list.",
+        "species_taxa_file": "Tab delimited (TSV) file which maps a species"
+            " name to an ID."
+    },
+    name="Z Score Scatter Visualization",
+    description="Creates a scatter plot using Z scores from two samples."
+        " A spline line can also be added. Significant points can also be"
+        " highlighted by passing metadata, as well."
 )
