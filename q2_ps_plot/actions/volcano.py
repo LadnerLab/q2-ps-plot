@@ -5,30 +5,28 @@ import numpy as np
 import pandas as pd
 
 
-# TODO: suggest making this action as general as possible
 def volcano(
         output_dir: str, 
         x: list = None,
         y: list = None,
         taxa: list = None,
-        xy_dir: str = None,
+        xy_dir: str = "",
         xy_access: list = ["x", "y"],
-        taxa_access: str = None,
+        taxa_access: str = "",
         x_threshold: float = 0.4,
         y_thresholds: list = [0.05],
         log: bool = True,
         xy_labels: list = ["x", "y"],
         titles: list = [""]
 ) -> None:
-    # TODO: change into temp directory
     alt.data_transformers.disable_max_rows()
 
-    if (xy_dir is not None
+    if (xy_dir != ""
             and x is None
             and y is None
             and taxa is None
             and xy_access is not None
-            and taxa_access is not None):
+            and taxa_access != ""):
         x = []
         y = []
         taxa = []
@@ -40,9 +38,12 @@ def volcano(
             data = pd.read_csv(f"{xy_dir}/{file}", sep="\t")
             x.append(data.loc[:, xy_access[0]].to_list())
             y.append(data.loc[:, xy_access[1]].to_list())
-            taxa.append(data.loc[:, taxa_access].to_list())
+            if taxa_access != "":
+                taxa.append(data.loc[:, taxa_access].to_list())
+            else:
+                taxa.append([])
         titles = sorted(titles)
-    elif (xy_dir is None
+    elif (xy_dir == ""
             and x is not None
             and y is not None
             and taxa is not None):

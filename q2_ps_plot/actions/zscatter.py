@@ -11,10 +11,10 @@ def zscatter(
         output_dir: str,
         zscores: PepsirfContingencyTSVFormat,
         pairs_file: str,
-        spline_file: str = None,
-        highlight_data: str = None,
+        spline_file: str = "",
+        highlight_data: str = "",  # TODO: rename
         highlight_thresholds: list = None,
-        species_taxa_file: str = None
+        species_taxa_file: str = ""
 ) -> None:
     alt.data_transformers.disable_max_rows()
 
@@ -31,18 +31,28 @@ def zscatter(
             for line in fh.readlines()
         ]
     pairs = sorted(pairs)
-    with open(species_taxa_file, "r") as fh:
-        species_taxa = [
-            tuple(line.replace("\n", "").split("\t"))
-            for line in fh.readlines()
-        ]
 
-    if not os.path.isfile(highlight_data):
-        files = os.listdir(highlight_data)
-        path = highlight_data
+    if species_taxa_file != "":
+        with open(species_taxa_file, "r") as fh:
+            species_taxa = [
+                tuple(line.replace("\n", "").split("\t"))
+                for line in fh.readlines()
+            ]
+
+    if os.path.exists(highlight_data):
+        if not os.path.isfile(highlight_data):
+            files = os.listdir(highlight_data)
+            path = highlight_data
+        else:
+            files = highlight_data
+            path = ""
     else:
-        files = highlight_data
-        path = "."
+        print(
+            "Error: Did not receive a file or directory path via"
+            " 'highlight_data' parameter!"
+            f" ('highlight_data' = {highlight_data})"
+        )
+        return
     files = sorted(files)
 
     charts = []
@@ -121,7 +131,8 @@ def zscatter(
             chart = alt.layer(chart, spline_chart)   
 
 
-        if species_taxa_file and highlight_thresholds:
+        highlight_df = None
+        if species_taxa_file != "" and highlight_thresholds:
             samples = zscores.columns.to_list()
             highlight_dict = {
                 "x": list(), "y": list(),
@@ -133,7 +144,20 @@ def zscatter(
                 f"{path}/{file}", sep="\t"
             ).iloc[:, [3, 4, 8]]
             p_vals = highlight_df.iloc[:, 0].to_list()
+        elif highlight_thresholds:
+            samples = zscores.columns.to_list()
+            highlight_dict = {
+                "x": list(), "y": list(),
+                "tooltip": list(), "highlight": list()
+            }
 
+            print(f"Working with highlight file: {path}/{file}")
+            highlight_df = pd.read_csv(
+                f"{path}/{file}", sep="\t"
+            ).iloc[:, [0, 3, 4]]
+            p_vals = highlight_df.iloc[:, 0].to_list()
+
+        if highlight_df is not None:
             thresh_count = len(highlight_thresholds)
             for i in range(len(p_vals)):
                 if p_vals[i] < highlight_thresholds[f % thresh_count]:
