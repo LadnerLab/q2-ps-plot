@@ -15,7 +15,7 @@ import math
 '''
 TODO:
 - create format type for input files (later)
-- allow user to specify which names to use
+- let user specify file name and directory for heatmap file
 
 '''
 
@@ -39,7 +39,8 @@ def epimap(
     z_thresh: float = 0,
     xtick_spacing: int = 20,
     color_by_col: str = "Category",
-    color_scheme: str = "dark2") -> None:
+    color_scheme: str = "dark2",
+    enriched_output_dir: str = "epimap-enriched-dir") -> None:
 
     # read in metadata
     mF = metadata_filepath
@@ -126,6 +127,19 @@ def epimap(
     final_plot = chart + x_line + y_line
 
     final_plot.save(os.path.join(output_dir, "index.html"), scale_factor=10.0)
+
+    # setup enriched dir file to use with heatmap
+    try:
+        os.mkdir(enriched_output_dir)
+    except FileExistsError:
+        pass
+    open( f"{enriched_output_dir}/failedEnrichment.txt", "w" ).close()
+    # save the data that passes the next threshhold
+    with open( f"{enriched_output_dir}/subset_enriched.txt", "w" ) as file:
+        for index, row in chartDf.iterrows():
+            if (row["ZScoreDiff"] >= z_thresh) and (row["PVal"] <= p_thresh):
+                file.write(row["CodeName"])
+                file.write("\n")
 
 
 # source: https://github.com/jtladner/Modules

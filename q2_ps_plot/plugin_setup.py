@@ -421,82 +421,6 @@ plugin.pipelines.register_function(
     description="Creates a scatterplot for mutant peptides with tsv filepaths instead of QZA files"
 )
 
-
-# all for now, but type should be converted later
-epimap_shared_parameters = {
-    "metadata_filepath": Str,
-    "peptide_seq_filepath": Str,
-    "zscore_filepath": Str,
-    "p_thresh": Float,
-    "z_thresh": Float,
-    "g1_enrichment_subset": List[Str],
-    "g2_enrichment_subset": List[Str],
-    "fullname_header": Str,
-    "codename_header": Str,
-    "protein_header": Str,
-    "category_header": Str,
-    "alascanpos_header": Str,
-    "include_categories": List[Str],
-    "horizontal_line_pos": List[Float],
-    "xtick_spacing": Int,
-    "color_by_col": Str,
-    "color_scheme": Str
-}
-
-epimap_shared_param_description = {
-    "metadata_filepath": "",
-    "peptide_seq_filepath": "",
-    "zscore_filepath": "",
-    "p_thresh": "",
-    "z_thresh": "",
-    "g1_enrichment_subset": "subnames to use for group 1."
-                            " (Example argument: --g1-enrichment-subset string1 string2 string3).",
-    "g2_enrichment_subset": "subnames to use for group 2."
-                            " (Example argument: --g2-enrichment-subset string1 string2 string3)."
-                            " if not used, group 2 will be everything not in group 1.",
-    "fullname_header": "",
-    "codename_header": "",
-    "protein_header": "",
-    "category_header": "",
-    "alascanpos_header": "",
-    "include_categories": "category types to be included "
-                            " (Example argument: --p-include-categories string1 string2 string3).",
-    "horizontal_line_pos": "Positions for horizional lines on the graph."
-                    " p_thresh will always be a line."
-                    " (Example argument: --p-horizontal-line-pos float1 float2 float3)",
-    "xtick_spacing": "",
-    "color_by_col": "",
-    "color_scheme": ""
-}
-
-# action set up for epimap module
-plugin.visualizers.register_function(
-    function=epimap,
-    inputs={},
-    parameters=epimap_shared_parameters,
-    input_descriptions=None,
-    parameter_descriptions=epimap_shared_param_description,
-    name="Epitope Mapping",
-    description="Test"
-)
-
-plugin.pipelines.register_function(
-    function=epimap_dir,
-    inputs={},
-    outputs=[
-        ("epimap_vis", Visualization)
-    ],
-    parameters={
-    **epimap_shared_parameters
-    },
-    input_descriptions=None,
-    output_descriptions=None,
-    parameter_descriptions={
-    **epimap_shared_param_description
-    },
-    name="Epitope Mapping Dir",
-    description="Test."
-
 plugin.visualizers.register_function(
     function=actions.volcano,
     inputs={},
@@ -590,4 +514,90 @@ plugin.visualizers.register_function(
     description="Creates a scatter plot using Z scores from two samples."
         " A spline line can also be added. Significant points can also be"
         " highlighted by passing metadata, as well."
+)
+
+
+# all for now, but type should be converted later
+epimap_shared_parameters = {
+    "metadata_filepath": Str,
+    "peptide_seq_filepath": Str,
+    "zscore_filepath": Str,
+    "p_thresh": Float,
+    "z_thresh": Float,
+    "g1_enrichment_subset": List[Str],
+    "g2_enrichment_subset": List[Str],
+    "fullname_header": Str,
+    "codename_header": Str,
+    "protein_header": Str,
+    "category_header": Str,
+    "alascanpos_header": Str,
+    "include_categories": List[Str],
+    "horizontal_line_pos": List[Float],
+    "xtick_spacing": Int,
+    "color_by_col": Str,
+    "color_scheme": Str,
+    "enriched_output_dir": Str
+}
+
+epimap_shared_param_description = {
+    "metadata_filepath": "Metadata file contaning the following columns (or similar): "
+                        "FullName, CodeName, Protein, Category, AlaScanPos. "
+                        " Header names can be customized in parameters.",
+    "peptide_seq_filepath": "Fasta file with each code name header and its sequence. ",
+    "zscore_filepath": "Tab delimited file with sample names as columns adn code names as rows "
+                        " with their calculated z-scores.",
+    "p_thresh": "Test p-value threshold. It will be displayed as a dotted line perpendicular "
+                "to the y-axis.",
+    "z_thresh": "Z-score difference threshold. It will be displayed as a dotted line perpendicular "
+                "to the x-axis.",
+    "g1_enrichment_subset": "Subnames to use for group 1."
+                            " (Example argument: --g1-enrichment-subset string1 string2 string3).",
+    "g2_enrichment_subset": "Subnames to use for group 2."
+                            " (Example argument: --g2-enrichment-subset string1 string2 string3)."
+                            " if not used, group 2 will be everything not in group 1.",
+    "fullname_header": "Respective header name in metadata file.",
+    "codename_header": "Respective header name in metadata file.",
+    "protein_header": "Respective header name in metadata file.",
+    "category_header": "Respective header name in metadata file.",
+    "alascanpos_header": "Respective header name in metadata file.",
+    "include_categories": "category types to be included "
+                            " (Example argument: --p-include-categories string1 string2 string3).",
+    "horizontal_line_pos": "Positions for horizional lines on the graph."
+                    " p_thresh will always be a line."
+                    " (Example argument: --p-horizontal-line-pos float1 float2 float3)",
+    "xtick_spacing": "Unit spacing in between x-axis ticks",
+    "color_by_col": "Metadata column header to color code by",
+    "color_scheme": "String of the name of a color scheme for the heatmap."
+        " Color schemes can be found here: https://vega.github.io/vega/docs/"
+        "schemes/",
+    "enriched_output_dir": "Directory to save codenames above illustrated thresholds."
+}
+
+# action set up for epimap module
+plugin.visualizers.register_function(
+    function=epimap,
+    inputs={},
+    parameters=epimap_shared_parameters,
+    input_descriptions=None,
+    parameter_descriptions=epimap_shared_param_description,
+    name="Epitope Mapping",
+    description="Test"
+)
+
+plugin.pipelines.register_function(
+    function=epimap_dir,
+    inputs={},
+    outputs=[
+        ("epimap_vis", Visualization)
+    ],
+    parameters={
+    **epimap_shared_parameters
+    },
+    input_descriptions=None,
+    output_descriptions=None,
+    parameter_descriptions={
+    **epimap_shared_param_description
+    },
+    name="Epitope Mapping Dir",
+    description="Test."
 )

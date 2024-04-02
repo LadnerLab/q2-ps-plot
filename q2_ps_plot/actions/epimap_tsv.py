@@ -24,7 +24,8 @@ def epimap_dir(
     z_thresh=0,
     xtick_spacing=20,
     color_by_col="Category",
-    color_scheme="dark2"
+    color_scheme="dark2",
+    enriched_output_dir="epimap-enriched-dir"
     ):
 
     # collect the epimpap module action
@@ -49,7 +50,8 @@ def epimap_dir(
         z_thresh=z_thresh,
         xtick_spacing=xtick_spacing,
         color_by_col=color_by_col,
-        color_scheme=color_scheme
+        color_scheme=color_scheme,
+        enriched_output_dir=enriched_output_dir
     )
 
     #return the visualization
