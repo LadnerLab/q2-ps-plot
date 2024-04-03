@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from q2_pepsirf.format_types import (
     Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment,
     InfoSNPN, ProteinAlignment, MutantReference
@@ -8,10 +9,12 @@ from q2_ps_plot.actions.heatmap import proteinHeatmap
 from q2_ps_plot.actions.heatmap_tsv import proteinHeatmap_dir
 from q2_ps_plot.actions.scatter import repScatters, mutantScatters
 from q2_ps_plot.actions.scatter_tsv import repScatters_tsv, mutantScatters_tsv
+from q2_ps_plot.actions.epimap import epimap
+from q2_ps_plot.actions.epimap_tsv import epimap_dir
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 from qiime2.plugin import (
     Plugin, SemanticType, model, Int, Range, MetadataColumn, Categorical, Str,
-    List, Visualization, Metadata, Bool, Float
+    List, Visualization, Metadata, Bool, Float, Metadata, Numeric
 )
 
 import importlib
@@ -260,7 +263,9 @@ proteinHeatmap_parameters = {
     "enriched_suffix": Str,
     "align_header": Str,
     "color_scheme": Str,
-    "align_delim": Str
+    "align_delim": Str,
+    "include_species": Bool,
+    "species_header": Str
 }
 
 proteinHeatmap_parameter_descriptions = {
@@ -270,7 +275,9 @@ proteinHeatmap_parameter_descriptions = {
     "color_scheme": "String of the name of a color scheme for the heatmap."
         " Color schemes can be found here: https://vega.github.io/vega/docs/"
         "schemes/",
-    "align_delim": "The deliminator that separates the alignment positions."
+    "align_delim": "The deliminator that separates the alignment positions.",
+    "include_species": "Use if alignment file(s) include a \'Species\' column.",
+    "species_header": "The name of the header to which identifies the species column"
 }
 
 # action set up for proteinHeatmap module
@@ -283,17 +290,17 @@ plugin.visualizers.register_function(
     parameters=proteinHeatmap_parameters,
     input_descriptions={
         "enriched_dir": "A PairwiseEnrichment semantic type or .qza. This file"
-            " is the output of q2-pepsirf's enrich module",
-        "protein_alignment": "A director containing a tab delimited file"
-            " containing the protein and the filepath to the associated"
-            " alignment file. The file should start with the header as"
-            " 'ProtName' and be named 'manifest.tsv'. And the files containing"
-            " the protein alignment information"
+        " is the output of q2-pepsirf's enrich module",
+        "protein_alignment": "A directory containing a tab delimited file"
+        " containing the protein and the filepath to the associated"
+        " alignment file. The file should start with the header as"
+        " 'ProtName' and be named 'manifest.tsv'. And the files containing"
+        " the protein alignment information"
     },
     parameter_descriptions=proteinHeatmap_parameter_descriptions,
     name="Protein Alignment Heatmap",
     description="Creates a heatmap based on the alignment of peptides in the"
-        " enriched peptides"
+    " enriched peptides."
 )
 
 plugin.pipelines.register_function(
@@ -311,17 +318,17 @@ plugin.pipelines.register_function(
     output_descriptions=None,
     parameter_descriptions={
         "enriched_dir_filepath": "Enriched directory filepath. This file is"
-            " the output of q2-pepsirf's enrich module",
-        "protein_alignment_filepath": "A director containing a tab delimited"
-            " file containing the protein and the filepath to the associated"
-            " alignment file. The file should start with the header as"
-            " 'ProtName' and be named 'manifest.tsv'. And the files containing"
-            " the protein alignment information",
+        " the output of q2-pepsirf's enrich module.",
+        "protein_alignment_filepath": "Filepath of the protein alignment"
+        " manifest file. The manifest file is tab delimited containing a"
+        " header with the column names 'ProtName' and 'AlignFile'. Each line"
+        " specifies the protein and the filepath to the associated alignment"
+        " file.",
         **proteinHeatmap_parameter_descriptions
     },
     name="Protein Alignment Heatmap Dir",
     description="Creates a heatmap based on the alignment of peptides in the"
-        " enriched peptides with directory filepaths instead of QZA files"
+    " enriched peptides with directory filepaths instead of QZA files."
 )
 
 mutantScatters_parameters = {
@@ -371,7 +378,7 @@ mutantScatters_param_descript = {
 # action set up for mutantScatters module
 plugin.visualizers.register_function(
     function=mutantScatters,
-    inputs={
+    inputs={ 
         "zscore": FeatureTable[Zscore],
         "reference_file": MutantReference
     },
@@ -412,4 +419,185 @@ plugin.pipelines.register_function(
     },
     name='Mutant Scatters',
     description="Creates a scatterplot for mutant peptides with tsv filepaths instead of QZA files"
+)
+
+plugin.visualizers.register_function(
+    function=actions.volcano,
+    inputs={},
+    input_descriptions={},
+    parameters={
+        "x": List[Float],
+        "y": List[Float],
+        "taxa": List[Str],
+        "xy_dir": Str,
+        "xy_access": List[Str],
+        "taxa_access": Str,
+        "x_threshold": Float,
+        "y_thresholds": List[Float],
+        "log": Bool,
+        "xy_labels": List[Str],
+        "titles": List[Str]
+    },
+    parameter_descriptions={
+        "x": "Coordinates along the x-axis at which to plot points.",
+        "y": "Coordinates along the y-axis at which to plot points.",
+        "taxa": "List of identifiers, positionally associated with passed"
+            " p-values and enrichment scores. These identifiers will be"
+            " displayed when the user mouses over a point in the chart.",
+        "xy_dir": "Directory containing tab delimited (TSV) files with"
+            " plotting data. Provide this as an alternative if many plots are"
+            " required.",
+        "xy_access": "List with column names in the tables collected in the"
+            " 'xy_dir' which should be used to grab x and y values,"
+            " respectively. Refer to default as an example. Only list length"
+            " of 2 is supported.",
+        "taxa_access": "Column name in tables collected in the 'xy_dir' which"
+            " should be used to grab highlighting information.",
+        "x_threshold": "Specifies the minimum ES a taxa can have in order to"
+            " be highlighted in the plot. If a taxa's ES is less than the"
+            " provided threshold, then the taxa is not eligible to be"
+            " highlighted. Please note the taxa must also have a p-value less"
+            " than the provided p-value threshold to also be eligible for"
+            " highlighting.",
+        "y_thresholds": "Specifies the maximum p-value a taxa can have in"
+            " order to be highlighted in the plot. If a taxa's p-value is"
+            " greater than the provided threshold, then the taxa is not"
+            " eligible to be highlighted. Please not the taxa must also have"
+            " an ES greater than the provided ES threshold to also be eligible"
+            " for highlighting. Note: If calling from a function with one"
+            " threshold, please put that value in a list.",
+        "log": "Specifies whether to or not transform y values. If True, the"
+            " log (base 10) of the y values will be plotted in ascending"
+            " order; otherwise, the passed y values will be plotted in"
+            " descending order.",
+        "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
+        "titles": "List of chart titles. This will most likely be useful when"
+            " multiple visualizations of different data is required."
+    },
+    name="Volcano Visualizer",
+    description="Generates a volcano plot given x and y values. Significant"
+        " points will be highlighted is identifiers are provided."
+)
+
+
+plugin.visualizers.register_function(
+    function=actions.zscatter,
+    inputs={
+        "zscores": FeatureTable[Zscore],
+    },
+    input_descriptions={
+        "zscores": "Matrix of Z scores."
+    },
+    parameters={
+        "pairs_file": Str,
+        "spline_file": Str,
+        "highlight_data": Str,
+        "highlight_thresholds": List[Float],
+        "species_taxa_file": Str
+    },
+    parameter_descriptions={
+        "pairs_file": "Tab delimited (TSV) file with a pair of sample"
+            " replicates on each line.",
+        "spline_file": "Tab delimited (TSV) file with spline results. The"
+            " first timepoint provides the x coordinates, and the second"
+            " provides the y coordinates.",
+        "highlight_data": "Path to a file or a directory with multiple files"
+            " which contain information needed to highlight significant taxa."
+            " The file(s) should be tab delimited (TSV format).",
+        "highlight_thresholds": "Maximum value queries can be to be"
+            " highlighted. Note: If calling this function with one threshold,"
+            " please also include that value in a list.",
+        "species_taxa_file": "Tab delimited (TSV) file which maps a species"
+            " name to an ID."
+    },
+    name="Z Score Scatter Visualization",
+    description="Creates a scatter plot using Z scores from two samples."
+        " A spline line can also be added. Significant points can also be"
+        " highlighted by passing metadata, as well."
+)
+
+
+# all for now, but type should be converted later
+epimap_shared_parameters = {
+    "metadata_filepath": Str,
+    "peptide_seq_filepath": Str,
+    "zscore_filepath": Str,
+    "p_thresh": Float,
+    "z_thresh": Float,
+    "g1_enrichment_subset": List[Str],
+    "g2_enrichment_subset": List[Str],
+    "fullname_header": Str,
+    "codename_header": Str,
+    "protein_header": Str,
+    "category_header": Str,
+    "alascanpos_header": Str,
+    "include_categories": List[Str],
+    "horizontal_line_pos": List[Float],
+    "xtick_spacing": Int,
+    "color_by_col": Str,
+    "color_scheme": Str,
+    "enriched_output_dir": Str
+}
+
+epimap_shared_param_description = {
+    "metadata_filepath": "Metadata file contaning the following columns (or similar): "
+                        "FullName, CodeName, Protein, Category, AlaScanPos. "
+                        " Header names can be customized in parameters.",
+    "peptide_seq_filepath": "Fasta file with each code name header and its sequence. ",
+    "zscore_filepath": "Tab delimited file with sample names as columns adn code names as rows "
+                        " with their calculated z-scores.",
+    "p_thresh": "Test p-value threshold. It will be displayed as a dotted line perpendicular "
+                "to the y-axis.",
+    "z_thresh": "Z-score difference threshold. It will be displayed as a dotted line perpendicular "
+                "to the x-axis.",
+    "g1_enrichment_subset": "Subnames to use for group 1."
+                            " (Example argument: --g1-enrichment-subset string1 string2 string3).",
+    "g2_enrichment_subset": "Subnames to use for group 2."
+                            " (Example argument: --g2-enrichment-subset string1 string2 string3)."
+                            " if not used, group 2 will be everything not in group 1.",
+    "fullname_header": "Respective header name in metadata file.",
+    "codename_header": "Respective header name in metadata file.",
+    "protein_header": "Respective header name in metadata file.",
+    "category_header": "Respective header name in metadata file.",
+    "alascanpos_header": "Respective header name in metadata file.",
+    "include_categories": "category types to be included "
+                            " (Example argument: --p-include-categories string1 string2 string3).",
+    "horizontal_line_pos": "Positions for horizional lines on the graph."
+                    " p_thresh will always be a line."
+                    " (Example argument: --p-horizontal-line-pos float1 float2 float3)",
+    "xtick_spacing": "Unit spacing in between x-axis ticks",
+    "color_by_col": "Metadata column header to color code by",
+    "color_scheme": "String of the name of a color scheme for the heatmap."
+        " Color schemes can be found here: https://vega.github.io/vega/docs/"
+        "schemes/",
+    "enriched_output_dir": "Directory to save codenames above illustrated thresholds."
+}
+
+# action set up for epimap module
+plugin.visualizers.register_function(
+    function=epimap,
+    inputs={},
+    parameters=epimap_shared_parameters,
+    input_descriptions=None,
+    parameter_descriptions=epimap_shared_param_description,
+    name="Epitope Mapping",
+    description="Test"
+)
+
+plugin.pipelines.register_function(
+    function=epimap_dir,
+    inputs={},
+    outputs=[
+        ("epimap_vis", Visualization)
+    ],
+    parameters={
+    **epimap_shared_parameters
+    },
+    input_descriptions=None,
+    output_descriptions=None,
+    parameter_descriptions={
+    **epimap_shared_param_description
+    },
+    name="Epitope Mapping Dir",
+    description="Test."
 )

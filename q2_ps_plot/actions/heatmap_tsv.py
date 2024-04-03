@@ -7,7 +7,10 @@ def proteinHeatmap_dir(
         enriched_suffix="_enriched.txt",
         align_header="AlignPos",
         align_delim="~",
-        color_scheme="viridis"):
+        include_species=False,
+        species_header="Species",
+        color_scheme="viridis"
+        ):
     
     proteinHeatmap = ctx.get_action("ps-plot", "proteinHeatmap")
 
@@ -29,6 +32,8 @@ def proteinHeatmap_dir(
         enriched_suffix=enriched_suffix,
         align_header=align_header,
         align_delim=align_delim,
+        include_species=include_species,
+        species_header=species_header,
         color_scheme=color_scheme
     )
 

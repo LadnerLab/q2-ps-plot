@@ -347,9 +347,11 @@ def zenrich(
         sample_dropdown = alt.binding_select(
             options=dropList, name="Sample Select"
         )
-        sample_select = alt.selection_single(
-            fields=["sample"], bind=sample_dropdown,
-            name="sample", init={"sample": dropList[0]}
+        sample_select = alt.selection_point(
+            fields=["sample"],
+            bind=sample_dropdown,
+            name="sample",
+            value=[{"sample": dropList[0]}]
         )
         
         # set color by as nominal
@@ -376,7 +378,7 @@ def zenrich(
                 legend=alt.Legend(title="Z Score Thresholds")
             ),
             tooltip=tooltip
-        ).add_selection(
+        ).add_params(
             sample_select
         ).transform_filter(
             sample_select
