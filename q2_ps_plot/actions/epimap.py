@@ -2,6 +2,7 @@ from collections import defaultdict
 from q2_pepsirf.format_types import (
     PepsirfContingencyTSVFormat, Zscore, PepsirfInfoSNPNFormat
 )
+from q2_ps_plot.actions.chart import make_alt_chart
 
 import altair as alt
 import glob
@@ -40,7 +41,9 @@ def epimap(
     xtick_spacing: int = 20,
     color_by_col: str = "Category",
     color_scheme: str = "dark2",
-    enriched_output_dir: str = "epimap-enriched-dir") -> None:
+    enriched_output_dir: str = "epimap-enriched-dir",
+    enriched_output_filepath: str = "epimap-peptides.tsv"
+    ) -> None:
 
     # read in metadata
     mF = metadata_filepath
@@ -87,7 +90,7 @@ def epimap(
     chartDf = pd.DataFrame.from_dict(chart_dict)
     #chartDf.to_csv("test.csv")
 
-    chart = alt.Chart(chartDf).mark_circle().encode(
+    chart = alt.Chart(chartDf).mark_circle(size=60).encode(
         alt.X(
             "ZScoreDiff:Q",
             title="Zscore Difference",
@@ -120,13 +123,23 @@ def epimap(
             "Seq:N"
             ]
         )
+    
 
-    y_line = alt.Chart(pd.DataFrame({'y': [p_thresh]})).mark_rule(strokeDash=[2,1], strokeWidth=2).encode(y='y')
-    x_line = alt.Chart(pd.DataFrame({'x': [z_thresh]})).mark_rule(strokeDash=[2,1], strokeWidth=2).encode(x='x')
+    y_line = alt.Chart(pd.DataFrame({'y': [p_thresh]})).mark_rule(strokeDash=[2,1], strokeWidth=1).encode(y='y')
+    x_line = alt.Chart(pd.DataFrame({'x': [z_thresh]})).mark_rule(strokeDash=[2,1], strokeWidth=1).encode(x='x')
 
     final_plot = chart + x_line + y_line
 
-    final_plot.save(os.path.join(output_dir, "index.html"), scale_factor=10.0)
+    final_plot = final_plot.configure_view(
+                                continuousHeight=500,
+                                continuousWidth=500
+                                )
+
+    final_plot.save(os.path.join(output_dir, "index.html"))
+
+    # save peptide data to outfile (tsv)
+    threshDf = chartDf.loc[(chartDf['ZScoreDiff'] >= z_thresh) & (chartDf['PVal'] <= p_thresh)]
+    threshDf[["CodeName", "ZScoreDiff", "PVal"]].to_csv(enriched_output_filepath, sep="\t", index=False)
 
     # setup enriched dir file to use with heatmap
     try:
@@ -134,12 +147,8 @@ def epimap(
     except FileExistsError:
         pass
     open( f"{enriched_output_dir}/failedEnrichment.txt", "w" ).close()
-    # save the data that passes the next threshhold
-    with open( f"{enriched_output_dir}/subset_enriched.txt", "w" ) as file:
-        for index, row in chartDf.iterrows():
-            if (row["ZScoreDiff"] >= z_thresh) and (row["PVal"] <= p_thresh):
-                file.write(row["CodeName"])
-                file.write("\n")
+    # save the peptide names to directory file
+    threshDf["CodeName"].to_csv(f"{enriched_output_dir}/subset_enriched.txt", index=False, header=False)
 
 
 # source: https://github.com/jtladner/Modules

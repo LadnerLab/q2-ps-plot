@@ -131,6 +131,7 @@ def proteinHeatmap(
         count_grouping.append("species")
         label_grouping.append("species")
 
+
     #Create a new sample column to handle NaN values in "sample"
     newDf["sampleDummy"] = newDf["sample"].fillna("dummy")
     # create a count of the x values
@@ -174,12 +175,15 @@ def proteinHeatmap(
             name="sample", value=[{"sample": sampleList[0]}]
         )
 
+        y_info = ["species:N", "Species"]
+    else:
+        y_info = ["sample:N", "Samples"]
+
+
     #set max rows for altair to none
     alt.data_transformers.enable("default", max_rows=None)
 
-    if include_species:
-        # generate the heatmap with species as y
-        chart = alt.Chart(newDf).mark_rect().encode(
+    chart = alt.Chart(newDf).mark_rect().encode(
             alt.X(
                 "x:Q",
                 title="Alignment",
@@ -188,37 +192,8 @@ def proteinHeatmap(
             ),
 
             alt.Y(
-                "species:N",
-                title="Species"
-            ),
-            alt.Color(
-                "count:Q",
-                scale=alt.Scale(
-                    scheme=color_scheme
-                )
-            ),
-            tooltip=["label:N"]
-        ).add_params(
-            sample_select
-        ).transform_filter(
-            sample_select
-        ).add_params(
-            protein_select
-        ).transform_filter(
-            protein_select
-        )
-    else:
-        # generate heatmap with sample as y
-        chart = alt.Chart(newDf).mark_rect().encode(
-            alt.X(
-                "x:Q",
-                title="Alignment",
-                bin=alt.Bin(maxbins=x_max, minstep=1),
-                scale=alt.Scale(zero=True)
-            ),
-            alt.Y(
-                "sample:N",
-                title="Samples"
+                y_info[0],
+                title=y_info[1]
             ),
             alt.Color(
                 "count:Q",
@@ -232,6 +207,14 @@ def proteinHeatmap(
         ).transform_filter(
             protein_select
         )
+
+    if include_species:
+        # generate the heatmap with species as y
+        chart = chart.add_params(
+                        sample_select
+                    ).transform_filter(
+                        sample_select
+                    )
 
     # save the chart into the qzv file index
     chart.save(os.path.join(output_dir, "index.html"), scale_factor=10.0)

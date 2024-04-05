@@ -13,7 +13,7 @@ def proteinHeatmap_dir(
         ):
     
     proteinHeatmap = ctx.get_action("ps-plot", "proteinHeatmap")
-
+    
     enriched_dir = ctx.make_artifact(
         type="PairwiseEnrichment",
         view=enriched_dir_filepath,
