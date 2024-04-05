@@ -536,7 +536,8 @@ epimap_shared_parameters = {
     "xtick_spacing": Int,
     "color_by_col": Str,
     "color_scheme": Str,
-    "enriched_output_dir": Str
+    "enriched_output_dir": Str,
+    "enriched_output_filepath": Str
 }
 
 epimap_shared_param_description = {
@@ -570,7 +571,10 @@ epimap_shared_param_description = {
     "color_scheme": "String of the name of a color scheme for the heatmap."
         " Color schemes can be found here: https://vega.github.io/vega/docs/"
         "schemes/",
-    "enriched_output_dir": "Directory to save codenames above illustrated thresholds."
+    "enriched_output_dir": "Directory to save codenames above illustrated thresholds. "
+                            "Intended to be used with the heatmap add-on.",
+    "enriched_output_filepath": "Filepath to write TSV with each peptide, its p-value calculation, "
+                                "and its z-score difference calculation."
 }
 
 # action set up for epimap module

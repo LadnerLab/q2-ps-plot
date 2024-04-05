@@ -25,7 +25,8 @@ def epimap_dir(
     xtick_spacing=20,
     color_by_col="Category",
     color_scheme="dark2",
-    enriched_output_dir="epimap-enriched-dir"
+    enriched_output_dir="epimap-enriched-dir",
+    enriched_output_filepath="epimap-peptides.tsv"
     ):
 
     # collect the epimpap module action
@@ -51,7 +52,8 @@ def epimap_dir(
         xtick_spacing=xtick_spacing,
         color_by_col=color_by_col,
         color_scheme=color_scheme,
-        enriched_output_dir=enriched_output_dir
+        enriched_output_dir=enriched_output_dir,
+        enriched_output_filepath=enriched_output_filepath
     )
 
     #return the visualization
