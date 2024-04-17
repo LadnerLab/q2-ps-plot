@@ -1,8 +1,8 @@
 from collections import defaultdict
 from q2_pepsirf.format_types import (
-    PepsirfContingencyTSVFormat, Zscore, PepsirfInfoSNPNFormat
+    PepsirfInfoSNPNFormat, PeptideFastaFmt, PepsirfContingencyTSVFormat
 )
-from q2_ps_plot.actions.chart import make_alt_chart
+from q2_ps_plot.actions.chart import AltChart
 
 import altair as alt
 import glob
@@ -16,7 +16,7 @@ import math
 '''
 TODO:
 - create format type for input files (later)
-- let user specify file name and directory for heatmap file
+    - peptide_seq_filepath: PeptideFastaFmt, zscore_filepath: PepsirfContingencyTSVFormat?
 
 '''
 
@@ -88,33 +88,22 @@ def epimap(
                 chart_dict['PVal'].append(res.pvalue)
 
     chartDf = pd.DataFrame.from_dict(chart_dict)
-    #chartDf.to_csv("test.csv")
 
-    chart = alt.Chart(chartDf).mark_circle(size=60).encode(
-        alt.X(
-            "ZScoreDiff:Q",
-            title="Zscore Difference",
-            axis=alt.Axis(
-                values=[z_thresh] + list(range(
-                        round("down", (chartDf["ZScoreDiff"].min())), round("up", (chartDf["ZScoreDiff"].max())), 
+    chart = AltChart(
+        dataframe=chartDf,
+        mark_size=60,
+        x_val="ZScoreDiff:Q",
+        x_title="Zscore Difference",
+        x_axis_ticks=[z_thresh] + list(range(
+                        round("down", (chartDf["ZScoreDiff"].min())), 
+                        round("up", (chartDf["ZScoreDiff"].max())), 
                         xtick_spacing
-                        )
-                    )
-                )
-            ),
-        alt.Y(
-            "PVal:Q",
-            title="T-test p-value",
-            scale=alt.Scale(type="log", reverse=True),
-            axis=alt.Axis(values=[p_thresh] + horizontal_line_pos)
-            ),
-        alt.Color(
-            f"{color_by_col}:N",
-            scale=alt.Scale(
-                scheme=color_scheme
-                )
-            ),
-
+                        )),
+        y_val="PVal:Q",
+        y_title="T-test p-value",
+        y_axis_ticks=[p_thresh] + horizontal_line_pos,
+        color_by=f"{color_by_col}:N",
+        color_scheme=color_scheme,
         tooltip=[
             "CodeName:N",
             "FullName:N",
@@ -122,7 +111,7 @@ def epimap(
             "Category:N",
             "Seq:N"
             ]
-        )
+        ).make_epimap()
     
 
     y_line = alt.Chart(pd.DataFrame({'y': [p_thresh]})).mark_rule(strokeDash=[2,1], strokeWidth=1).encode(y='y')
@@ -142,10 +131,9 @@ def epimap(
     threshDf[["CodeName", "ZScoreDiff", "PVal"]].to_csv(enriched_output_filepath, sep="\t", index=False)
 
     # setup enriched dir file to use with heatmap
-    try:
+    if not os.path.exists(enriched_output_dir):
         os.mkdir(enriched_output_dir)
-    except FileExistsError:
-        pass
+
     open( f"{enriched_output_dir}/failedEnrichment.txt", "w" ).close()
     # save the peptide names to directory file
     threshDf["CodeName"].to_csv(f"{enriched_output_dir}/subset_enriched.txt", index=False, header=False)
@@ -172,6 +160,7 @@ def read_fasta_lists(file):
     
     return names, seqs
 
+# source: https://github.com/jtladner/Modules
 def read_fasta_dict_upper(file):
     names, seqs = read_fasta_lists(file)
     seqs = [x.upper() for x in seqs]

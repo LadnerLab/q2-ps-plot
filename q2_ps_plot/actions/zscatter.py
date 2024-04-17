@@ -83,6 +83,7 @@ def zscatter(
         chart_height = 500
         chart_width = chart_height + (20*ratio)
 
+        # NOTE: when implementing chart creation class, using .properties(width=chart_width,height=chart_height)
         heatmap_chart = alt.Chart(
             heatmap_df, width=chart_width, height=chart_height
         ).mark_rect().encode(
