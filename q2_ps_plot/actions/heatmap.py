@@ -1,5 +1,6 @@
 from collections import defaultdict
 from q2_pepsirf.format_types import EnrichedPeptideDirFmt, ProteinAlignmentDirFormat
+from q2_ps_plot.actions.chart import AltChart
 
 import altair as alt
 import glob
@@ -215,6 +216,23 @@ def proteinHeatmap(
                     ).transform_filter(
                         sample_select
                     )
+    else:
+        chart = AltChart(
+            dataframe=newDf,
+            x_val="x:Q",
+            x_title="Alignment",
+            y_val="sample:N",
+            y_title="Samples",
+            tooltip=["label:N"],
+            x_max=x_max,
+            color_by="count:Q", 
+            color_scheme=color_scheme
+            ).make_heatmap(
+            ).add_params(
+                protein_select
+            ).transform_filter(
+                protein_select
+            )
 
     # save the chart into the qzv file index
     chart.save(os.path.join(output_dir, "index.html"), scale_factor=10.0)

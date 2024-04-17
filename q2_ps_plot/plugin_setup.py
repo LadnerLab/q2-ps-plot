@@ -573,7 +573,7 @@ epimap_shared_param_description = {
         "schemes/",
     "enriched_output_dir": "Directory to save codenames above illustrated thresholds. "
                             "Intended to be used with the heatmap add-on.",
-    "enriched_output_filepath": "Filepath to write TSV with each peptide, its p-value calculation, "
+    "enriched_output_filepath": "Filepath to write tab separated values with each peptide, its p-value calculation, "
                                 "and its z-score difference calculation."
 }
 
@@ -603,5 +603,6 @@ plugin.pipelines.register_function(
     **epimap_shared_param_description
     },
     name="Epitope Mapping Dir",
-    description="Test."
+    description="Creates an epitope mapping based on the z-scores of petides in multiple species"
+                " with tsv filepaths instead of QZA files."
 )
