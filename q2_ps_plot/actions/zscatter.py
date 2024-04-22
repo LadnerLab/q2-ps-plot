@@ -97,15 +97,9 @@ def zscatter(
     heatmap_chart = alt.Chart(
         heatmap_df, width=chart_width, height=chart_height
     ).mark_rect().encode(
-        alt.X(
-            "bin_x_start:Q",
-            scale=alt.Scale(domain=(0, xy_max[0]))
-        ),
+        alt.X("bin_x_start:Q", title="Time Point 1"),
         alt.X2("bin_x_end:Q"),
-        alt.Y(
-            "bin_y_start:Q",
-            scale=alt.Scale(domain=(0, xy_max[1]))
-        ),
+        alt.Y("bin_y_start:Q", title="Time Point 2"),
         alt.Y2("bin_y_end:Q"),
         alt.Color(
             "count:Q",
