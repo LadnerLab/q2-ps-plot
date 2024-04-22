@@ -21,10 +21,6 @@ def zscatter(
     zscores = zscores.view(pd.DataFrame)
     zscores = zscores.transpose()
 
-    spline_data_df = None
-    if spline_file:
-        spline_data_df = pd.read_csv(spline_file, sep="\t")
-
     with open(pairs_file, "r") as fh:
         pairs = [
             line.replace("\n", "").replace("\t", "~")
@@ -64,7 +60,6 @@ def zscatter(
         if "~" not in file:
             continue
         pair = pairs[f].split("~")  # TODO: why is `file` not opened?
-        print(f"File: {file}\nPair: {pair}\n")
 
         x = zscores.loc[:, pair[0]]
         y = zscores.loc[:, pair[1]]
@@ -88,7 +83,6 @@ def zscatter(
                 heatmap_dict["pair"].append(pairs[f])
         f += 1
     heatmap_df = pd.DataFrame(heatmap_dict)
-    heatmap_df.to_csv("heatmap_df.tsv", sep="\t", index=False)
     xy_max = heatmap_df.loc[:, ["bin_x_end", "bin_y_end"]].max()
     ratio = (xy_max[0] / xy_max[1]) + 1
     chart_height = 500
@@ -113,27 +107,24 @@ def zscatter(
     )
     final_chart = alt.layer(heatmap_chart)
         
-        
-        # if spline_data_df is not None:
-        #     spline_dict = {
-        #         "x": spline_data_df.loc[:, pair[0]],
-        #         "y": spline_data_df.loc[:, pair[1]]
-        #     }
-        
-        #     spline_df = pd.DataFrame(spline_dict)
-        #     spline_chart = alt.Chart(
-        #         pd.DataFrame(spline_df)
-        #     ).mark_square(size=20).encode(
-        #         x=alt.X("x:Q"),
-        #         y=alt.Y("y:Q"),
-        #         color=alt.Color(
-        #             "x:N",
-        #             scale=alt.Scale(range=["#FF0000"]),
-        #             # reference: https://github.com/altair-viz/altair/issues/620
-        #             legend=None
-        #         )
-        #     )
-        #     chart = alt.layer(chart, spline_chart)   
+    if spline_file:
+        spline_df = pd.read_csv(spline_file, sep="\t")
+        spline_df.to_csv("spline_df.tsv", sep="\t")
+        spline_chart = alt.Chart(
+            pd.DataFrame(spline_df)
+        ).mark_square(size=20).encode(
+            x=alt.X("x:Q"),
+            y=alt.Y("y:Q"),
+            color=alt.Color(
+                "x:N",
+                scale=alt.Scale(range=["#FF0000"]),
+                # reference: https://github.com/altair-viz/altair/issues/620
+                legend=None
+            )
+        ).transform_filter(
+            pair_select
+        )
+        final_chart = alt.layer(final_chart, spline_chart)
 
 
         # if species_taxa_file and highlight_thresholds:
