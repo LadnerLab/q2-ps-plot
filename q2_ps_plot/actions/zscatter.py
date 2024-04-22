@@ -42,19 +42,24 @@ def zscatter(
     files = sorted(files)
 
     print(f"Pairs = {pairs}")
-    pair_dropdown = alt.binding_select(options=pairs, name="Sample Select")
-    pair_select = alt.selection_point(
+    sample_dropdown = alt.binding_select(options=pairs, name="Sample Select")
+    sample_select = alt.selection_point(
         fields=["pair"],
-        bind=pair_dropdown,
+        bind=sample_dropdown,
         name="pair",
         value=[{"pair": pairs[0]}]
     )
 
     f = 0
+    highlight_df = None
     heatmap_dict = {
         "bin_x_start": list(), "bin_x_end": list(),
         "bin_y_start": list(), "bin_y_end": list(),
         "count": list(), "pair": list()
+    }
+    highlight_dict = {
+        "x": list(), "y": list(),
+        "tooltip": list(), "highlight": list(), "pair": list()
     }
     for file in files:
         if "~" not in file:
@@ -81,8 +86,33 @@ def zscatter(
                 heatmap_dict["bin_y_end"].append(bin_y_end)
                 heatmap_dict["count"].append(count)
                 heatmap_dict["pair"].append(pairs[f])
+
+        if species_taxa_file and highlight_thresholds:
+            print(f"Working with highlight file: {path}/{file}")
+            highlight_df = pd.read_csv(
+                f"{path}/{file}", sep="\t"
+            ).iloc[:, [3, 4, 8]]
+
+            p_vals = highlight_df.iloc[:, 0].to_list()
+            thresh_count = len(highlight_thresholds)
+
+            for i in range(len(p_vals)):
+                if p_vals[i] < highlight_thresholds[f % thresh_count]:
+                    sig_taxa = highlight_df.iloc[i, 2]
+                    le_peps = highlight_df.iloc[i, 1].split("/")
+                    for le_pep in le_peps:
+                        highlight_dict["x"].append(
+                            zscores.loc[le_pep, pair[0]]
+                        )
+                        highlight_dict["y"].append(
+                            zscores.loc[le_pep, pair[1]]
+                        )
+                        highlight_dict["tooltip"].append(le_pep)
+                        highlight_dict["highlight"].append(sig_taxa)
+                        highlight_dict["pair"].append(pairs[f])
         f += 1
     heatmap_df = pd.DataFrame(heatmap_dict)
+    highlight_df = pd.DataFrame(highlight_dict)
     xy_max = heatmap_df.loc[:, ["bin_x_end", "bin_y_end"]].max()
     ratio = (xy_max[0] / xy_max[1]) + 1
     chart_height = 500
@@ -101,9 +131,9 @@ def zscatter(
             legend=alt.Legend(title="Point Frequency")
         )
     ).add_params(
-        pair_select
+        sample_select
     ).transform_filter(
-        pair_select
+        sample_select
     )
     final_chart = alt.layer(heatmap_chart)
         
@@ -122,67 +152,37 @@ def zscatter(
                 legend=None
             )
         ).transform_filter(
-            pair_select
+            sample_select
         )
         final_chart = alt.layer(final_chart, spline_chart)
 
+    if highlight_df is not None:
+        highlight_chart = alt.Chart(highlight_df).mark_point(
+            filled=True, size=60
+        ).encode(
+            x=alt.X("x:Q"),
+            y=alt.Y("y:Q"),
+            color=alt.Color(
+                "highlight:N",
+                scale=alt.Scale(range=[
+                    "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00",
+                    "#CC79A7"
+                ]),
+                legend=alt.Legend(title="Significant Taxa")
+            ),
+            # https://github.com/altair-viz/altair/issues/1181
+            shape=alt.Shape(
+                "highlight:N",
+                legend=None
+            ),
+            tooltip="tooltip"
+        ).transform_filter(
+            sample_select
+        )
+        final_chart = alt.layer(final_chart, highlight_chart).resolve_scale(
+            color="independent",
+            shape="independent"
+        )
 
-        # if species_taxa_file and highlight_thresholds:
-        #     samples = zscores.columns.to_list()
-        #     highlight_dict = {
-        #         "x": list(), "y": list(),
-        #         "tooltip": list(), "highlight": list()
-        #     }
-
-        #     print(f"Working with highlight file: {path}/{file}")
-        #     highlight_df = pd.read_csv(
-        #         f"{path}/{file}", sep="\t"
-        #     ).iloc[:, [3, 4, 8]]
-        #     p_vals = highlight_df.iloc[:, 0].to_list()
-
-        #     thresh_count = len(highlight_thresholds)
-        #     for i in range(len(p_vals)):
-        #         if p_vals[i] < highlight_thresholds[f % thresh_count]:
-        #             sig_taxa = highlight_df.iloc[i, 2]
-        #             le_peps = highlight_df.iloc[i, 1].split("/")
-        #             for le_pep in le_peps:
-        #                 highlight_dict["x"].append(
-        #                     zscores.loc[le_pep, pair[0]]
-        #                 )
-        #                 highlight_dict["y"].append(
-        #                     zscores.loc[le_pep, pair[1]]
-        #                 )
-        #                 highlight_dict["tooltip"].append(le_pep)
-        #                 highlight_dict["highlight"].append(sig_taxa)
-        #     highlight_df = pd.DataFrame(highlight_dict)
-        #     highlight_chart = alt.Chart(highlight_df).mark_point(
-        #         filled=True, size=60
-        #     ).encode(
-        #         x=alt.X("x:Q", title=pair[0]),
-        #         y=alt.Y("y:Q", title=pair[1]),
-        #         color=alt.Color(
-        #             "highlight:N",
-        #             scale=alt.Scale(range=[
-        #                 "#E69F00", "#56B4E9", "#009E73",
-        #                 "#F0E442", "#0072B2", "#D55E00",
-        #                 "#CC79A7"
-        #             ]),
-        #             legend=alt.Legend(title="Significant Taxa")
-        #         ),
-        #         # https://github.com/altair-viz/altair/issues/1181
-        #         shape=alt.Shape(
-        #             "highlight:N",
-        #             legend=None
-        #         ),
-        #         tooltip="tooltip"
-        #     )
-        #     chart = alt.layer(chart, highlight_chart).resolve_scale(
-        #         color="independent",
-        #         shape="independent"
-        #     )
-
-        # charts.append(chart)
-        # f += 1
-
-    # final_chart = alt.vconcat(*charts)
     final_chart.save(os.path.join(output_dir, "index.html"))
