@@ -62,7 +62,7 @@ def volcano(
         )
         return
 
-    volcano_dict = { "titles": list(), "p-values": list(), "es": list() }
+    volcano_dict = { "title": list(), "p-values": list(), "es": list() }
     # y_thresh_count = len(y_thresholds)
 
     for t in range(len(titles)):
@@ -84,17 +84,17 @@ def volcano(
                 # )
                 sort = "descending"
             volcano_dict["es"].append(x[i])
-            volcano_dict["titles"].append(titles[t])
+            volcano_dict["title"].append(titles[t])
     volcano_df = pd.DataFrame(volcano_dict)
     volcano_df.to_csv("volcano_df.tsv", sep="\t")
 
     sample_dropdown = alt.binding_select(options=titles, name="Sample Select")
     sample_select = alt.selection_point(
         # length determines how many drop-downs appear
-        fields=["titles"],
+        fields=["title"],
         bind=sample_dropdown,
         name="title",
-        value=[{"titles": titles[0]}]
+        value=[{"title": titles[0]}]
     )
 
     volcano_chart = alt.Chart(volcano_df).mark_circle(
