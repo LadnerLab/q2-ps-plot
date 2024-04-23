@@ -27,6 +27,7 @@ def volcano(
         # TODO: make assertions here?
         x = []
         y = []
+        taxa = []
         files = os.listdir(xy_dir)
         files = sorted(files)
         for file in files:
@@ -42,23 +43,6 @@ def volcano(
         taxa = [taxa]
     titles = sorted(titles)
 
-    volcano_dict = { "x": list(), "y": list(), "pair": list() }
-
-    for i in range(len(x)):
-        if log:
-            log_adjusted_y = -np.log10(y[i])
-            volcano_dict["y"].extend(log_adjusted_y)
-            # TODO: highlight significant taxa
-            sort = "ascending"
-        else:
-            volcano_dict["y"].extend(y[i])
-            # TODO: highlight significant taxa
-            sort = "descending"
-        volcano_dict["x"].extend(x[i])
-        volcano_dict["pair"].extend([titles[i]] * len(x[i]))
-    volcano_df = pd.DataFrame(volcano_dict)
-    volcano_df.to_csv("volcano_df.tsv", sep="\t")
-
     sample_dropdown = alt.binding_select(options=titles, name="Sample Select")
     sample_select = alt.selection_point(
         fields=["pair"],
@@ -66,6 +50,22 @@ def volcano(
         name="pair",
         value=[{"pair": titles[0]}]
     )
+
+    volcano_dict = { "x": list(), "y": list(), "pair": list() }
+
+    charting_ys = []
+    for i in range(len(x)):
+        if log:
+            charting_ys.append(-np.log10(y[i]))
+            # volcano_dict["y"].extend(log_adjusted_y)
+            sort = "ascending"
+        else:
+            charting_ys.append(y[i])
+            sort = "descending"
+        volcano_dict["x"].extend(x[i])
+        volcano_dict["y"].extend(charting_ys[i])
+        volcano_dict["pair"].extend([titles[i]] * len(x[i]))
+    volcano_df = pd.DataFrame(volcano_dict)
 
     volcano_chart = alt.Chart(volcano_df).mark_circle(
         size=50, color="black"
@@ -78,6 +78,53 @@ def volcano(
         sample_select
     )
     final_chart = alt.layer(volcano_chart)
+
+    highlight_df = None
+    if taxa:
+        highlight_dict = {
+            "x": list(), "y": list(),
+            "taxa": list(), "pair": list()
+        }
+        for i in range(len(taxa)):
+            for j in range(len(taxa[i])):
+                if y[i][j] < y_threshold and abs(x[i][j]) > x_threshold:
+                    highlight_dict["x"].append(x[i][j])
+                    highlight_dict["y"].append(charting_ys[i][j])
+                    highlight_dict["taxa"].append(taxa[i][j])
+                    highlight_dict["pair"].append(titles[i])
+        highlight_df = pd.DataFrame(highlight_dict)
+        highlight_df.to_csv("highlight_df.tsv", sep="\t")
+
+        highlight_chart = alt.Chart(highlight_df).mark_circle(
+            size=60, filled=True, opacity=1.0
+        ).encode(
+            x=alt.X(
+                "x:Q",
+                title=xy_labels[0]
+            ),
+            y=alt.Y(
+                "y:Q",
+                title=xy_labels[1],
+                sort=sort
+            ),
+            color=alt.Color(
+                "taxa:N",
+                scale=alt.Scale(range=[
+                    "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00",
+                    "#CC79A7"
+                ]),
+                legend=alt.Legend(title="Significant Taxa")
+            ),
+            tooltip="taxa"
+        ).add_params(
+            sample_select
+        ).transform_filter(
+            sample_select
+        )
+        final_chart = alt.layer(final_chart, highlight_chart).resolve_scale(
+            color="independent"
+        )
 
     final_chart.save(os.path.join(output_dir, "index.html"))
 

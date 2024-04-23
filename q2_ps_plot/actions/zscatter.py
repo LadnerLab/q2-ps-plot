@@ -137,7 +137,6 @@ def zscatter(
         
     if spline_file:
         spline_df = pd.read_csv(spline_file, sep="\t")
-        spline_df.to_csv("spline_df.tsv", sep="\t")
         spline_chart = alt.Chart(
             pd.DataFrame(spline_df)
         ).mark_square(size=20).encode(
