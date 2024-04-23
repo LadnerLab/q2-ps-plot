@@ -20,7 +20,6 @@ def volcano(
         xy_labels: list = ["x", "y"],
         titles: list = [""]
 ) -> None:
-    # TODO: change into temp directory
     alt.data_transformers.disable_max_rows()
 
     if xy_dir:
@@ -57,7 +56,6 @@ def volcano(
     for i in range(len(x)):
         if log:
             charting_ys.append(-np.log10(y[i]))
-            # volcano_dict["y"].extend(log_adjusted_y)
             sort = "ascending"
         else:
             charting_ys.append(y[i])
@@ -93,7 +91,6 @@ def volcano(
                     highlight_dict["taxa"].append(taxa[i][j])
                     highlight_dict["pair"].append(titles[i])
         highlight_df = pd.DataFrame(highlight_dict)
-        highlight_df.to_csv("highlight_df.tsv", sep="\t")
 
         highlight_chart = alt.Chart(highlight_df).mark_circle(
             size=60, filled=True, opacity=1.0
@@ -127,23 +124,3 @@ def volcano(
         )
 
     final_chart.save(os.path.join(output_dir, "index.html"))
-
-
-def make_sig_taxa_df(
-        y,
-        x,
-        taxa,
-        y_test,
-        y_thresh,
-        x_thresh
-) -> pd.DataFrame:
-    if taxa is None:
-        return None
-
-    sig_taxa_dict = { "y": list(), "x": list(), "taxa": list() }
-    for i in range(len(taxa)):
-        if y_test[i] < y_thresh and abs(x[i]) > x_thresh:
-            sig_taxa_dict["y"].append(y[i])
-            sig_taxa_dict["x"].append(x[i])
-            sig_taxa_dict["taxa"].append(taxa[i])
-    return pd.DataFrame(sig_taxa_dict)
