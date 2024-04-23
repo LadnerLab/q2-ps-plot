@@ -13,7 +13,7 @@ def zscatter(
         pairs_file: str,
         spline_file: str = None,
         highlight_data: str = None,
-        highlight_thresholds: list = None,
+        highlight_threshold: float = 0.05,
         species_taxa_file: str = None
 ) -> None:
     alt.data_transformers.disable_max_rows()
@@ -41,7 +41,6 @@ def zscatter(
         path = "."
     files = sorted(files)
 
-    print(f"Pairs = {pairs}")
     sample_dropdown = alt.binding_select(options=pairs, name="Sample Select")
     sample_select = alt.selection_point(
         fields=["pair"],
@@ -64,7 +63,7 @@ def zscatter(
     for file in files:
         if "~" not in file:
             continue
-        pair = pairs[f].split("~")  # TODO: why is `file` not opened?
+        pair = pairs[f].split("~")
 
         x = zscores.loc[:, pair[0]]
         y = zscores.loc[:, pair[1]]
@@ -87,17 +86,16 @@ def zscatter(
                 heatmap_dict["count"].append(count)
                 heatmap_dict["pair"].append(pairs[f])
 
-        if species_taxa_file and highlight_thresholds:
+        if species_taxa_file and highlight_threshold:
             print(f"Working with highlight file: {path}/{file}")
             highlight_df = pd.read_csv(
                 f"{path}/{file}", sep="\t"
             ).iloc[:, [3, 4, 8]]
 
             p_vals = highlight_df.iloc[:, 0].to_list()
-            thresh_count = len(highlight_thresholds)
 
             for i in range(len(p_vals)):
-                if p_vals[i] < highlight_thresholds[f % thresh_count]:
+                if p_vals[i] < highlight_threshold:
                     sig_taxa = highlight_df.iloc[i, 2]
                     le_peps = highlight_df.iloc[i, 1].split("/")
                     for le_pep in le_peps:

@@ -431,7 +431,7 @@ plugin.visualizers.register_function(
         "xy_access": List[Str],
         "taxa_access": Str,
         "x_threshold": Float,
-        "y_thresholds": List[Float],
+        "y_threshold": Float,
         "log": Bool,
         "xy_labels": List[Str],
         "titles": List[Str]
@@ -457,20 +457,19 @@ plugin.visualizers.register_function(
             " highlighted. Please note the taxa must also have a p-value less"
             " than the provided p-value threshold to also be eligible for"
             " highlighting.",
-        "y_thresholds": "Specifies the maximum p-value a taxa can have in"
+        "y_threshold": "Specifies the maximum p-value a taxa can have in"
             " order to be highlighted in the plot. If a taxa's p-value is"
             " greater than the provided threshold, then the taxa is not"
-            " eligible to be highlighted. Please not the taxa must also have"
+            " eligible to be highlighted. Please note the taxa must also have"
             " an ES greater than the provided ES threshold to also be eligible"
-            " for highlighting. Note: If calling from a function with one"
-            " threshold, please put that value in a list.",
+            " for highlighting.",
         "log": "Specifies whether to or not transform y values. If True, the"
             " log (base 10) of the y values will be plotted in ascending"
             " order; otherwise, the passed y values will be plotted in"
             " descending order.",
         "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
-        "titles": "List of chart titles. This will most likely be useful when"
-            " multiple visualizations of different data is required."
+        "titles": "List of chart titles. These will be used to determine the"
+            " names in the drop down which is used to change chart views."
     },
     name="Volcano Visualizer",
     description="Generates a volcano plot given x and y values. Significant"
@@ -490,7 +489,7 @@ plugin.visualizers.register_function(
         "pairs_file": Str,
         "spline_file": Str,
         "highlight_data": Str,
-        "highlight_thresholds": List[Float],
+        "highlight_threshold": Float,
         "species_taxa_file": Str
     },
     parameter_descriptions={
@@ -502,9 +501,9 @@ plugin.visualizers.register_function(
         "highlight_data": "Path to a file or a directory with multiple files"
             " which contain information needed to highlight significant taxa."
             " The file(s) should be tab delimited (TSV format).",
-        "highlight_thresholds": "Maximum value queries can be to be"
-            " highlighted. Note: If calling this function with one threshold,"
-            " please also include that value in a list.",
+        "highlight_threshold": "Maximum p-value a taxa can have to be"
+            " highlighted. Anything above this threshold will not be"
+            " considered 'significant'.",
         "species_taxa_file": "Tab delimited (TSV) file which maps a species"
             " name to an ID."
     },
