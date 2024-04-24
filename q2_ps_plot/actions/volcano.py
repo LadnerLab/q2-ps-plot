@@ -10,7 +10,7 @@ def volcano(
         output_dir: str, 
         x: list = None,
         y: list = None,
-        taxa: list = [""],
+        taxa: list = None,
         xy_dir: str = None,
         xy_access: list = ["x", "y"],
         taxa_access: str = None,
@@ -23,7 +23,6 @@ def volcano(
     alt.data_transformers.disable_max_rows()
 
     if xy_dir:
-        # TODO: make assertions here?
         x = []
         y = []
         taxa = []
@@ -35,11 +34,15 @@ def volcano(
             data = pd.read_csv(f"{xy_dir}/{file}", sep="\t")
             x.append(data.loc[:, xy_access[0]].to_list())
             y.append(data.loc[:, xy_access[1]].to_list())
-            taxa.append(data.loc[:, taxa_access].to_list())
+            if taxa_access:
+                taxa.append(data.loc[:, taxa_access].to_list())
     elif x and y:
         x = [x]
         y = [y]
-        taxa = [taxa]
+        if not taxa:
+            taxa = []
+        else:
+            taxa = [taxa]
     titles = sorted(titles)
 
     sample_dropdown = alt.binding_select(options=titles, name="Sample Select")

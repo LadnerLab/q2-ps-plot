@@ -11,12 +11,25 @@ def zscatter(
         output_dir: str,
         zscores: PepsirfContingencyTSVFormat,
         pairs_file: str,
+        p_val_access: str = None,
+        le_peps_access: str = None,
+        taxa_access: str = None,
         spline_file: str = None,
         highlight_data: str = None,
-        highlight_threshold: float = 0.05,
-        species_taxa_file: str = None
+        highlight_threshold: float = 0.05
 ) -> None:
     alt.data_transformers.disable_max_rows()
+
+    if highlight_data:
+        assert p_val_access, \
+            f"'highlight_data' was provided, but nothing was provided for" \
+            " 'p_val_access'!"
+        assert le_peps_access, \
+            f"'highlight_data' was provided, but nothing was provided for" \
+            " 'le_peps_access'!"
+        assert taxa_access, \
+            f"'highlight_data' was provided, but nothing was provided for" \
+            " 'taxa_access'!"
 
     zscores = zscores.view(pd.DataFrame)
     zscores = zscores.transpose()
@@ -27,19 +40,14 @@ def zscatter(
             for line in fh.readlines()
         ]
     pairs = sorted(pairs)
-    with open(species_taxa_file, "r") as fh:
-        species_taxa = [
-            tuple(line.replace("\n", "").split("\t"))
-            for line in fh.readlines()
-        ]
 
-    if not os.path.isfile(highlight_data):
+    if highlight_data and not os.path.isfile(highlight_data):
         files = os.listdir(highlight_data)
         path = highlight_data
+        files = sorted(files)
     else:
         files = highlight_data
         path = "."
-    files = sorted(files)
 
     sample_dropdown = alt.binding_select(options=pairs, name="Sample Select")
     sample_select = alt.selection_point(
@@ -49,21 +57,14 @@ def zscatter(
         value=[{"pair": pairs[0]}]
     )
 
-    f = 0
-    highlight_df = None
     heatmap_dict = {
         "bin_x_start": list(), "bin_x_end": list(),
         "bin_y_start": list(), "bin_y_end": list(),
         "count": list(), "pair": list()
     }
-    highlight_dict = {
-        "x": list(), "y": list(),
-        "tooltip": list(), "highlight": list(), "pair": list()
-    }
-    for file in files:
-        if "~" not in file:
-            continue
-        pair = pairs[f].split("~")
+    p = 0
+    for pair in pairs:
+        pair = pair.split("~")
 
         x = zscores.loc[:, pair[0]]
         y = zscores.loc[:, pair[1]]
@@ -84,20 +85,36 @@ def zscatter(
                 heatmap_dict["bin_y_start"].append(bin_y_start)
                 heatmap_dict["bin_y_end"].append(bin_y_end)
                 heatmap_dict["count"].append(count)
-                heatmap_dict["pair"].append(pairs[f])
+                heatmap_dict["pair"].append(pairs[p])
+        p += 1
+    heatmap_df = pd.DataFrame(heatmap_dict)
+    xy_max = heatmap_df.loc[:, ["bin_x_end", "bin_y_end"]].max()
+    ratio = (xy_max[0] / xy_max[1]) + 1
+    chart_height = 500
+    chart_width = chart_height + (20*ratio)
 
-        if species_taxa_file and highlight_threshold:
-            print(f"Working with highlight file: {path}/{file}")
+    highlight_df = None
+    if highlight_data:
+        highlight_dict = {
+            "x": list(), "y": list(),
+            "tooltip": list(), "highlight": list(), "pair": list()
+        }
+
+        f = 0
+        for file in files:
+            pair = pairs[f].split("~")
+            if "~" not in file and pairs[f] not in file.rsplit(".", 1)[0]:
+                continue
             highlight_df = pd.read_csv(
                 f"{path}/{file}", sep="\t"
-            ).iloc[:, [3, 4, 8]]
+            ).loc[:, [p_val_access, le_peps_access, taxa_access]]
 
             p_vals = highlight_df.iloc[:, 0].to_list()
 
             for i in range(len(p_vals)):
                 if p_vals[i] < highlight_threshold:
-                    sig_taxa = highlight_df.iloc[i, 2]
                     le_peps = highlight_df.iloc[i, 1].split("/")
+                    sig_taxa = highlight_df.iloc[i, 2]
                     for le_pep in le_peps:
                         highlight_dict["x"].append(
                             zscores.loc[le_pep, pair[0]]
@@ -108,13 +125,8 @@ def zscatter(
                         highlight_dict["tooltip"].append(le_pep)
                         highlight_dict["highlight"].append(sig_taxa)
                         highlight_dict["pair"].append(pairs[f])
-        f += 1
-    heatmap_df = pd.DataFrame(heatmap_dict)
-    highlight_df = pd.DataFrame(highlight_dict)
-    xy_max = heatmap_df.loc[:, ["bin_x_end", "bin_y_end"]].max()
-    ratio = (xy_max[0] / xy_max[1]) + 1
-    chart_height = 500
-    chart_width = chart_height + (20*ratio)
+            f += 1
+        highlight_df = pd.DataFrame(highlight_dict)
 
     heatmap_chart = alt.Chart(
         heatmap_df, width=chart_width, height=chart_height

@@ -488,9 +488,11 @@ plugin.visualizers.register_function(
     parameters={
         "pairs_file": Str,
         "spline_file": Str,
+        "p_val_access": Str,
+        "le_peps_access": Str,
+        "taxa_access": Str,
         "highlight_data": Str,
-        "highlight_threshold": Float,
-        "species_taxa_file": Str
+        "highlight_threshold": Float
     },
     parameter_descriptions={
         "pairs_file": "Tab delimited (TSV) file with a pair of sample"
@@ -498,14 +500,17 @@ plugin.visualizers.register_function(
         "spline_file": "Tab delimited (TSV) file with spline results. The"
             " first timepoint provides the x coordinates, and the second"
             " provides the y coordinates.",
+        "p_val_access": "Column name with data to compare to"
+            " 'highlight_threshold' which will be considered for"
+            " highlighting.",
+        "le_peps_access": "Column name with data to use in tooltip.",
+        "taxa_access": "Column name with taxa names to use when highlighting.",
         "highlight_data": "Path to a file or a directory with multiple files"
             " which contain information needed to highlight significant taxa."
             " The file(s) should be tab delimited (TSV format).",
         "highlight_threshold": "Maximum p-value a taxa can have to be"
             " highlighted. Anything above this threshold will not be"
-            " considered 'significant'.",
-        "species_taxa_file": "Tab delimited (TSV) file which maps a species"
-            " name to an ID."
+            " considered 'significant'."
     },
     name="Z Score Scatter Visualization",
     description="Creates a scatter plot using Z scores from two samples."
