@@ -1,11 +1,11 @@
 #!/usr/bin/env python
+
 import altair as alt
 import os
 import numpy as np
 import pandas as pd
 
 
-# TODO: suggest making this action as general as possible
 def volcano(
         output_dir: str, 
         x: list = None,
@@ -15,20 +15,14 @@ def volcano(
         xy_access: list = ["x", "y"],
         taxa_access: str = None,
         x_threshold: float = 0.4,
-        y_thresholds: list = [0.05],
+        y_threshold: float = 0.05,
         log: bool = True,
         xy_labels: list = ["x", "y"],
         titles: list = [""]
 ) -> None:
-    # TODO: change into temp directory
     alt.data_transformers.disable_max_rows()
 
-    if (xy_dir is not None
-            and x is None
-            and y is None
-            and taxa is None
-            and xy_access is not None
-            and taxa_access is not None):
+    if xy_dir:
         x = []
         y = []
         taxa = []
@@ -40,53 +34,69 @@ def volcano(
             data = pd.read_csv(f"{xy_dir}/{file}", sep="\t")
             x.append(data.loc[:, xy_access[0]].to_list())
             y.append(data.loc[:, xy_access[1]].to_list())
-            taxa.append(data.loc[:, taxa_access].to_list())
-        titles = sorted(titles)
-    elif (xy_dir is None
-            and x is not None
-            and y is not None
-            and taxa is not None):
+            if taxa_access:
+                taxa.append(data.loc[:, taxa_access].to_list())
+    elif x and y:
         x = [x]
         y = [y]
-        taxa = [taxa]
-    else:
-        print(
-            "A directory with tables, as well as unrelated parameters were"
-            "provided:\n"
-            f"x = {x}\n"
-            f"y = {y}\n"
-            f"taxa = {taxa}\n"
-            f"xy_access = {xy_access}\n"
-            f"taxa_access = {taxa_access}\n"
-            "Please review and edit parameters accordingly."
-        )
-        return
+        if not taxa:
+            taxa = []
+        else:
+            taxa = [taxa]
+    titles = sorted(titles)
 
-    charts = []
-    y_thresh_count = len(y_thresholds)
+    sample_dropdown = alt.binding_select(options=titles, name="Sample Select")
+    sample_select = alt.selection_point(
+        fields=["pair"],
+        bind=sample_dropdown,
+        name="pair",
+        value=[{"pair": titles[0]}]
+    )
+
+    volcano_dict = { "x": list(), "y": list(), "pair": list() }
+
+    charting_ys = []
     for i in range(len(x)):
-        titles_len = len(titles)
         if log:
-            log_adjusted_y = -np.log10(y[i])
-            volcano_dict = { "y": log_adjusted_y, "x": x[i] }
-            sig_taxa_df = make_sig_taxa_df(
-                log_adjusted_y, x[i], taxa[i],
-                y[i], y_thresholds[i % y_thresh_count], x_threshold
-            )
+            charting_ys.append(-np.log10(y[i]))
             sort = "ascending"
         else:
-            volcano_dict = {"y": y[i], "x": x[i]}
-            sig_taxa_df = make_sig_taxa_df(
-                y[i], x[i], taxa[i],
-                y[i], y_thresholds[i], x_threshold
-            )
+            charting_ys.append(y[i])
             sort = "descending"
-        volcano_df = pd.DataFrame(volcano_dict)
+        volcano_dict["x"].extend(x[i])
+        volcano_dict["y"].extend(charting_ys[i])
+        volcano_dict["pair"].extend([titles[i]] * len(x[i]))
+    volcano_df = pd.DataFrame(volcano_dict)
 
-        volcano_chart = alt.Chart(
-            volcano_df, title=titles[i % titles_len]
-        ).mark_circle(
-            size=50, color="black"
+    volcano_chart = alt.Chart(volcano_df).mark_circle(
+        size=50, color="black"
+    ).encode(
+        x=alt.X("x:Q", title=xy_labels[0]),
+        y=alt.Y("y:Q", title=xy_labels[1], sort=sort)
+    ).add_params(
+        sample_select
+    ).transform_filter(
+        sample_select
+    )
+    final_chart = alt.layer(volcano_chart)
+
+    highlight_df = None
+    if taxa:
+        highlight_dict = {
+            "x": list(), "y": list(),
+            "taxa": list(), "pair": list()
+        }
+        for i in range(len(taxa)):
+            for j in range(len(taxa[i])):
+                if y[i][j] < y_threshold and abs(x[i][j]) > x_threshold:
+                    highlight_dict["x"].append(x[i][j])
+                    highlight_dict["y"].append(charting_ys[i][j])
+                    highlight_dict["taxa"].append(taxa[i][j])
+                    highlight_dict["pair"].append(titles[i])
+        highlight_df = pd.DataFrame(highlight_dict)
+
+        highlight_chart = alt.Chart(highlight_df).mark_circle(
+            size=60, filled=True, opacity=1.0
         ).encode(
             x=alt.X(
                 "x:Q",
@@ -96,63 +106,24 @@ def volcano(
                 "y:Q",
                 title=xy_labels[1],
                 sort=sort
-            )
+            ),
+            color=alt.Color(
+                "taxa:N",
+                scale=alt.Scale(range=[
+                    "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00",
+                    "#CC79A7"
+                ]),
+                legend=alt.Legend(title="Significant Taxa")
+            ),
+            tooltip="taxa"
+        ).add_params(
+            sample_select
+        ).transform_filter(
+            sample_select
         )
-        chart = alt.layer(volcano_chart)
+        final_chart = alt.layer(final_chart, highlight_chart).resolve_scale(
+            color="independent"
+        )
 
-        if sig_taxa_df is not None:
-            sig_taxa = alt.Chart(
-                sig_taxa_df, title=titles[i % titles_len]
-            ).mark_point(filled=True, size=60, opacity=1.0).encode(
-                x=alt.X(
-                    "x:Q",
-                    title=xy_labels[0]
-                ),
-                y=alt.Y(
-                    "y:Q",
-                    title=xy_labels[1],
-                    sort=sort
-                ),
-                color=alt.Color(
-                    "taxa:N",
-                    scale=alt.Scale(range=[
-                        "#E69F00", "#56B4E9", "#009E73",
-                        "#F0E442", "#0072B2", "#D55E00",
-                        "#CC79A7"
-                    ]),
-                    legend=alt.Legend(title="Significant Taxa")
-                ),
-                shape=alt.Shape(
-                    "taxa:N",
-                    legend=None
-                ),
-                tooltip="taxa"
-            )
-            chart = alt.layer(chart, sig_taxa).resolve_scale(
-                color="independent",
-                shape="independent"
-            )
-        charts.append(chart)
-
-    final_chart = alt.vconcat(*charts)
     final_chart.save(os.path.join(output_dir, "index.html"))
-
-
-def make_sig_taxa_df(
-        y,
-        x,
-        taxa,
-        y_test,
-        y_thresh,
-        x_thresh
-) -> pd.DataFrame:
-    if taxa is None:
-        return None
-
-    sig_taxa_dict = { "y": list(), "x": list(), "taxa": list() }
-    for i in range(len(taxa)):
-        if y_test[i] < y_thresh and abs(x[i]) > x_thresh:
-            sig_taxa_dict["y"].append(y[i])
-            sig_taxa_dict["x"].append(x[i])
-            sig_taxa_dict["taxa"].append(taxa[i])
-    return pd.DataFrame(sig_taxa_dict)
