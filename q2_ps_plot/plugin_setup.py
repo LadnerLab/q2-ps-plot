@@ -265,7 +265,8 @@ proteinHeatmap_parameters = {
     "color_scheme": Str,
     "align_delim": Str,
     "include_species": Bool,
-    "species_header": Str
+    "species_header": Str,
+    "output_size": Int,
 }
 
 proteinHeatmap_parameter_descriptions = {
@@ -277,7 +278,8 @@ proteinHeatmap_parameter_descriptions = {
         "schemes/",
     "align_delim": "The deliminator that separates the alignment positions.",
     "include_species": "Use if alignment file(s) include a \'Species\' column.",
-    "species_header": "The name of the header to which identifies the species column"
+    "species_header": "The name of the header to which identifies the species column",
+    "output_size": "The size of the generated default, set to 500 by default."
 }
 
 # action set up for proteinHeatmap module

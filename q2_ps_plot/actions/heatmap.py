@@ -21,7 +21,8 @@ def proteinHeatmap(
         align_delim: str = "~",
         include_species: bool = False,
         species_header: str = "Species",
-        color_scheme: str = "viridis") -> None:
+        color_scheme: str = "viridis",
+        output_size: int = 500) -> None:
 
     print(os.listdir(str(protein_alignment)))   
 
@@ -215,6 +216,11 @@ def proteinHeatmap(
                     ).transform_filter(
                         sample_select
                     )
+
+    chart = chart.configure_view(
+                            continuousHeight=output_size,
+                            continuousWidth=output_size
+                            )
 
     # save the chart into the qzv file index
     chart.save(os.path.join(output_dir, "index.html"), scale_factor=10.0)

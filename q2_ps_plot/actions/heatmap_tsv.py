@@ -9,7 +9,8 @@ def proteinHeatmap_dir(
         align_delim="~",
         include_species=False,
         species_header="Species",
-        color_scheme="viridis"
+        color_scheme="viridis",
+        output_size=500
         ):
     
     proteinHeatmap = ctx.get_action("ps-plot", "proteinHeatmap")
@@ -34,7 +35,8 @@ def proteinHeatmap_dir(
         align_delim=align_delim,
         include_species=include_species,
         species_header=species_header,
-        color_scheme=color_scheme
+        color_scheme=color_scheme,
+        output_size=output_size
     )
 
     return proteinHeatmap_vis
