@@ -9,6 +9,8 @@ from q2_ps_plot.actions.heatmap import proteinHeatmap
 from q2_ps_plot.actions.heatmap_tsv import proteinHeatmap_dir
 from q2_ps_plot.actions.scatter import repScatters, mutantScatters
 from q2_ps_plot.actions.scatter_tsv import repScatters_tsv, mutantScatters_tsv
+from q2_ps_plot.actions.epimap import epimap
+from q2_ps_plot.actions.epimap_tsv import epimap_dir
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 from qiime2.plugin import (
     Plugin, SemanticType, model, Int, Range, MetadataColumn, Categorical, Str,
@@ -263,7 +265,8 @@ proteinHeatmap_parameters = {
     "color_scheme": Str,
     "align_delim": Str,
     "include_species": Bool,
-    "species_header": Str
+    "species_header": Str,
+    "output_size": Int,
 }
 
 proteinHeatmap_parameter_descriptions = {
@@ -275,7 +278,8 @@ proteinHeatmap_parameter_descriptions = {
         "schemes/",
     "align_delim": "The deliminator that separates the alignment positions.",
     "include_species": "Use if alignment file(s) include a \'Species\' column.",
-    "species_header": "The name of the header to which identifies the species column"
+    "species_header": "The name of the header to which identifies the species column",
+    "output_size": "The size of the generated default, set to 500 by default."
 }
 
 # action set up for proteinHeatmap module
@@ -376,7 +380,7 @@ mutantScatters_param_descript = {
 # action set up for mutantScatters module
 plugin.visualizers.register_function(
     function=mutantScatters,
-    inputs={
+    inputs={ 
         "zscore": FeatureTable[Zscore],
         "reference_file": MutantReference
     },
@@ -516,4 +520,94 @@ plugin.visualizers.register_function(
     description="Creates a scatter plot using Z scores from two samples."
         " A spline line can also be added. Significant points can also be"
         " highlighted by passing metadata, as well."
+)
+
+
+# all for now, but type should be converted later
+epimap_shared_parameters = {
+    "metadata_filepath": Str,
+    "peptide_seq_filepath": Str,
+    "zscore_filepath": Str,
+    "p_thresh": Float,
+    "z_thresh": Float,
+    "g1_enrichment_subset": List[Str],
+    "g2_enrichment_subset": List[Str],
+    "fullname_header": Str,
+    "codename_header": Str,
+    "protein_header": Str,
+    "category_header": Str,
+    "alascanpos_header": Str,
+    "include_categories": List[Str],
+    "horizontal_line_pos": List[Float],
+    "xtick_spacing": Int,
+    "color_by_col": Str,
+    "color_scheme": Str,
+    "enriched_output_dir": Str,
+    "enriched_output_filepath": Str
+}
+
+epimap_shared_param_description = {
+    "metadata_filepath": "Metadata file contaning the following columns (or similar): "
+                        "FullName, CodeName, Protein, Category, AlaScanPos. "
+                        " Header names can be customized in parameters.",
+    "peptide_seq_filepath": "Fasta file with each code name header and its sequence. ",
+    "zscore_filepath": "Tab delimited file with sample names as columns adn code names as rows "
+                        " with their calculated z-scores.",
+    "p_thresh": "Test p-value threshold. It will be displayed as a dotted line perpendicular "
+                "to the y-axis.",
+    "z_thresh": "Z-score difference threshold. It will be displayed as a dotted line perpendicular "
+                "to the x-axis.",
+    "g1_enrichment_subset": "Subnames to use for group 1."
+                            " (Example argument: --g1-enrichment-subset string1 string2 string3).",
+    "g2_enrichment_subset": "Subnames to use for group 2."
+                            " (Example argument: --g2-enrichment-subset string1 string2 string3)."
+                            " if not used, group 2 will be everything not in group 1.",
+    "fullname_header": "Respective header name in metadata file.",
+    "codename_header": "Respective header name in metadata file.",
+    "protein_header": "Respective header name in metadata file.",
+    "category_header": "Respective header name in metadata file.",
+    "alascanpos_header": "Respective header name in metadata file.",
+    "include_categories": "category types to be included "
+                            " (Example argument: --p-include-categories string1 string2 string3).",
+    "horizontal_line_pos": "Positions for horizional lines on the graph."
+                    " p_thresh will always be a line."
+                    " (Example argument: --p-horizontal-line-pos float1 float2 float3)",
+    "xtick_spacing": "Unit spacing in between x-axis ticks",
+    "color_by_col": "Metadata column header to color code by",
+    "color_scheme": "String of the name of a color scheme for the heatmap."
+        " Color schemes can be found here: https://vega.github.io/vega/docs/"
+        "schemes/",
+    "enriched_output_dir": "Directory to save codenames above illustrated thresholds. "
+                            "Intended to be used with the heatmap add-on.",
+    "enriched_output_filepath": "Filepath to write TSV with each peptide, its p-value calculation, "
+                                "and its z-score difference calculation."
+}
+
+# action set up for epimap module
+plugin.visualizers.register_function(
+    function=epimap,
+    inputs={},
+    parameters=epimap_shared_parameters,
+    input_descriptions=None,
+    parameter_descriptions=epimap_shared_param_description,
+    name="Epitope Mapping",
+    description="Test"
+)
+
+plugin.pipelines.register_function(
+    function=epimap_dir,
+    inputs={},
+    outputs=[
+        ("epimap_vis", Visualization)
+    ],
+    parameters={
+    **epimap_shared_parameters
+    },
+    input_descriptions=None,
+    output_descriptions=None,
+    parameter_descriptions={
+    **epimap_shared_param_description
+    },
+    name="Epitope Mapping Dir",
+    description="Test."
 )
