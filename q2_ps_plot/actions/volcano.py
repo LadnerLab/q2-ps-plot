@@ -8,6 +8,7 @@ import pandas as pd
 
 def volcano(
         output_dir: str, 
+        pairs_file: str,
         x: list = None,
         y: list = None,
         taxa: list = None,
@@ -17,8 +18,7 @@ def volcano(
         x_threshold: float = 0.4,
         y_threshold: float = 0.05,
         log: bool = True,
-        xy_labels: list = ["x", "y"],
-        titles: list = [""]
+        xy_labels: list = ["x", "y"]
 ) -> None:
     alt.data_transformers.disable_max_rows()
 
@@ -43,14 +43,27 @@ def volcano(
             taxa = []
         else:
             taxa = [taxa]
-    titles = sorted(titles)
+    pairs = list()
+    pair_2_title = dict()
+    with open(pairs_file, "r") as fh:
+        for line in fh.readlines():
+            line_tup = tuple(line.replace("\n", "").split("\t"))
+            pair = line_tup[0:2]
+            pairs.append(f"{pair[0]}~{pair[1]}")
 
-    sample_dropdown = alt.binding_select(options=titles, name="Sample Select")
+            if( len(line_tup) > 2):
+                pair_2_title[f"{pair[0]}~{pair[1]}"] = line_tup[2]
+            else:
+                pair_2_title[f"{pair[0]}~{pair[1]}"] = ""
+
+    pairs = sorted(pairs)
+
+    sample_dropdown = alt.binding_select(options=pairs, name="Sample Select")
     sample_select = alt.selection_point(
         fields=["pair"],
         bind=sample_dropdown,
         name="pair",
-        value=[{"pair": titles[0]}]
+        value=[{"pair": pairs[0]}]
     )
 
     volcano_dict = { "x": list(), "y": list(), "pair": list() }
@@ -65,7 +78,7 @@ def volcano(
             sort = "descending"
         volcano_dict["x"].extend(x[i])
         volcano_dict["y"].extend(charting_ys[i])
-        volcano_dict["pair"].extend([titles[i]] * len(x[i]))
+        volcano_dict["pair"].extend([pairs[i]] * len(x[i]))
     volcano_df = pd.DataFrame(volcano_dict)
 
     volcano_chart = alt.Chart(volcano_df).mark_circle(
@@ -92,7 +105,7 @@ def volcano(
                     highlight_dict["x"].append(x[i][j])
                     highlight_dict["y"].append(charting_ys[i][j])
                     highlight_dict["taxa"].append(taxa[i][j])
-                    highlight_dict["pair"].append(titles[i])
+                    highlight_dict["pair"].append(pairs[i])
         highlight_df = pd.DataFrame(highlight_dict)
 
         highlight_chart = alt.Chart(highlight_df).mark_circle(
@@ -125,5 +138,15 @@ def volcano(
         final_chart = alt.layer(final_chart, highlight_chart).resolve_scale(
             color="independent"
         )
+
+    titleDf = pd.DataFrame(pair_2_title.items(), columns=["pair", "title"])
+    title = alt.Chart(titleDf).mark_text(
+        size=25, dx=150
+    ).encode(
+        text='title:N'
+    ).transform_filter(
+        sample_select
+    )
+    final_chart = alt.vconcat(title, final_chart)
 
     final_chart.save(os.path.join(output_dir, "index.html"))

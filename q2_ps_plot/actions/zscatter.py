@@ -41,6 +41,21 @@ def zscatter(
         ]
     pairs = sorted(pairs)
 
+    pairs = list()
+    pair_2_title = dict()
+    with open(pairs_file, "r") as fh:
+        for line in fh.readlines():
+            line_tup = tuple(line.replace("\n", "").split("\t"))
+            pair = line_tup[0:2]
+            pairs.append(f"{pair[0]}~{pair[1]}")
+
+            if( len(line_tup) > 2):
+                pair_2_title[f"{pair[0]}~{pair[1]}"] = line_tup[2]
+            else:
+                pair_2_title[f"{pair[0]}~{pair[1]}"] = ""
+
+    pairs = sorted(pairs)
+
     if highlight_data and not os.path.isfile(highlight_data):
         files = os.listdir(highlight_data)
         path = highlight_data
@@ -194,4 +209,14 @@ def zscatter(
             shape="independent"
         )
 
+    titleDf = pd.DataFrame(pair_2_title.items(), columns=["pair", "title"])
+    title = alt.Chart(titleDf).mark_text(
+        size=30, dx=chart_width/2
+    ).encode(
+        text='title:N'
+    ).transform_filter(
+        sample_select
+    )
+    final_chart = alt.vconcat(title, final_chart)
+    
     final_chart.save(os.path.join(output_dir, "index.html"))

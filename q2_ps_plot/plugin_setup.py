@@ -438,7 +438,7 @@ plugin.visualizers.register_function(
         "y_threshold": Float,
         "log": Bool,
         "xy_labels": List[Str],
-        "titles": List[Str]
+        "pairs_file": Str
     },
     parameter_descriptions={
         "x": "Coordinates along the x-axis at which to plot points.",
@@ -472,8 +472,8 @@ plugin.visualizers.register_function(
             " order; otherwise, the passed y values will be plotted in"
             " descending order.",
         "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
-        "titles": "List of chart titles. These will be used to determine the"
-            " names in the drop down which is used to change chart views."
+        "pairs_file": "Tab delimited (TSV) file with a pair of sample"
+            " replicates on each line."
     },
     name="Volcano Visualizer",
     description="Generates a volcano plot given x and y values. Significant"
