@@ -34,27 +34,21 @@ def zscatter(
     zscores = zscores.view(pd.DataFrame)
     zscores = zscores.transpose()
 
-    with open(pairs_file, "r") as fh:
-        pairs = [
-            line.replace("\n", "").replace("\t", "~")
-            for line in fh.readlines()
-        ]
-    pairs = sorted(pairs)
-
-    pairs = list()
+    unsorted_pairs = list()
     pair_2_title = dict()
     with open(pairs_file, "r") as fh:
+        fh.readline()
         for line in fh.readlines():
             line_tup = tuple(line.replace("\n", "").split("\t"))
             pair = line_tup[0:2]
-            pairs.append(f"{pair[0]}~{pair[1]}")
+            unsorted_pairs.append(f"{pair[0]}~{pair[1]}")
 
             if( len(line_tup) > 2):
                 pair_2_title[f"{pair[0]}~{pair[1]}"] = line_tup[2]
             else:
                 pair_2_title[f"{pair[0]}~{pair[1]}"] = ""
 
-    pairs = sorted(pairs)
+    pairs = sorted(unsorted_pairs)
 
     if highlight_data and not os.path.isfile(highlight_data):
         files = os.listdir(highlight_data)
@@ -64,12 +58,12 @@ def zscatter(
         files = highlight_data
         path = "."
 
-    sample_dropdown = alt.binding_select(options=pairs, name="Sample Select")
+    sample_dropdown = alt.binding_select(options=unsorted_pairs, name="Sample Select")
     sample_select = alt.selection_point(
         fields=["pair"],
         bind=sample_dropdown,
         name="pair",
-        value=[{"pair": pairs[0]}]
+        value=[{"pair": unsorted_pairs[0]}]
     )
 
     heatmap_dict = {
