@@ -522,6 +522,30 @@ plugin.visualizers.register_function(
         " highlighted by passing metadata, as well."
 )
 
+plugin.visualizers.register_function(
+    function=actions.aeplots,
+    inputs={},
+    input_descriptions={},
+    parameters={
+        "pos_nes_ae_file": Str,
+        "neg_nes_ae_file": Str,
+        "xy_access": List[Str],
+        "xy_labels": List[Str]
+    },
+    parameter_descriptions={
+        "pos_nes_ae_file": "Directory containing tab delimited (TSV) files with"
+            " plotting data for positive nes antibody event counts.",
+        "neg_nes_ae_file": "Directory containing tab delimited (TSV) files with"
+            " plotting data for negative nes antibody event counts.",
+        "xy_access": "List with column names in the tables collected in the"
+            " 'xy_dir' which should be used to grab x and y values,"
+            " respectively. Refer to default as an example. Only list length"
+            " of 2 is supported.",
+        "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
+    },
+    name="Antibody Events plots Visualizer",
+    description="Generates a box plot of species' anitbody events positive and negative NES."
+)
 
 # all for now, but type should be converted later
 epimap_shared_parameters = {
