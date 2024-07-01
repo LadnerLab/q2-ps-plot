@@ -30,7 +30,7 @@ def aeplots(
             f"{xy_access[1]}:N",
             axis=alt.Axis(grid=True),
             sort=alt.EncodingSortField(field=xy_access[1], op="count", order='ascending'),
-            title=xy_labels[1]
+            title=None
             ),
         alt.Color(
             f"{xy_access[1]}:N"
@@ -46,7 +46,12 @@ def aeplots(
         )
 
     final_chart = (bar_chart + text).facet(
-            row=alt.Row("NES:N", sort=alt.SortField(field='NES', order='descending'))
+            column=alt.Column(
+                "NES:N", 
+                sort=alt.SortField(field='NES', order='descending'), 
+                title=None,
+                header=alt.Header(labelFontSize=15, labelFontWeight='bold')
+                )
         ).resolve_scale(
             y='independent'
         )
