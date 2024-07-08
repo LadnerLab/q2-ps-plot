@@ -438,7 +438,8 @@ plugin.visualizers.register_function(
         "y_threshold": Float,
         "log": Bool,
         "xy_labels": List[Str],
-        "pairs_file": Str
+        "pairs_file": Str,
+        "colors_file": Str
     },
     parameter_descriptions={
         "x": "Coordinates along the x-axis at which to plot points.",
@@ -473,7 +474,9 @@ plugin.visualizers.register_function(
             " descending order.",
         "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
         "pairs_file": "Tab delimited (TSV) file with a pair of sample"
-            " replicates on each line."
+            " replicates on each line.",
+        "colors_file": "Name of tab-delimited file containing species"
+            " name and HEX color code for that species to appear on the output charts."
     },
     name="Volcano Visualizer",
     description="Generates a volcano plot given x and y values. Significant"
@@ -496,7 +499,8 @@ plugin.visualizers.register_function(
         "le_peps_access": Str,
         "taxa_access": Str,
         "highlight_data": Str,
-        "highlight_threshold": Float
+        "highlight_threshold": Float,
+        "colors_file": Str
     },
     parameter_descriptions={
         "pairs_file": "Tab delimited (TSV) file with a pair of sample"
@@ -514,7 +518,9 @@ plugin.visualizers.register_function(
             " The file(s) should be tab delimited (TSV format).",
         "highlight_threshold": "Maximum p-value a taxa can have to be"
             " highlighted. Anything above this threshold will not be"
-            " considered 'significant'."
+            " considered 'significant'.",
+        "colors_file": "Name of tab-delimited file containing species"
+            " name and HEX color code for that species to appear on the output charts."
     },
     name="Z Score Scatter Visualization",
     description="Creates a scatter plot using Z scores from two samples."
@@ -530,7 +536,8 @@ plugin.visualizers.register_function(
         "pos_nes_ae_file": Str,
         "neg_nes_ae_file": Str,
         "xy_access": List[Str],
-        "xy_labels": List[Str]
+        "xy_labels": List[Str],
+        "colors_file": Str
     },
     parameter_descriptions={
         "pos_nes_ae_file": "Directory containing tab delimited (TSV) files with"
@@ -542,6 +549,8 @@ plugin.visualizers.register_function(
             " respectively. Refer to default as an example. Only list length"
             " of 2 is supported.",
         "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
+        "colors_file": "Name of tab-delimited file containing species"
+            " name and HEX color code for that species to appear on the output charts."
     },
     name="Antibody Events plots Visualizer",
     description="Generates a box plot of species' anitbody events positive and negative NES."

@@ -3,6 +3,10 @@ import numpy as np
 import os
 import pandas as pd
 import qiime2
+import matplotlib.pyplot as plt
+import matplotlib.colors as clr
+import numpy as np
+import math
 
 from q2_pepsirf.format_types import PepsirfContingencyTSVFormat
 
@@ -11,6 +15,7 @@ def zscatter(
         output_dir: str,
         zscores: PepsirfContingencyTSVFormat,
         pairs_file: str,
+        colors_file: str = "",
         p_val_access: str = None,
         le_peps_access: str = None,
         taxa_access: str = None,
@@ -106,7 +111,7 @@ def zscatter(
     if highlight_data:
         highlight_dict = {
             "x": list(), "y": list(),
-            "tooltip": list(), "highlight": list(), "pair": list()
+            "peptide": list(), "taxa": list(), "pair": list()
         }
 
         f = 0
@@ -131,8 +136,8 @@ def zscatter(
                         highlight_dict["y"].append(
                             zscores.loc[le_pep, pair[1]]
                         )
-                        highlight_dict["tooltip"].append(le_pep)
-                        highlight_dict["highlight"].append(sig_taxa)
+                        highlight_dict["peptide"].append(le_pep)
+                        highlight_dict["taxa"].append(sig_taxa)
                         highlight_dict["pair"].append(pairs[f])
             f += 1
         highlight_df = pd.DataFrame(highlight_dict)
@@ -174,6 +179,37 @@ def zscatter(
         )
         final_chart = alt.layer(final_chart, spline_chart)
 
+    # create color scale
+    color_scale=alt.Scale(range=[
+                    "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00",
+                    "#CC79A7"])
+    shape=alt.Shape("taxa:N", legend=None)
+    legend=alt.Legend(title="Significant Taxa")
+
+    if colors_file:
+        all_species = list(set(highlight_df["taxa"].to_list()))
+        num_extra_colors = len(all_species)
+
+        color_df = pd.read_csv(colors_file, sep="\t", header=None, names=["Taxa", "Color"])
+        # remove species that are not in all_species
+        color_df = color_df[color_df["Taxa"].isin(all_species)]
+        species_list = color_df["Taxa"].to_list()
+        colors_list = color_df["Color"].to_list()
+        num_extra_colors -= len(species_list)
+
+        color_iter = iter(plt.cm.rainbow(np.linspace(0, 1, num_extra_colors)))
+
+        # fill lists for species not included in color file
+        for species in all_species:
+            if species not in species_list:
+                species_list.append(species)
+                colors_list.append(clr.to_hex(next(color_iter)))
+
+        color_scale=alt.Scale(domain=species_list, range=colors_list)
+        shape=alt.Shape("taxa:N", scale=alt.Scale(domain=species_list), legend=None)
+        legend=alt.Legend(title="Significant Taxa", columns=int(math.ceil(len(species_list)/30)), symbolLimit=0)
+
     if highlight_df is not None:
         highlight_chart = alt.Chart(highlight_df).mark_point(
             filled=True, size=60
@@ -181,20 +217,13 @@ def zscatter(
             x=alt.X("x:Q"),
             y=alt.Y("y:Q"),
             color=alt.Color(
-                "highlight:N",
-                scale=alt.Scale(range=[
-                    "#E69F00", "#56B4E9", "#009E73",
-                    "#F0E442", "#0072B2", "#D55E00",
-                    "#CC79A7"
-                ]),
-                legend=alt.Legend(title="Significant Taxa")
+                "taxa:N",
+                scale=color_scale,
+                legend=legend
             ),
             # https://github.com/altair-viz/altair/issues/1181
-            shape=alt.Shape(
-                "highlight:N",
-                legend=None
-            ),
-            tooltip="tooltip"
+            shape=shape,
+            tooltip=["peptide", "taxa"]
         ).transform_filter(
             sample_select
         )
