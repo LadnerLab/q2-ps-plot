@@ -78,139 +78,150 @@ def repScatters(
         scatterDict[nm]
 
     # call function to collect samples pairs
+    pairs = None
     if user_spec_pairs:
         pairs = [tuple(tuple(user_spec_pairs[i:i+2]) for i in range(0, len(user_spec_pairs), 2))]
     elif source:
         pairs = _make_pairs_list(source, "sourceCol")
     elif pn_filepath:
         pairs = _make_pairs_list(pn_filepath, "pnFile")
-
-    # initialize empty list to collet sample names for dropdown menu
-    samples = []
-
-    # start loop to collect heatmap values
-    for lst in pairs:
-        for tpl in lst:
-
-            # set x and y values from the dataframe
-            if type(tpl) is tuple:
-                samp = "~".join(tpl)
-                samples.append(samp)
-                x = []
-                y = []
-                xData = list(data[tpl[0]])
-                yData = list(data[tpl[1]])
-                peptides = list(data.index)
-                for i in range(len(xData)):
-                    if not np.isnan(xData[i]) and not np.isnan(yData[i]):
-                        x.append(xData[i])
-                        y.append(yData[i])
-
-                        #if xy-threshold provided collect values matching threshold
-                        if (xy_threshold
-                                and xData[i] > xy_threshold
-                                and yData[i] > xy_threshold):
-                            scatterDict["x_value"].append(xData[i])
-                            scatterDict["y_value"].append(yData[i])
-                            scatterDict["peptide"].append(peptides[i])
-                            scatterDict["sample"].append(samp)
-            else:
-                samp = tpl
-                samples.append(samp)
-                x = [x for x in data[tpl] if not np.isnan(x)]
-                y = [y for y in data[tpl] if not np.isnan(y)]
-
-            if plot_log:
-                x = np.log10(np.array(x)+1)
-                y = np.log10(np.array(y)+1)
-                xTitle = "Sample1 log10(score + 1)"
-                yTitle = "Sample2 log10(score + 1)"
-            else:
-                xTitle = "Sample1"
-                yTitle = "Sample2"
-
-            #generate heatmap values
-            heatmap, xedges, yedges = np.histogram2d(x, y, bins=(70,70))
-            for x in range(0, heatmap.shape[0]):
-                for y in range(0, heatmap.shape[1]):
-                    count = heatmap[x,y]
-                    #do not add data with count of 0
-                    if count == 0.0:
-                        continue
-                    bin_x_start = xedges[x]
-                    bin_x_end = xedges[x+1]
-                    bin_y_start = yedges[y]
-                    bin_y_end = yedges[y+1]
-
-                    #place heatmap values in the dictionary created
-                    hmDic["sample"].append(samp)
-                    hmDic["bin_x_start"].append(bin_x_start)
-                    hmDic["bin_x_end"].append(bin_x_end)
-                    hmDic["bin_y_start"].append(bin_y_start)
-                    hmDic["bin_y_end"].append(bin_y_end)
-                    hmDic["count"].append(count)
     
-    #convert the heatmap to a dataframe
-    hmDf = pd.DataFrame(hmDic)
+    # check if pairs were found and data is valid
+    if pairs:
+        # initialize empty list to collet sample names for dropdown menu
+        samples = []
 
-    #convert the scatterplot dict to a dataframe
-    scatterDf = pd.DataFrame(scatterDict)
+        # start loop to collect heatmap values
+        for lst in pairs:
+            for tpl in lst:
 
-    # set the dropdown values
-    sample_dropdown = alt.binding_select(options=samples, name="Sample Select")
-    sample_select = alt.selection_point(
-        fields=["sample"],
-        bind=sample_dropdown,
-        name="sample",
-        value=[{"sample": samples[0]}]
-    )
+                # set x and y values from the dataframe
+                if type(tpl) is tuple and len(tpl) > 1:
+                    samp = "~".join(tpl)
+                    samples.append(samp)
+                    x = []
+                    y = []
+                    xData = list(data[tpl[0]])
+                    yData = list(data[tpl[1]])
+                    peptides = list(data.index)
+                    for i in range(len(xData)):
+                        if not np.isnan(xData[i]) and not np.isnan(yData[i]):
+                            x.append(xData[i])
+                            y.append(yData[i])
 
-    if not facet_charts:
-        # create scatterplot chart with attached dropdown menu
-        heatmapChart = alt.Chart(hmDf).mark_rect().encode(
-            alt.X("bin_x_start:Q", title=xTitle),
-            alt.X2("bin_x_end:Q"),
-            alt.Y("bin_y_start:Q", title=yTitle),
-            alt.Y2("bin_y_end:Q"),
-            alt.Color("count:Q", scale = alt.Scale(scheme="plasma"))
-        ).add_params(
-            sample_select
-        ).transform_filter(
-            sample_select
+                            #if xy-threshold provided collect values matching threshold
+                            if (xy_threshold
+                                    and xData[i] > xy_threshold
+                                    and yData[i] > xy_threshold):
+                                scatterDict["x_value"].append(xData[i])
+                                scatterDict["y_value"].append(yData[i])
+                                scatterDict["peptide"].append(peptides[i])
+                                scatterDict["sample"].append(samp)
+                else:
+                    if type(tpl) is tuple:
+                        tpl = tpl[0]
+                    samp = tpl
+                    samples.append(samp)
+                    x = [x for x in data[tpl] if not np.isnan(x)]
+                    y = [y for y in data[tpl] if not np.isnan(y)]
+
+                if plot_log:
+                    x = np.log10(np.array(x)+1)
+                    y = np.log10(np.array(y)+1)
+                    xTitle = "Sample1 log10(score + 1)"
+                    yTitle = "Sample2 log10(score + 1)"
+                else:
+                    xTitle = "Sample1"
+                    yTitle = "Sample2"
+
+                #generate heatmap values
+                heatmap, xedges, yedges = np.histogram2d(x, y, bins=(70,70))
+                for x in range(0, heatmap.shape[0]):
+                    for y in range(0, heatmap.shape[1]):
+                        count = heatmap[x,y]
+                        #do not add data with count of 0
+                        if count == 0.0:
+                            continue
+                        bin_x_start = xedges[x]
+                        bin_x_end = xedges[x+1]
+                        bin_y_start = yedges[y]
+                        bin_y_end = yedges[y+1]
+
+                        #place heatmap values in the dictionary created
+                        hmDic["sample"].append(samp)
+                        hmDic["bin_x_start"].append(bin_x_start)
+                        hmDic["bin_x_end"].append(bin_x_end)
+                        hmDic["bin_y_start"].append(bin_y_start)
+                        hmDic["bin_y_end"].append(bin_y_end)
+                        hmDic["count"].append(count)
+        
+        #convert the heatmap to a dataframe
+        hmDf = pd.DataFrame(hmDic)
+
+        #convert the scatterplot dict to a dataframe
+        scatterDf = pd.DataFrame(scatterDict)
+
+        # set the dropdown values
+        sample_dropdown = alt.binding_select(options=samples, name="Sample Select")
+        sample_select = alt.selection_point(
+            fields=["sample"],
+            bind=sample_dropdown,
+            name="sample",
+            value=[{"sample": samples[0]}]
         )
+
+        if not facet_charts:
+            # create scatterplot chart with attached dropdown menu
+            heatmapChart = alt.Chart(hmDf).mark_rect().encode(
+                alt.X("bin_x_start:Q", title=xTitle),
+                alt.X2("bin_x_end:Q"),
+                alt.Y("bin_y_start:Q", title=yTitle),
+                alt.Y2("bin_y_end:Q"),
+                alt.Color("count:Q", scale = alt.Scale(scheme="plasma"))
+            ).add_params(
+                sample_select
+            ).transform_filter(
+                sample_select
+            )
+        else:
+            # create scatterplot chart with attached dropdown menu
+            heatmapChart = alt.Chart(hmDf).mark_rect().encode(
+                alt.X("bin_x_start:Q", title=xTitle),
+                alt.X2("bin_x_end:Q"),
+                alt.Y("bin_y_start:Q", title=yTitle),
+                alt.Y2("bin_y_end:Q"),
+                alt.Color("count:Q", scale = alt.Scale(scheme="plasma"))
+            ).facet(
+                facet="sample:N",
+                columns=5
+            )
+        
+        #if xy-threshold then create the scatterplot
+        if xy_threshold:
+            Scatter = alt.Chart(
+                scatterDf
+            ).mark_circle(
+                opacity=1, size=100, color="#009E73"
+            ).encode(
+                x = alt.X("x_value:Q", title = xTitle),
+                y = alt.Y("y_value:Q", title = yTitle),
+                tooltip = ["sample", "peptide", "x_value", "y_value"]
+            ).transform_filter(
+                sample_select
+            )
+
+            chart = alt.layer(heatmapChart, Scatter)
+            chart.save(os.path.join(output_dir, "index.html"))
+
+        if not xy_threshold:
+            # save the chart to index.html to be saved to a .qzv file
+            heatmapChart.save(os.path.join(output_dir, "index.html"))
+
+    # if no pairs found, create empty chart
     else:
-        # create scatterplot chart with attached dropdown menu
-        heatmapChart = alt.Chart(hmDf).mark_rect().encode(
-            alt.X("bin_x_start:Q", title=xTitle),
-            alt.X2("bin_x_end:Q"),
-            alt.Y("bin_y_start:Q", title=yTitle),
-            alt.Y2("bin_y_end:Q"),
-            alt.Color("count:Q", scale = alt.Scale(scheme="plasma"))
-        ).facet(
-            facet="sample:N",
-            columns=5
-        )
-    
-    #if xy-threshold then create the scatterplot
-    if xy_threshold:
-        Scatter = alt.Chart(
-            scatterDf
-        ).mark_circle(
-            opacity=1, size=100, color="#009E73"
-        ).encode(
-            x = alt.X("x_value:Q", title = xTitle),
-            y = alt.Y("y_value:Q", title = yTitle),
-            tooltip = ["sample", "peptide", "x_value", "y_value"]
-        ).transform_filter(
-            sample_select
-        )
+        blank_chart = alt.Chart().mark_point()
+        blank_chart.save(os.path.join(output_dir, "index.html"))
 
-        chart = alt.layer(heatmapChart, Scatter)
-        chart.save(os.path.join(output_dir, "index.html"))
-
-    if not xy_threshold:
-        # save the chart to index.html to be saved to a .qzv file
-        heatmapChart.save(os.path.join(output_dir, "index.html"))
 
 # Name: mutantScatters
 # Process: creates an interactive scatterplot/boxplot for mutant peptides

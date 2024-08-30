@@ -2,7 +2,7 @@
 
 from q2_pepsirf.format_types import (
     Normed, Zscore, InfoSumOfProbes, PairwiseEnrichment,
-    InfoSNPN, ProteinAlignment, MutantReference
+    InfoSNPN, ProteinAlignment, MutantReference, PepsirfContingencyTSVFormat
 )
 from q2_ps_plot.actions.boxplot import readCountsBoxplot, enrichmentRCBoxplot
 from q2_ps_plot.actions.heatmap import proteinHeatmap
