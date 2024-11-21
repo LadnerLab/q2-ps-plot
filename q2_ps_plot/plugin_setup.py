@@ -11,6 +11,7 @@ from q2_ps_plot.actions.scatter import repScatters, mutantScatters
 from q2_ps_plot.actions.scatter_tsv import repScatters_tsv, mutantScatters_tsv
 from q2_ps_plot.actions.epimap import epimap
 from q2_ps_plot.actions.epimap_tsv import epimap_dir
+from q2_ps_plot.actions.compareCS_scatter import compareCS_scatter
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 from qiime2.plugin import (
     Plugin, SemanticType, model, Int, Range, MetadataColumn, Categorical, Str,
@@ -610,4 +611,30 @@ plugin.pipelines.register_function(
     },
     name="Epitope Mapping Dir",
     description="Test."
+)
+
+plugin.visualizers.register_function(
+    function=compareCS_scatter,
+    inputs={},
+    input_descriptions={},
+    parameters={
+        "x": List[Float],
+        "y": List[Float],
+        "c_codenames": List[Str],
+        "s_codenames": List[Str],
+        "sample_names": List[Str],
+        "color_scheme": Str
+    },
+    parameter_descriptions={
+        "x": "Coordinates along the x-axis at which to plot points.",
+        "y": "Coordinates along the y-axis at which to plot points.",
+        "c_codenames": "",
+        "s_codenames": "",
+        "sample_names": "",
+        "color_scheme": "String of the name of a color scheme for the heatmap."
+        " Color schemes can be found here: https://vega.github.io/vega/docs/"
+        "schemes/"
+    },
+    name="compareCS Visualizer",
+    description="Generates a scatter plot given x and y values."
 )
