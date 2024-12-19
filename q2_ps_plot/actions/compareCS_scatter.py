@@ -10,6 +10,7 @@ def compareCS_scatter(
     y: list,
     c_codenames: list,
     s_codenames: list,
+    parent_sequences: list,
     sample_names: list,
     color_scheme: str = "dark2",
 ):
@@ -22,6 +23,7 @@ def compareCS_scatter(
         "S z-score": y,
         "C codename": c_codenames,
         "S codename": s_codenames,
+        "Parent Sequence": parent_sequences,
         "Sample Name": sample_names
     }
 
@@ -51,6 +53,7 @@ def compareCS_scatter(
             "S codename:N",
             "C z-score:Q",
             "S z-score:Q",
+            "Parent Sequence:N",
             "Sample Name:N"
             ]
         )

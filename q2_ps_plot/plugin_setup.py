@@ -622,6 +622,7 @@ plugin.visualizers.register_function(
         "y": List[Float],
         "c_codenames": List[Str],
         "s_codenames": List[Str],
+        "parent_sequences": List[Str],
         "sample_names": List[Str],
         "color_scheme": Str
     },
@@ -630,6 +631,7 @@ plugin.visualizers.register_function(
         "y": "Coordinates along the y-axis at which to plot points.",
         "c_codenames": "",
         "s_codenames": "",
+        "parent_sequences": "The peptide sequences of the c-version peptides.",
         "sample_names": "",
         "color_scheme": "String of the name of a color scheme for the heatmap."
         " Color schemes can be found here: https://vega.github.io/vega/docs/"
