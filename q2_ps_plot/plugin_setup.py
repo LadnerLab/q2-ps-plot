@@ -12,6 +12,7 @@ from q2_ps_plot.actions.scatter_tsv import repScatters_tsv, mutantScatters_tsv
 from q2_ps_plot.actions.epimap import epimap
 from q2_ps_plot.actions.epimap_tsv import epimap_dir
 from q2_ps_plot.actions.compareCS_scatter import compareCS_scatter
+from q2_ps_plot.actions.compareCS_histogram import compareCS_histogram
 from q2_types.feature_table import FeatureTable, BIOMV210DirFmt
 from qiime2.plugin import (
     Plugin, SemanticType, model, Int, Range, MetadataColumn, Categorical, Str,
@@ -637,6 +638,28 @@ plugin.visualizers.register_function(
         " Color schemes can be found here: https://vega.github.io/vega/docs/"
         "schemes/"
     },
-    name="compareCS Visualizer",
+    name="compareCS Scatterplot Visualizer",
     description="Generates a scatter plot given x and y values."
+)
+
+plugin.visualizers.register_function(
+    function=compareCS_histogram,
+    inputs={},
+    input_descriptions={},
+    parameters={
+        "sample_names": List[Str],
+        "category_names": List[Str],
+        "c_counts": List[Int],
+        "positions": List[Int],
+        "num_bins": Int
+    },
+    parameter_descriptions={
+        "sample_names": "",
+        "category_names": "",
+        "c_counts": "",
+        "positions": "",
+        "num_bins": ""
+    },
+    name="compareCS Histogram Visualizer",
+    description="Generates a histogram of c-count position for different peptide versions"
 )
