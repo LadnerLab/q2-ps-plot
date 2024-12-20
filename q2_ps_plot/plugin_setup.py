@@ -654,6 +654,7 @@ plugin.visualizers.register_function(
     input_descriptions={},
     parameters={
         "sample_names": List[Str],
+        "total_c_counts": List[Str],
         "category_names": List[Str],
         "c_counts": List[Int],
         "positions": List[Int],
@@ -661,6 +662,7 @@ plugin.visualizers.register_function(
     },
     parameter_descriptions={
         "sample_names": "",
+        "total_c_counts": "",
         "category_names": "",
         "c_counts": "",
         "positions": "",
