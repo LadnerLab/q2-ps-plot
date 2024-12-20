@@ -40,12 +40,7 @@ def compareCS_histogram(
             alt.Chart(category_chart_df).mark_bar(opacity=0.75).encode(
                 alt.X("Position:Q").bin(maxbins=num_bins),
                 alt.Y("C count:Q"),
-                alt.Color("Category Name:N"),
-                tooltip=[
-                    "C count:Q",
-                    "Category Name:N",
-                    "Sample Name:N"
-                ]
+                alt.Color("Category Name:N")
             ).transform_filter(
                 sample_select
             )
