@@ -14,7 +14,7 @@ def compareCS_scatter(
     c_counts: list,
     sample_names: list,
     color_scheme_1: str = "dark2",
-    color_scheme_2: str = "blues"
+    color_scheme_2: str = "dark2"
 ):
     # make sure all lists are the same length
     assert len(x)==len(y) and len(y)==len(c_codenames) and len(c_codenames)==len(s_codenames) and len(s_codenames)==len(sample_names), \
