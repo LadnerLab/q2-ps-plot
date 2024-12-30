@@ -632,11 +632,11 @@ plugin.visualizers.register_function(
     parameter_descriptions={
         "x": "Coordinates along the x-axis at which to plot points.",
         "y": "Coordinates along the y-axis at which to plot points.",
-        "c_codenames": "",
-        "s_codenames": "",
+        "c_codenames": "List of C-version peptides in the same order as coordinates.",
+        "s_codenames": "List of S-version peptides in the same order as coordinates.",
         "parent_sequences": "The peptide sequences of the c-version peptides.",
-        "c_counts": "",
-        "sample_names": "",
+        "c_counts": "List of number of C's in parent peptide in the same order as coordinates.",
+        "sample_names": "List of sample names in the same order as coordinates.",
         "color_scheme_1": "String of the name of a color scheme for the scatterplot colored by sample."
         " Color schemes can be found here: https://vega.github.io/vega/docs/"
         "schemes/",
@@ -661,12 +661,12 @@ plugin.visualizers.register_function(
         "num_bins": Int
     },
     parameter_descriptions={
-        "sample_names": "",
-        "total_c_counts": "",
-        "category_names": "",
-        "c_counts": "",
-        "positions": "",
-        "num_bins": ""
+        "sample_names": "List of the sample names.",
+        "total_c_counts": "List of the total number of c's the peptide of the c-count falls into.",
+        "category_names": "List of which category (C_Higher, S_Higher, or Similar) the peptide of the c-count falls into.",
+        "c_counts": "List of number of total number of C's in each position",
+        "positions": "List of peptide positions",
+        "num_bins": "Number of position bins for the x-axis."
     },
     name="compareCS Histogram Visualizer",
     description="Generates a histogram of c-count position for different peptide versions"
