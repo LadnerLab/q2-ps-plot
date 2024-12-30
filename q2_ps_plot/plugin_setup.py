@@ -553,7 +553,7 @@ epimap_shared_param_description = {
                         "FullName, CodeName, Protein, Category, AlaScanPos. "
                         " Header names can be customized in parameters.",
     "peptide_seq_filepath": "Fasta file with each code name header and its sequence. ",
-    "zscore_filepath": "Tab delimited file with sample names as columns adn code names as rows "
+    "zscore_filepath": "Tab delimited file with sample names as columns and code names as rows "
                         " with their calculated z-scores.",
     "p_thresh": "Test p-value threshold. It will be displayed as a dotted line perpendicular "
                 "to the y-axis.",
