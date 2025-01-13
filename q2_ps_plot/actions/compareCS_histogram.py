@@ -49,18 +49,20 @@ def compareCS_histogram(
     charts = list()
     for category, category_chart_df in category_groups:
         charts.append(
-            alt.Chart(category_chart_df).mark_bar(opacity=0.75).encode(
+            alt.Chart(category_chart_df).mark_bar().encode(
                 alt.X("Position:Q").bin(maxbins=num_bins),
                 alt.Y("C count:Q"),
-                alt.Color("Category Name:N")
+                alt.Color("Category Name:N"),
             ).transform_filter(
                 c_count_select &
                 sample_select
+            ).properties(
+                title=category
             )
         )
 
 
-    final_chart = alt.layer(
+    final_chart = alt.hconcat(
             *charts
         ).add_params(
             c_count_select,
