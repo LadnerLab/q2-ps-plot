@@ -13,7 +13,8 @@ def aeplots(
         neg_nes_ae_file: str,
         colors_file: str = "",
         xy_access: list = ["Events", "Species"],
-        xy_labels: list = ["Number of AEs in cohort", "Species"]
+        xy_labels: list = ["Number of AEs in cohort", "Species"],
+        vis_outputs_dir: str = None
 ) -> None:
     alt.data_transformers.disable_max_rows()
 
@@ -88,4 +89,6 @@ def aeplots(
             y='independent'
         )
 
-    final_chart.save(os.path.join(output_dir, "index.html"));
+    final_chart.save(os.path.join(output_dir, "index.html"))
+    if vis_outputs_dir:
+        final_chart.save(os.path.join(vis_outputs_dir, "aeplots.html"))

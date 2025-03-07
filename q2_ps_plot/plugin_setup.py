@@ -439,7 +439,8 @@ plugin.visualizers.register_function(
         "log": Bool,
         "xy_labels": List[Str],
         "pairs_file": Str,
-        "colors_file": Str
+        "colors_file": Str,
+        "vis_outputs_dir": Str 
     },
     parameter_descriptions={
         "x": "Coordinates along the x-axis at which to plot points.",
@@ -476,7 +477,9 @@ plugin.visualizers.register_function(
         "pairs_file": "Tab delimited (TSV) file with a pair of sample"
             " replicates on each line.",
         "colors_file": "Name of tab-delimited file containing species"
-            " name and HEX color code for that species to appear on the output charts."
+            " name and HEX color code for that species to appear on the output charts.",
+        "vis_outputs_dir": "Directory to save visualizations (not as a qiime2 artifact)."
+            " They will not be output here if this option is not provided."
     },
     name="Volcano Visualizer",
     description="Generates a volcano plot given x and y values. Significant"
@@ -500,7 +503,8 @@ plugin.visualizers.register_function(
         "taxa_access": Str,
         "highlight_data": Str,
         "highlight_threshold": Float,
-        "colors_file": Str
+        "colors_file": Str,
+        "vis_outputs_dir": Str 
     },
     parameter_descriptions={
         "pairs_file": "Tab delimited (TSV) file with a pair of sample"
@@ -520,7 +524,9 @@ plugin.visualizers.register_function(
             " highlighted. Anything above this threshold will not be"
             " considered 'significant'.",
         "colors_file": "Name of tab-delimited file containing species"
-            " name and HEX color code for that species to appear on the output charts."
+            " name and HEX color code for that species to appear on the output charts.",
+        "vis_outputs_dir": "Directory to save visualizations (not as a qiime2 artifact)."
+            " They will not be output here if this option is not provided."
     },
     name="Z Score Scatter Visualization",
     description="Creates a scatter plot using Z scores from two samples."
@@ -537,7 +543,8 @@ plugin.visualizers.register_function(
         "neg_nes_ae_file": Str,
         "xy_access": List[Str],
         "xy_labels": List[Str],
-        "colors_file": Str
+        "colors_file": Str,
+        "vis_outputs_dir": Str
     },
     parameter_descriptions={
         "pos_nes_ae_file": "Directory containing tab delimited (TSV) files with"
@@ -550,7 +557,9 @@ plugin.visualizers.register_function(
             " of 2 is supported.",
         "xy_labels": "Name of plot's x- and y-axis labels, respectively.",
         "colors_file": "Name of tab-delimited file containing species"
-            " name and HEX color code for that species to appear on the output charts."
+            " name and HEX color code for that species to appear on the output charts.",
+        "vis_outputs_dir": "Directory to save visualizations (not as a qiime2 artifact)."
+            " They will not be output here if this option is not provided."
     },
     name="Antibody Events plots Visualizer",
     description="Generates a box plot of species' anitbody events positive and negative NES."

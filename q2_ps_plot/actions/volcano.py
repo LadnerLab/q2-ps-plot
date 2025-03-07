@@ -22,9 +22,14 @@ def volcano(
         x_threshold: float = 0.4,
         y_threshold: float = 0.05,
         log: bool = True,
-        xy_labels: list = ["x", "y"]
+        xy_labels: list = ["x", "y"],
+        vis_outputs_dir: str = None
 ) -> None:
     alt.data_transformers.disable_max_rows()
+
+    if vis_outputs_dir:
+        plot_output_dir = os.path.join(vis_outputs_dir, "volcano_plots")
+        os.mkdir(plot_output_dir)
 
     if xy_dir:
         x = []
@@ -179,3 +184,52 @@ def volcano(
     final_chart = alt.vconcat(title, final_chart)
 
     final_chart.save(os.path.join(output_dir, "index.html"))
+
+    if vis_outputs_dir:
+        volcano_pair_df = {group: df for group, df in volcano_df.groupby("pair")}
+        if taxa:
+            highlight_pair_df = {group: df for group, df in highlight_df.groupby("pair")}
+
+        for pair in pairs:
+            final_chart = None
+            if pair in volcano_pair_df.keys():
+                volcano_chart = alt.Chart(volcano_pair_df[pair], title=alt.TitleParams(pair, anchor='middle')
+                ).mark_circle(
+                    size=50, color="black"
+                ).encode(
+                    x=alt.X("x:Q", title=xy_labels[0]),
+                    y=alt.Y("y:Q", title=xy_labels[1], sort=sort)
+                )
+                final_chart = volcano_chart
+
+            if taxa and pair in highlight_pair_df.keys():
+                highlight_chart = alt.Chart(highlight_pair_df[pair]).mark_circle(
+                    size=60, filled=True, opacity=1.0
+                ).encode(
+                    x=alt.X(
+                        "x:Q",
+                        title=xy_labels[0]
+                    ),
+                    y=alt.Y(
+                        "y:Q",
+                        title=xy_labels[1],
+                        sort=sort
+                    ),
+                    color=alt.Color(
+                        "taxa:N",
+                        scale=color_scale,
+                        legend=legend
+                    ),
+                    tooltip="taxa"
+                )
+                if final_chart != None:
+                    final_chart = alt.layer(final_chart, highlight_chart).resolve_scale(
+                        color="independent"
+                    )
+                else:
+                    final_chart = highlight_chart
+            
+            if final_chart != None:
+                final_chart.save(os.path.join(plot_output_dir, f"{pair}_volcano.html"))
+            else:
+                print(f"Skipped volcano plot for {pair}")

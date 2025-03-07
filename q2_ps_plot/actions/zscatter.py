@@ -21,9 +21,14 @@ def zscatter(
         taxa_access: str = None,
         spline_file: str = None,
         highlight_data: str = None,
-        highlight_threshold: float = 0.05
+        highlight_threshold: float = 0.05,
+        vis_outputs_dir: str = None
 ) -> None:
     alt.data_transformers.disable_max_rows()
+
+    if vis_outputs_dir:
+        plot_output_dir = os.path.join(vis_outputs_dir, "scatter_plots")
+        os.mkdir(plot_output_dir)
 
     if highlight_data:
         assert p_val_access, \
@@ -163,8 +168,9 @@ def zscatter(
         
     if spline_file:
         spline_df = pd.read_csv(spline_file, sep="\t")
+        spline_df = pd.DataFrame(spline_df)
         spline_chart = alt.Chart(
-            pd.DataFrame(spline_df)
+            spline_df
         ).mark_square(size=20).encode(
             x=alt.X("x:Q"),
             y=alt.Y("y:Q"),
@@ -243,3 +249,76 @@ def zscatter(
     final_chart = alt.vconcat(title, final_chart)
     
     final_chart.save(os.path.join(output_dir, "index.html"))
+
+    if vis_outputs_dir:
+        heatmap_pair_df = {pair: df for pair, df in heatmap_df.groupby("pair")}
+        if spline_file:
+            spline_pair_df = {pair: df for pair, df in spline_df.groupby("pair")}
+        if highlight_data:
+            highlight_pair_df = {pair: df for pair, df in highlight_df.groupby("pair")}
+
+        
+        for pair in pairs:
+            final_chart = None
+            if pair in heatmap_pair_df.keys():
+                heatmap_chart = alt.Chart(
+                    heatmap_pair_df[pair], width=chart_width, height=chart_height, 
+                    title=alt.TitleParams(pair, anchor='middle')
+                ).mark_rect().encode(
+                    alt.X("bin_x_start:Q", title="Time Point 1"),
+                    alt.X2("bin_x_end:Q"),
+                    alt.Y("bin_y_start:Q", title="Time Point 2"),
+                    alt.Y2("bin_y_end:Q"),
+                    alt.Color(
+                        "count:Q",
+                        scale=alt.Scale(scheme="greys"),
+                        legend=alt.Legend(title="Point Frequency")
+                    )
+                )
+                final_chart = heatmap_chart
+                
+            if spline_file and pair in spline_pair_df.keys():
+                spline_chart = alt.Chart(
+                    spline_pair_df[pair]
+                ).mark_square(size=20).encode(
+                    x=alt.X("x:Q"),
+                    y=alt.Y("y:Q"),
+                    color=alt.Color(
+                        "x:N",
+                        scale=alt.Scale(range=["#FF0000"]),
+                        # reference: https://github.com/altair-viz/altair/issues/620
+                        legend=None
+                    )
+                )
+                if final_chart != None:
+                    final_chart = alt.layer(final_chart, spline_chart)
+                else:
+                    final_chart = spline_chart
+
+            if highlight_df is not None and pair in highlight_pair_df.keys():
+                highlight_chart = alt.Chart(highlight_pair_df[pair]).mark_point(
+                    filled=True, size=60
+                ).encode(
+                    x=alt.X("x:Q"),
+                    y=alt.Y("y:Q"),
+                    color=alt.Color(
+                        "taxa:N",
+                        scale=color_scale,
+                        legend=legend
+                    ),
+                    # https://github.com/altair-viz/altair/issues/1181
+                    shape=shape,
+                    tooltip=["peptide", "taxa"]
+                )
+                if final_chart != None:
+                    final_chart = alt.layer(final_chart, highlight_chart).resolve_scale(
+                        color="independent",
+                        shape="independent"
+                    )
+                else:
+                    final_chart = highlight_chart
+            
+            if final_chart != None:
+                final_chart.save(os.path.join(plot_output_dir, f"{pair}_scatter.html"))
+            else:
+                print(f"Skipped volcano plot for {pair}")
