@@ -321,4 +321,4 @@ def zscatter(
             if final_chart != None:
                 final_chart.save(os.path.join(plot_output_dir, f"{pair}_scatter.html"))
             else:
-                print(f"Skipped volcano plot for {pair}")
+                print(f"Skipped scatter plot for {pair}")
