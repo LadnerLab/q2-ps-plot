@@ -4,11 +4,15 @@ import altair as alt
 import os
 import numpy as np
 import pandas as pd
-
+import matplotlib.pyplot as plt
+import matplotlib.colors as clr
+import numpy as np
+import math
 
 def volcano(
         output_dir: str, 
         pairs_file: str,
+        colors_file: str = "",
         x: list = None,
         y: list = None,
         taxa: list = None,
@@ -18,9 +22,14 @@ def volcano(
         x_threshold: float = 0.4,
         y_threshold: float = 0.05,
         log: bool = True,
-        xy_labels: list = ["x", "y"]
+        xy_labels: list = ["x", "y"],
+        vis_outputs_dir: str = None
 ) -> None:
     alt.data_transformers.disable_max_rows()
+
+    if vis_outputs_dir:
+        plot_output_dir = os.path.join(vis_outputs_dir, "volcano_plots")
+        os.mkdir(plot_output_dir)
 
     if xy_dir:
         x = []
@@ -109,6 +118,34 @@ def volcano(
                     highlight_dict["pair"].append(pairs[i])
         highlight_df = pd.DataFrame(highlight_dict)
 
+        # create color scale
+        color_scale=alt.Scale(range=[
+                    "#E69F00", "#56B4E9", "#009E73",
+                    "#F0E442", "#0072B2", "#D55E00",
+                    "#CC79A7"])
+        legend=alt.Legend(title="Significant Taxa")
+        if colors_file:
+            all_species = list(set(highlight_df["taxa"].to_list()))
+            num_extra_colors = len(all_species)
+
+            color_df = pd.read_csv(colors_file, sep="\t", header=None, names=["Taxa", "Color"])
+            # remove species that are not in all_species
+            color_df = color_df[color_df["Taxa"].isin(all_species)]
+            species_list = color_df["Taxa"].to_list()
+            colors_list = color_df["Color"].to_list()
+            num_extra_colors -= len(species_list)
+
+            color_iter = iter(plt.cm.rainbow(np.linspace(0, 1, num_extra_colors)))
+
+            # fill lists for species not included in color file
+            for species in all_species:
+                if species not in species_list:
+                    species_list.append(species)
+                    colors_list.append(clr.to_hex(next(color_iter)))
+
+            color_scale=alt.Scale(domain=species_list, range=colors_list)
+            legend=alt.Legend(title="Significant Taxa", columns=int(math.ceil(len(species_list)/30)), symbolLimit=0)
+
         highlight_chart = alt.Chart(highlight_df).mark_circle(
             size=60, filled=True, opacity=1.0
         ).encode(
@@ -123,12 +160,8 @@ def volcano(
             ),
             color=alt.Color(
                 "taxa:N",
-                scale=alt.Scale(range=[
-                    "#E69F00", "#56B4E9", "#009E73",
-                    "#F0E442", "#0072B2", "#D55E00",
-                    "#CC79A7"
-                ]),
-                legend=alt.Legend(title="Significant Taxa")
+                scale=color_scale,
+                legend=legend
             ),
             tooltip="taxa"
         ).add_params(
@@ -151,3 +184,52 @@ def volcano(
     final_chart = alt.vconcat(title, final_chart)
 
     final_chart.save(os.path.join(output_dir, "index.html"))
+
+    if vis_outputs_dir:
+        volcano_pair_df = {group: df for group, df in volcano_df.groupby("pair")}
+        if taxa:
+            highlight_pair_df = {group: df for group, df in highlight_df.groupby("pair")}
+
+        for pair in pairs:
+            final_chart = None
+            if pair in volcano_pair_df.keys():
+                volcano_chart = alt.Chart(volcano_pair_df[pair], title=alt.TitleParams(pair, anchor='middle')
+                ).mark_circle(
+                    size=50, color="black"
+                ).encode(
+                    x=alt.X("x:Q", title=xy_labels[0]),
+                    y=alt.Y("y:Q", title=xy_labels[1], sort=sort)
+                )
+                final_chart = volcano_chart
+
+            if taxa and pair in highlight_pair_df.keys():
+                highlight_chart = alt.Chart(highlight_pair_df[pair]).mark_circle(
+                    size=60, filled=True, opacity=1.0
+                ).encode(
+                    x=alt.X(
+                        "x:Q",
+                        title=xy_labels[0]
+                    ),
+                    y=alt.Y(
+                        "y:Q",
+                        title=xy_labels[1],
+                        sort=sort
+                    ),
+                    color=alt.Color(
+                        "taxa:N",
+                        scale=color_scale,
+                        legend=legend
+                    ),
+                    tooltip="taxa"
+                )
+                if final_chart != None:
+                    final_chart = alt.layer(final_chart, highlight_chart).resolve_scale(
+                        color="independent"
+                    )
+                else:
+                    final_chart = highlight_chart
+            
+            if final_chart != None:
+                final_chart.save(os.path.join(plot_output_dir, f"{pair}_volcano.html"))
+            else:
+                print(f"Skipped volcano plot for {pair}")
