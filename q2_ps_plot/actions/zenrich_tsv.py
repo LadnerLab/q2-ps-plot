@@ -34,7 +34,8 @@ def zenrich_tsv(
         lower_z_thresh=5,
         exact_z_thresh=None,
         exact_cs_thresh="20",
-        pepsirf_binary="pepsirf"):
+        pepsirf_binary="pepsirf"
+    ):
 
     # collect the zenrich module action
     zenrich = ctx.get_action("ps-plot", "zenrich")

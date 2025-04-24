@@ -1,7 +1,3 @@
-from altair.vegalite.v4.schema.channels import Tooltip
-from collections import defaultdict
-from q2_pepsirf.format_types import MutantReferenceFileFmt
-
 import altair as alt
 import csv
 import itertools
@@ -11,6 +7,10 @@ import os
 import pandas as pd
 import qiime2
 import random
+
+from altair.vegalite.v5.schema.channels import Tooltip
+from collections import defaultdict
+from q2_pepsirf.format_types import MutantReferenceFileFmt
 
 # Name: _make_pairs_list
 # Process: creates a list of sample replicates
@@ -158,11 +158,11 @@ def repScatters(
 
     # set the dropdown values
     sample_dropdown = alt.binding_select(options=samples, name="Sample Select")
-    sample_select = alt.selection_single(
+    sample_select = alt.selection_point(
         fields=["sample"],
         bind=sample_dropdown,
         name="sample",
-        init={"sample": samples[0]}
+        value=[{"sample": samples[0]}]
     )
 
     if not facet_charts:
@@ -173,7 +173,7 @@ def repScatters(
             alt.Y("bin_y_start:Q", title=yTitle),
             alt.Y2("bin_y_end:Q"),
             alt.Color("count:Q", scale = alt.Scale(scheme="plasma"))
-        ).add_selection(
+        ).add_params(
             sample_select
         ).transform_filter(
             sample_select
@@ -321,16 +321,16 @@ def mutantScatters(
     sample_dropdown = alt.binding_select(
         options=samples, name="Reference Select"
     )
-    sample_select = alt.selection_single(
+    sample_select = alt.selection_point(
         fields=[reference_header], bind=sample_dropdown,
-        name="Reference", init={reference_header: samples[0]}
+        name="Reference", value=[{reference_header: samples[0]}]
     )
 
     # set the dropdown values
     samp_dropdown = alt.binding_select(options=samp, name="Sample Select")
-    samp_select = alt.selection_single(
+    samp_select = alt.selection_point(
         fields=["Samples"], bind=samp_dropdown,
-        name="Samples", init={"Samples": samp[0]}
+        name="Samples", value=[{"Samples": samp[0]}]
     )
 
     #set max rows for altair to none
@@ -351,7 +351,7 @@ def mutantScatters(
                     ])
                 ),
                 tooltip=[label_header, peptide_header, category_header]
-            ).add_selection(
+            ).add_params(
                 sample_select, samp_select
             ).transform_filter(
                 sample_select &
@@ -373,7 +373,7 @@ def mutantScatters(
                     ])
                 ),
                 tooltip = [label_header, peptide_header, category_header]
-            ).add_selection(
+            ).add_params(
                 sample_select,
                 samp_select
             ).transform_filter(
@@ -406,7 +406,7 @@ def mutantScatters(
                 text="labeling:N"
             ).properties(
                 width=1000
-            ).add_selection(
+            ).add_params(
                 sample_select
             ).transform_filter(
                 sample_select
@@ -429,7 +429,7 @@ def mutantScatters(
         ).properties(
             width=1000,
             height=300
-        ).add_selection(
+        ).add_params(
             sample_select,
             samp_select
         ).transform_filter(

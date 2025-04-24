@@ -7,10 +7,14 @@ def proteinHeatmap_dir(
         enriched_suffix="_enriched.txt",
         align_header="AlignPos",
         align_delim="~",
-        color_scheme="viridis"):
+        include_species=False,
+        species_header="Species",
+        color_scheme="viridis",
+        output_size=500
+        ):
     
     proteinHeatmap = ctx.get_action("ps-plot", "proteinHeatmap")
-
+    
     enriched_dir = ctx.make_artifact(
         type="PairwiseEnrichment",
         view=enriched_dir_filepath,
@@ -29,7 +33,10 @@ def proteinHeatmap_dir(
         enriched_suffix=enriched_suffix,
         align_header=align_header,
         align_delim=align_delim,
-        color_scheme=color_scheme
+        include_species=include_species,
+        species_header=species_header,
+        color_scheme=color_scheme,
+        output_size=output_size
     )
 
     return proteinHeatmap_vis
